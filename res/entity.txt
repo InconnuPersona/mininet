@@ -1,0 +1,49 @@
+Itemdrops are special cases only instantiable by the game level; they may never be defined under a class.
+
+==============================
+Entity:
+==============================
+
+bioluminance():
+Returns a lighting radius.
+
+blocks(Entity other):
+Returns true or false.
+
+buoyant():
+Determines whether the entity can float or swim.
+
+//interact(Entity other):
+//
+
+remove():
+Removes entity from level.
+
+render():
+Renders entity sprites.
+
+tick():
+Handles entity thought.
+
+touch(Entity other):
+Handles entity interaction.
+
+==============================
+Mob:
+==============================
+
+findspawn():
+Sets mob coordinates to suitable spawn location.
+
+freestrike(Tile other, Item item):
+Deals attack to tile in the specified direction or interacts with tile.
+
+strike(Entity other, Item item):
+Deals attack to entity in the specified direction or interacts with entity.
+
+==============================
+Pliant:
+==============================
+
+command:
+Handles clientsent command.

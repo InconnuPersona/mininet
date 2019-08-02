@@ -1,0 +1,4 @@
+
+unit files serve as template masters to construct and maintain units. they concern with the state and surface of the unit while only containing the data necessary to fit under a class of entity.
+
+an unit may be initiated, invoked(bound to master), or spawned by another unit

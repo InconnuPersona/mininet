@@ -1,0 +1,53 @@
+Shared [
+
+MSG_SYNCHRONIZE:
+ int sessionID;
+ int ticks;
+
+]
+
+Client [
+
+MSG_ADDCLIENT:
+ string name;
+
+MSG_COMMAND:
+ refer pliant;
+ byte command;
+ refer result; // if the command was to craft something, this would be the desired output; if it were to place something, this would be the entity ID
+
+MSG_LEVELBITMAP:
+ array bitmap;
+
+
+]
+
+Host [
+
+MSG_ADDCLIENT:
+ int sessionID;
+ int state; // accepted or refused; 0 stands for acceptance while another number encodes a reason for refusal
+ refer bond; // player bond
+
+MSG_ITEMWORD:
+ int id;
+ string word;
+
+MSG_UNITWORD:
+ int id;
+ string word;
+
+MSG_UDPATECHUNK:
+ int unitcount;
+ array tiles;
+ array units;
+
+MSG_UPDATECLIENT:
+ 
+
+MSG_UPDATEPILE:
+ refer pile;
+ int itemcount;
+ array slots;
+
+]

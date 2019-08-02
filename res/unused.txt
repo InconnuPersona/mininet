@@ -1,0 +1,8 @@
+
+class unit.beast
+
+ if (lua_gettop(L) > 0) {
+  le_tileY = luaL_checknumber(L, 1);
+ }
+ 
+ level.drop("goldOre", x, y)
