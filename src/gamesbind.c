@@ -1,3 +1,4 @@
+#include "host.h"
 #include "main.h"
 #include "bind.h"
 
@@ -11,13 +12,117 @@ lua_State* L_game;
 // ==================================================
 // externals
 
-extern game_t session;
+extern void assigntile(int index, const char* name);
+extern refer_t designunit(const char* word, int extra);
+//extern void appenditem();
 
-extern void assigntile(int index, const char* name, int flags);
-extern void designunit(const char* word, int extra);
+// ==================================================
+// lua_game
+
+NEWLUAFUNCTION(dumpstack) {
+ dumpluastack(L);
+ 
+ return 0;
+}
+
+NEWLUAFUNCTION(random) {
+ int range;
+ 
+ range = 0xffff;
+ 
+ if (lua_gettop(L) > 0) {
+  range = luaL_checknumber(L, 1);
+ }
+ 
+ lua_pushnumber(L, randominteger(range));
+ 
+ return 1;
+}
+
+NEWLUAFUNCTION(randomboolean) {
+ lua_pushboolean(L, randominteger(0xffff) % 1);
+ 
+ return 1;
+}
+
+NEWLUAFUNCTION(render) {
+ extern screen_t* le_screen;
+ 
+ rendergame(le_screen);
+ 
+ return 0;
+}
+
+NEWLUAFUNCTION(seedrandom) {
+ if (lua_gettop(L) > 0) {
+  if (lua_isnil(L, 1)) {
+   seedrandomtime();
+  }
+  else {
+   seedrandom(luaL_checknumber(L, 1));
+  }
+ }
+ 
+ return 0;
+}
+
+NEWLUAFUNCTION(start) {
+ char* name;
+ char* addr;
+ char* port;
+ int type;
+ 
+ type = luaL_checknumber(L, 1);
+ name = (char*) luaL_checkstring(L, 2);
+ addr = (char*) luaL_checkstring(L, 3);
+ port = (char*) luaL_checkstring(L, 4);
+ 
+ startsession(type, name, addr, atoi(port));
+ 
+ return 0;
+}
+
+NEWLUAFUNCTION(ticks) {
+ lua_pushnumber(L, session.ticks);
+ 
+ return 1;
+}
+
+// ==================================================
+// lua table declaration
+
+BEGINLUATABLE(game)
+ LUANUMBER(CLIENT, GAME_CLIENT),
+ LUANUMBER(HOST, GAME_HOST),
+ LUANUMBER(PRIVATE, GAME_PRIVATE),
+ LUANUMBER(RATE, GAMERATE),
+ 
+ LUAFUNCTION(dumpstack),
+ LUAFUNCTION(random),
+ LUAFUNCTION(randomboolean),
+ LUAFUNCTION(render),
+ LUAFUNCTION(seedrandom),
+ LUAFUNCTION(start),
+ LUAFUNCTION(ticks),
+ENDLUATABLE;
 
 // ==================================================
 // functions
+
+void loaditems() {
+ DIR* d;
+ struct dirent* dir;
+ 
+ d = opendir("res/item");
+ 
+ if (d) {
+  while ((dir = readdir(d))) {
+   
+  }
+  
+  closedir(d);
+ }
+}
 
 void loadtile(const char* string) {
  char buffer[64];
@@ -32,15 +137,24 @@ void loadtile(const char* string) {
   sprintf(buffer, "res/tile/%s", string);
   
   *c = '\0';
+  
   label = reprintstring(string);
+  
+  if (strlen(label) > MAX_WORDLENGTH) {
+   LOGREPORT("tile word '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
+   exit(EXIT_FAILURE);
+  }
+  
   *c = '.';
   
   uploadfile(buffer, label, L_game);
   
   {
-   assigntile(getinternal("id", label, L_game), label, 0);
-   
-   callmethod("define", label, L_game);
+   assigntile(getinternal("id", label, L_game), label);
+
+   if (hasluamethod("define", label, L_game)) {
+    callmethod("define", label, L_game, NULL);
+   }
   }
  }
 }
@@ -49,7 +163,7 @@ void loadtiles() {
  DIR* d;
  struct dirent* dir;
  
- assigntile(NOTILE, "void", 0);
+ assigntile(NOTILE, "void");
  
  d = opendir("res/tile");
  
@@ -75,7 +189,14 @@ void loadunit(const char* string) {
   sprintf(buffer, "res/unit/%s", string);
   
   *c = '\0';
+  
   label = reprintstring(string);
+  
+  if (strlen(label) > MAX_WORDLENGTH) {
+   LOGREPORT("unit word '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
+   exit(EXIT_FAILURE);
+  }
+  
   *c = '.';
   
   uploadfile(buffer, label, L_game);
@@ -83,7 +204,9 @@ void loadunit(const char* string) {
   {
    designunit((char*) getinternal("word", label, L_game), getinternal("extra", label, L_game));
    
-   callmethod("define", label, L_game);
+   if (hasluamethod("define", label, L_game)) {
+    callmethod("define", label, L_game, NULL);
+   }
   }
  }
 }
@@ -127,82 +250,9 @@ void enablegame() {
   uploadsubtable(lua_unittrace, "trace", "unit", L_game);
  }
  
+ loaditems();
  loadtiles();
  loadunits();
+ 
+ return;
 }
-
-// ==================================================
-// lua_game
-
-NEWLUAFUNCTION(random) {
- int range;
- 
- range = 0xffff;
- 
- if (lua_gettop(L) > 0) {
-  range = luaL_checknumber(L, 1);
- }
- 
- lua_pushnumber(L, randominteger(range));
- 
- return 1;
-}
-
-NEWLUAFUNCTION(randomboolean) {
- lua_pushboolean(L, randominteger(0xffff) % 1);
- 
- return 1;
-}
-
-NEWLUAFUNCTION(render) {
- extern screen_t* le_screen;
- 
- rendergame(le_screen);
- 
- return 0;
-}
-
-NEWLUAFUNCTION(start) {
- char* name;
- char* addr;
- char* port;
- int type;
- 
- type = luaL_checknumber(L, 1);
- name = (char*) luaL_checkstring(L, 2);
- addr = (char*) luaL_checkstring(L, 3);
- port = (char*) luaL_checkstring(L, 4);
- 
- startsession(type, name, addr, atoi(port));
- 
- return 0;
-}
-
-NEWLUAFUNCTION(tick) {
- tickgame();
- 
- return 0;
-}
-
-NEWLUAFUNCTION(ticks) {
- lua_pushnumber(L, session.ticks);
- 
- return 1;
-}
-
-// ==================================================
-// lua table declaration
-
-BEGINLUATABLE(game)
- LUANUMBER(CLIENT, GAME_CLIENT),
- LUANUMBER(HOST, GAME_HOST),
- LUANUMBER(PRIVATE, GAME_PRIVATE),
- LUANUMBER(RATE, GAMERATE),
- 
- LUAFUNCTION(random),
- LUAFUNCTION(randomboolean),
- LUAFUNCTION(render),
- LUAFUNCTION(start),
- LUAFUNCTION(tick),
- LUAFUNCTION(ticks),
-ENDLUATABLE;

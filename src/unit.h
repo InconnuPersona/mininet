@@ -8,39 +8,43 @@
 #define ELEMENTSIZE sizeof(int)
 #define NOUNIT 0
 
-// bond is the client to which the entity is bound; owner refers to a master bond not a bonded being; 
-// a pile is the inventory of the being (it will drop this after death presumably and may be used by the player)
 #define CLASS_UNIT \
  int id; \
+ int extant; \
  refer_t word; \
  refer_t owner; \
- refer_t bond; \
- int extant; \
  int x, y;
 
-//#define CLASS_DROP 
-// CLASS_UNIT; 
-// refer_t item; 
-// float xa, ya, za; 
-// float xx, yy, zz; 
-// int lifetime;
+//#define CLASS_DROP
+// CLASS_UNIT;
+// refer_t item;
+// float xa, ya, za;
+// float xx, yy, zz;
+// int aim, hurttime, lifetime, time;
+// int xk, yk;
 
 #define CLASS_MOB \
  CLASS_UNIT; \
  refer_t pile; \
  int health, dir, xk, yk; \
- int hurt, tick, swim, walk;
+ int hurted, ticked, swum, walked;
 
 //#define CLASS_FIEND 
 // CLASS_MOB; 
 // int level, xa, ya;
 
+// The command contains all movement and action command data while the medium of such acts is
+// identified under the object; the target is the acted character, whether an item or mob.
 #define CLASS_PLIANT \
  CLASS_MOB; \
+ refer_t bond; \
+ int commands; \
+ refer_t object; \
+ refer_t target; \
  refer_t inhand, item; \
  int aim, score; \
  int attacktime, breathtime, dodgetime, stairtime; \
- int stamina, rechargedelay;
+ int stamina, tireddelay;
 
 // item is the item which is the furniture, and taker is the player that is queued for pickup
 // the taker is whoever is picking up the movable, while the user is whoever is engaged with it
@@ -68,7 +72,8 @@ typedef enum {
  CMD_NONE = 0,
  CMD_ATTACK = 0x01,
  CMD_CRAFT = 0x02,
- CMD_INTERACT = 0x04,
+ //CMD_INTERACT = 0x04, // NULL for player menu
+ CMD_MENU = 0x04,
  CMD_MOVEUP = 0x08,
  CMD_MOVEDOWN = 0x10,
  CMD_MOVELEFT = 0x20,
@@ -77,39 +82,23 @@ typedef enum {
 
 typedef enum {
  SUPER_NULL = 0,
- SUPER_UNIT,
- SUPER_DROP,
- SUPER_MOB,
-//  SUPER_BEAST,
-  SUPER_FIEND,
-  SUPER_PLIANT,
- SUPER_MOVABLE,
- SUPER_TRACE,
-} class_e;
-
-//typedef struct {
-// CLASS_DROP;
-//} drop_t;
-
-//typedef struct {
-// CLASS_FIEND;
-//} fiend_t;
+ SUPER_UNIT = 0x01,
+ SUPER_DROP = 0x02,
+ SUPER_MOVABLE = 0x04,
+ SUPER_TRACE = 0x08,
+ SUPER_MOB = 0x10,
+//  SUPER_BEAST = SUPER_MOB | 1,
+  SUPER_FIEND = SUPER_MOB | 2,
+  SUPER_PLIANT = SUPER_MOB | 3,
+} unit_e;
 
 typedef struct {
  CLASS_MOB;
 } mob_t;
 
-//typedef struct {
-// CLASS_MOVABLE;
-//} movable_t;
-
 typedef struct {
  CLASS_PLIANT;
 } pliant_t;
-
-//typedef struct {
-// CLASS_TRACE;
-//} trace_t;
 
 typedef struct {
  CLASS_UNIT;
@@ -118,40 +107,43 @@ typedef struct {
 typedef union {
  int data[MAX_ELEMENTS];
  
-// drop_t drop;
-// fiend_t fiend;
  mob_t mob;
-// movable_t movable;
  pliant_t pliant;
-// trace_t trace;
  unit_t base;
 } unit_u;
 
 typedef struct {
- // shared
+ int extra;
  int id;
- int super; // superclass
- char* word; // unitword
- int extra; // extra unit data length
+ char* name;
+ unit_e super;
+ char* word;
  
- // unit shared "unit"
+ // unit shared
  int halfheight, halfwidth;
  
- // mob only "mob"
- attitude_e attitude;
+ // mob shared
  int maxhealth;
  
- // movable only "movable"
-// char* name;
-// refer_t surface;
+ // movable only
+ //char* name;
+ //refer_t surface;
  
- // player only "pliant"
+ // pliant only
  int maxstamina;
-} unitword_t, entity_t;
+} unitword_t;
 
-refer_t unitid(const char* word);
-char* unitname(refer_t word);
-char* unitword(refer_t word);
-char* unitwordname(const char* word);
+struct level_s;
 
-void blankunit(unit_u* unit, refer_t word);
+void bindunitword(const char* word, refer_t bind);
+refer_t designunit(const char* word, int extra);
+int getclassdepth(unit_e super);
+int getunitwidth(const char* word);
+
+refer_t getclass(const char* word);
+int isclass(unit_e super, refer_t word);
+
+unitword_t* getunitword(int id);
+unitword_t* getunitbyword(const char* word);
+
+void createunit(unit_t* unit, const char* word);

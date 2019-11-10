@@ -2,7 +2,7 @@
 
 #undef main
 
-screen_t screen, lightscreen;
+screen_t lightscreen, screen;
 int debug = 0;
 int ticks = 0;
 
@@ -12,6 +12,8 @@ void preinit() {
  createview();
  
  fillpalette();
+ 
+ initiatechecksum();
  
  seedrandomtime();
 }
@@ -41,6 +43,10 @@ void tick() {
  else {
   tickkeys();
   
+  if (session.open) {
+   tickgame();
+  }
+  
   tickmenu();
  }
  
@@ -68,6 +74,7 @@ void quit() {
 }
 
 int main(int argc, char** argv) {
+ static int r = 0, t = 0;
  watch_t timer;
  float delay = 1.f / TICKRATE;
  int shouldrender, unprocessed;
@@ -76,9 +83,10 @@ int main(int argc, char** argv) {
  
  init();
  
- settimer(&timer, TIMER_SIMPLELAPSE, CURRENTTIME, delay);
+ settimer(&timer, TIMER_SPACEDLAPSE, CURRENTTIME, delay);
  
  while (1) {
+  shouldrender = 0;
   unprocessed = readtimer(&timer);
   
   pollevents();
@@ -88,13 +96,16 @@ int main(int argc, char** argv) {
   while (unprocessed > 0) {
    tick();
    
-   unprocessed -= 1;
    shouldrender = 1;
+   unprocessed--;
   }
   
   if (shouldrender) {
    render();
+   LOGDEBUG("renders %i.", r++);
   }
+  
+  LOGDEBUG("ticks %i.", t++);
   
   delaythread(delay);
  }

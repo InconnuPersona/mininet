@@ -1,4 +1,4 @@
-#include "main.h"
+#include "host.h"
 #include "nethost.h"
 
 // ==================================================
@@ -10,25 +10,43 @@ host_t host = { 0 };
 // ==================================================
 // functions
 
-void adjoinmessage(message_t* message, queue_t* queue) {
- if (queue->count > -1 && queue->count < MAX_MESSAGES) {
-  copymessage(message, &queue->messages[queue->count]);
+void adjoinmessage(message_t* message, queue_t* queue, int reliable) {
+ if (!message || !queue) {
+  LOGREPORT("received invalid arguments.");
+  return;
+ }
+ 
+ CHECKMESSAGE(message, return);
+ 
+ if (reliable && queue->reliablecount > -1 && queue->reliablecount < MAX_MESSAGES) {
+  copymessage(message, &queue->reliable[queue->reliablecount]);
   
-  emplacemessage(&queue->messages[queue->count]);
+  emplacemessage(&queue->reliable[queue->reliablecount]);
   
-  queue->count++;
-  queue->queued = 1;
+  queue->reliablecount++;
+ }
+ else if (!reliable && queue->messagecount > -1 && queue->messagecount < MAX_MESSAGES) {
+  copymessage(message, &queue->messages[queue->messagecount]);
+  
+  emplacemessage(&queue->messages[queue->messagecount]);
+  
+  queue->messagecount++;
  }
  else {
   LOGREPORT("queue overflowed.");
+  return;
  }
+ 
+ queue->queued = 1;
 }
 
-void appendclientmessage(message_t* message, int client) {
+void appendclientmessage(message_t* message, int reliable, refer_t client) {
  if (host.type != HOST_LOCAL) {
   LOGREPORT("invalid host.");
   return;
  }
+ 
+ CHECKMESSAGE(message, return);
  
  client = fetchclient(client);
  
@@ -37,24 +55,21 @@ void appendclientmessage(message_t* message, int client) {
   return;
  }
  
- adjoinmessage(message, &clients[client].queue);
+ adjoinmessage(message, &clients[client].queue, reliable);
 }
 
-void appendmessage(message_t* message) {
+void appendmessage(message_t* message, int reliable) {
  if (host.type != HOST_CLIENT) {
   LOGREPORT("invalid host.");
   return;
  }
  
- if (!message) {
-  LOGREPORT("received null message.");
-  return;
- }
+ CHECKMESSAGE(message, return);
  
- adjoinmessage(message, &host.queue);
+ adjoinmessage(message, &host.queue, reliable);
 }
 
-int clientstate(int client) {
+int clientstate(refer_t client) {
  client = fetchclient(client);
  
  if (client == INVALIDCLIENT) {
@@ -78,16 +93,17 @@ int countclients() {
  return count;
 }
 
-//dropclient(client, reason)
-void dropclient(int client) {
+void dropclient(refer_t client, int reason) {
  client = fetchclient(client);
  
  if (client == INVALIDCLIENT) {
-  LOGREPORT("invalid client.");
+  LOGREPORT("received invalid client.");
   return;
  }
  
- shakehands(clients[client].address, EXT_GOODBYE, EXT_GOODBYE);
+ shakehands(clients[client].address, EXT_GOODBYE, reason);
+ 
+ LOGREPORT("dropped client [%x] at index %i.", clients[client].id, client);
  
  memset(&clients[client], 0, sizeof(client_t));
  
@@ -97,17 +113,23 @@ void dropclient(int client) {
 void emplacemessage(message_t* message) {
  int byte, i, j, k, l, need;
  
+ CHECKMESSAGE(message);
+ 
+ if (message->length == 0) {
+  message->length = message->stored;
+ }
+ 
  need = ceil((float) message->length / SECTIONANGTH);
  
  k = -1;
  l = 0;
  
- for (i = 0; i < MAX_POOLLENGTH / SECTIONANGTH; i++) {
+ for (i = 0; i < MAX_POOLSECTIONS; i++) {
   byte = i / BYTEWIDTH;
   j = i - byte * BYTEWIDTH;
   
-  if ((message->data.bytes[byte] & (1 << j)) == 0) {
-   if (k < 0) {
+  if (!(host.used[byte] & (1 << j))) {
+   if (k < 0) { 
 	k = i;
    }
    else {
@@ -126,19 +148,30 @@ void emplacemessage(message_t* message) {
    
    message->data.integer = k * SECTIONANGTH;
    
-   //printf("reserve data:\n");
-   
-   //for (i = 0; i < MAX_POOLLENGTH; i++) {
-	//printf(" %02x", host.reserve[i]);
-   //}
-   
-   //printf("\n");
-   
    return;
   }
  }
  
  LOGREPORT("failed to place message into host reserve buffer.");
+ 
+ return;
+}
+
+void entrustmessages(packet_t* packet, client_t* holder) {
+ if (!holder || !packet) {
+  LOGREPORT("received invalid arguments.");
+  return;
+ }
+ 
+ packet->flags |= PKTFLG_RELIABLE;
+ packet->sequence = holder->sequence;
+ 
+ memcpy(&holder->held[holder->sequence % NETWORKRATE].packet, packet, sizeof(packet_t));
+ memcpy(&holder->held[holder->sequence % NETWORKRATE].reserve, host.reserve, MAX_POOLLENGTH);
+ 
+ postmessages(packet, holder->address);
+ 
+ holder->sequence++;
  
  return;
 }
@@ -155,8 +188,12 @@ int fetchaddressedclient(IPaddress address) {
  return INVALIDCLIENT;
 }
 
-int fetchclient(int id) {
+int fetchclient(refer_t id) {
  int i;
+ 
+ if (!id) {
+  return INVALIDCLIENT;
+ }
  
  for (i = 1; i < MAX_CLIENTS + 1; i++) {
   if (clients[i].id == id) {
@@ -171,6 +208,10 @@ void handlequeues() {
  if (host.type != HOST_UNMADE && host.socket) {
   receivepackets();
  }
+}
+
+int hasclient(refer_t client) {
+ return fetchclient(client) != INVALIDCLIENT;
 }
 
 int hoststate() {
@@ -192,7 +233,12 @@ void markstretch(int start, int length) {
  
  end = start + length;
  
- for (i = start / BYTEWIDTH; i < end / BYTEWIDTH; i++) {
+ if (end >= MAX_POOLLENGTH / SECTIONANGTH) {
+  LOGREPORT("marks exceed host reserve length.");
+  return;
+ }
+ 
+ for (i = start / BYTEWIDTH; i < ceil((float) end / BYTEWIDTH); i++) {
   mask = 0;
   
   j = start - i * BYTEWIDTH;
@@ -203,12 +249,13 @@ void markstretch(int start, int length) {
   
   k = end - i * BYTEWIDTH;
   
-  if (k >= BYTEWIDTH) {
+  if (k > BYTEWIDTH) {
    k = BYTEWIDTH;
   }
   
   for (l = j; l < k; l++) {
-   mask |= 1 << (BYTEWIDTH - l - 1);
+   //mask |= 1 << (BYTEWIDTH - 1 - l);
+   mask |= 1 << l;
   }
   
   host.used[i] |= mask;
@@ -217,20 +264,18 @@ void markstretch(int start, int length) {
  return;
 }
 
+int matchaddress(IPaddress address, IPaddress other) {
+ return (address.host == other.host) && (address.port == other.port);
+}
+
 int newclientid() {
- int i, id;
+ int id;
  
  do {
   id = randomid();
   
-  if (id == host.id) {
+  if (hasclient(id) || id == host.id) {
    continue;
-  }
-  
-  for (i = 1; i < MAX_CLIENTS + 1; i++) {
-   if (id == clients[i].id) {
-	continue;
-   }
   }
   
   return id;
@@ -238,34 +283,36 @@ int newclientid() {
  while (1);
 }
 
-int matchaddress(IPaddress address, IPaddress other) {
- return (address.host == other.host) && (address.port == other.port);
-}
-
 void receivehandshake(int type, int extra, packet_t* packet, IPaddress address) {
  int client, i;
+ 
+ if (!packet) {
+  LOGREPORT("received invalid packet.");
+  return;
+ }
  
  if (host.type == HOST_LOCAL) {
   client = INVALIDCLIENT;
   
   if (type == EXT_RESERVE) {
+   if (fetchaddressedclient(address) != INVALIDCLIENT) {
+	shakehands(address, EXT_ALREADYMET, 0);
+	return;
+   }
+   
    for (i = 1; i < MAX_CLIENTS + 1; i++) {
-	if (matchaddress(address, clients[i].address)) {
-	 shakehands(address, EXT_ALREADYMET, 0);
-	 return;
-	}
-	
-	if (client == INVALIDCLIENT && clients[i].usable == CLIENT_EMPTY) {
+	if (clients[i].usable == CLIENT_EMPTY) {
 	 client = i;
+	 break;
 	}
    }
    
    if (client != INVALIDCLIENT) {
 	clients[client].address = address;
-	clients[client].last = packet->posttime;
+	clients[client].last = currenttime();
 	clients[client].id = newclientid();
 	clients[client].usable = CLIENT_READY;
-
+	
 	LOGREPORT("accepted client to client ID [%x].", clients[client].id);
 	
 	shakehands(address, EXT_ACCEPT, clients[client].id);
@@ -283,7 +330,7 @@ void receivehandshake(int type, int extra, packet_t* packet, IPaddress address) 
    
    for (i = 1; i < MAX_CLIENTS + 1; i++) {
    	if (matchaddress(address, clients[i].address) && clients[i].id == packet->sender) {
-   	 clients[i].last = packet->posttime;
+   	 clients[i].last = currenttime();
    	 return;
    	}
    }
@@ -311,43 +358,84 @@ void receivehandshake(int type, int extra, packet_t* packet, IPaddress address) 
  }
 }
 
-void renewqueue(queue_t* queue, const char* string) {
- queue->label = reprintstring(string);
- queue->queued = 0;
- queue->count = 0;
+void updatequeue(client_t* holder, client_t* broadcast) {
+ packet_t packet;
+ int i, j;
  
- return;
+ if (!holder) {
+  LOGREPORT("received invalid client holder.");
+  return;
+ }
+ 
+ packet.session = session.id;
+ 
+ // reliable messages
+ {
+  for (i = 0; broadcast && broadcast->usable && i < broadcast->queue.reliablecount; i++) {
+   copymessage(&broadcast->queue.reliable[i], &packet.messages[i]);
+  }
+  
+  packet.messagecount = i;
+  
+  if (holder->queue.queued) {
+   for (j = 0; j < holder->queue.reliablecount; j++) {
+	copymessage(&holder->queue.reliable[j], &packet.messages[i + j]);
+   }
+   
+   packet.messagecount += holder->queue.reliablecount;
+   
+   holder->queue.reliablecount = 0;
+  }
+  
+  if (packet.messagecount > 0) {
+   entrustmessages(&packet, holder);
+  }
+ }
+ 
+ // unreliable messages
+ {
+  for (i = 0; broadcast && broadcast->usable && i < broadcast->queue.messagecount; i++) {
+   copymessage(&broadcast->queue.messages[i], &packet.messages[i]);
+  }
+  
+  packet.messagecount = i;
+  
+  if (holder->queue.queued) {
+   for (j = 0; j < holder->queue.messagecount; j++) {
+	copymessage(&holder->queue.messages[j], &packet.messages[i + j]);
+   }
+   
+   packet.messagecount += holder->queue.messagecount;
+   
+   holder->queue.messagecount = 0;
+  }
+  
+  if (packet.messagecount > 0) {
+   postmessages(&packet, holder->address);
+  }
+ }
+ 
+ holder->queue.queued = 0;
 }
 
 void updatequeues() {
  client_t* broadcast;
  packet_t packet;
  float time;
- int i, j, k;
+ int i;
  
- if (!host.usable || host.type == HOST_UNMADE || !host.socket) { \
+ if (!host.usable || host.type == HOST_UNMADE || !host.socket) {
   return;
  }
- 
- time = currenttime();
  
  memset(&packet, 0, sizeof(packet_t));
  
  packet.sender = host.id;
  
+ time = currenttime();
+ 
  if (host.type == HOST_CLIENT) {
-  if (host.queue.queued && host.queue.count > 0) {
-   for (j = 0; j < host.queue.count; j++) {
-	copymessage(&host.queue.messages[j], &packet.messages[j]);
-   }
-   
-   packet.messagecount = j;
-   
-   postmessages(&packet, host.address);
-   
-   host.queue.count = 0;
-   host.queue.queued = 0;
-  }
+  updatequeue((client_t*) &host, NULL);
  }
  else if (host.type == HOST_LOCAL) {
   broadcast = &clients[BROADCASTCLIENT];
@@ -355,49 +443,27 @@ void updatequeues() {
   for (i = 1; i < MAX_CLIENTS + 1; i++) {
    if (clients[i].usable == CLIENT_READY) {
 	if (time - clients[i].last >= TIMEOUT) {
-	 dropclient(clients[i].id);
-	 
+	 dropclient(clients[i].id, EXT_TIMEOUT);
 	 continue;
 	}
-	else if (cutoff(time - clients[i].last, 5) <= 1.f / GAMERATE) {
+	else if (cutoff(time - clients[i].last, 5) <= 1.f / NETWORKRATE) {
 	 shakehands(clients[i].address, EXT_MEETUP, clients[i].id);
 	}
 	
-	for (k = 0; broadcast->usable && k < broadcast->queue.count; k++) {
-	 copymessage(&broadcast->queue.messages[k], &packet.messages[k]);
-	}
-	
-	packet.messagecount = k;
-	
-	if (clients[i].queue.queued) {
-	 for (j = 0; j < clients[i].queue.count; j++) {
-	  copymessage(&clients[i].queue.messages[j], &packet.messages[k + j]);
-	 }
-	 
-	 packet.messagecount += clients[i].queue.count;
-	 
-	 clients[i].queue.count = 0;
-	 clients[i].queue.queued = 0;
-	}
-	
-	if (packet.messagecount > 0) {
-	 postmessages(&packet, clients[i].address);
-	 
-	 packet.messagecount = 0;
-	}
+	updatequeue(&clients[i], broadcast);
    }
    else if (clients[i].usable == CLIENT_FAULT) {
-	shakehands(clients[i].address, EXT_GOODBYE, EXT_FAULTED);
-	
-	memset(&clients[i], 0, sizeof(client_t));
+	dropclient(clients[i].id, EXT_FAULTED);
    }
   }
   
-  broadcast->queue.count = 0;
+  broadcast->queue.messagecount = 0;
+  broadcast->queue.reliablecount = 0;
   broadcast->queue.queued = 0;
  }
- 
- memset(&host.used, 0, MAX_POOLSECTIONS);
+ else {
+  LOGREPORT("attempted to update unknown host state.");
+ }
  
  return;
 }

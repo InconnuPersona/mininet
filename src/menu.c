@@ -81,31 +81,19 @@ void setmenu(const char* newmenu) {
  menu = (char*) newmenu;
  
  if (menu) {
-  callmethod("reset", menu, L_menu);
+  callmethod("reset", menu, L_menu, NULL);
  }
 }
 
 void menuchar(int character) {
  if (menu && ((character >= ' ' && character <= '~') || character == '\b' || character == '\r' || character == '\033')) {
-  lua_getglobal(L_menu, menu);
-  
-  if (lua_istable(L_menu, -1)) {
-   lua_getfield(L_menu, -1, "text");
-   
-   if (lua_isfunction(L_menu, -1)) {
-	lua_pushnumber(L_menu, character);
-	
-	lua_call(L_menu, 1, 0);
-   }
-  }
-  
-  lua_settop(L_menu, 0);
+  callmethod("text", menu, L_menu, "n", character);
  }
 }
 
 void tickmenu() {
  if (menu) {
-  callmethod("tick", menu, L_menu);
+  callmethod("tick", menu, L_menu, NULL);
  }
 }
 
@@ -113,7 +101,7 @@ void rendermenu(screen_t* screen) {
  le_screen = screen;
  
  if (menu) {
-  callmethod("render", menu, L_menu);
+  callmethod("render", menu, L_menu, NULL);
  }
  
  le_screen = 0;

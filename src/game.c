@@ -1,33 +1,12 @@
 #include "main.h"
 
-#define SELF 0
-#define SPAWNLEVEL 3
-
-// ==================================================
-// externals
-
-extern screen_t lightscreen;
-
-// ==================================================
-// declarations
-
-game_t session = { 0 };
-
-// ==================================================
-// functions
-
-void assignplayer(refer_t player, int level, int client) {
- if (client < 0 || client >= MAX_GAMECLIENTS) {
-  LOGREPORT("received out of bounds client index.");
-  return;
- }
- 
-}
+extern void handleclientsend(gamesend_t* sent);
+extern void handlehostsend(gamesend_t* sent);
 
 void assortlevels() {
- level_t* level;
- refer_t* players;
  aabb_t aabb;
+ level_t* level;
+ refer_t* pliants;
  int i, j;
  
  if (!session.open) {
@@ -38,14 +17,19 @@ void assortlevels() {
  for (i = 0; i < MAX_LEVELS; i++) {
   level = &session.levels[i];
   
+  bindlevel(level);
+  
   boundbox(&aabb, 0, 0, level->w, level->h);
   
-  players = seekclass("pliant.Player", aabb);
+  pliants = seekunits("pliant.Player", aabb);
   
-  for (j = 0; players[j]; j++);
+  if (!pliants) {
+   continue;
+  }
+  
+  for (j = 0; pliants[j]; j++);
   
   if (j > 0) {
-   bindlevel(level);
    ticklevel();
   }
  }
@@ -53,10 +37,116 @@ void assortlevels() {
  return;
 }
 
-void centerspace(int* sx, int* sy, level_t* level, screen_t* screen) {
+void chainlevels(int chained) {
+ level_t* level;
+ int i, j;
+ 
+ level = NULL;
+ 
+ for (i = MAX_LEVELS - 1, j = 1; i > -1; i--, j--) {
+  bindlevel(&session.levels[i]);
+  
+  if (chained) {
+   createlevel(LEVELANGTH, LEVELANGTH, j, level);
+   
+   level = &session.levels[i];
+  }
+  else {
+   emptylevel(LEVELANGTH, LEVELANGTH, j);
+  }
+ }
+ 
+ return;
+}
+
+void routepacket(packet_t* packet) {
+ gamesend_t sent;
+ int i;
+ 
+ if (session.type != GAME_CLIENT || session.type != GAME_HOST) {
+  LOGREPORT("routed packet under unpredicted or invalid host state.");
+  return;
+ }
+ 
+ for (i = 0; i < packet->messagecount; i++) {
+//  memcpy(sent, packet->messages[i].data.pointer);
+//  
+//  sent = packet->messages[i].data.pointer;
+//  
+//  if (sent->marker == GAMESMARKER) {
+//   
+//   
+//   if (session.type == GAME_CLIENT) {
+//    handlehostsend(sent);
+//   }
+//   else if (session.type == GAME_HOST) {
+//    handleclientsend(sent);
+//   }
+//  } else {
+//   LOGREPORT("received unknown message.");
+//  }
+ }
+}
+
+void startsession(gametype_e type, char* name, char* address, int port) {
+ gamesend_t send;
+ 
+ if (session.open) {
+  LOGREPORT("game session already open.");
+  return;
+ }
+ 
+ switch (type) {
+ case GAME_CLIENT:
+  joinhost(address, port, 54321);
+  
+  chainlevels(0);
+  
+  //directmessage(&message, MSG_ADDCLIENT, session.clients[LOCALCLIENT].name, MAX_NAMELENGTH);
+  //appendmessage(&message, 1);
+  
+  //pushgamesend();
+  
+  break;
+  
+ case GAME_HOST:
+  openhost(port);
+  /* no break */
+  
+ case GAME_PRIVATE:
+  chainlevels(1);
+  
+  session.id = randomid();
+  
+  LOGREPORT("opened game session under id [%x].", session.id);
+  
+  session.self = putgameclient(name, LOCALCLIENT);
+  
+  spawngameclient(session.self, SPAWNLEVEL);
+  
+  break;
+  
+ default:
+  LOGREPORT("invalid session type.");
+  return;
+ }
+ 
+ // TODO: improve timer accuracy
+ settimer(&session.timer, TIMER_SPACEDLAPSE, CURRENTTIME, 1.f / GAMERATE);
+ 
+ session.marker = GAMESMARKER;
+ session.open = 1;
+ session.ticks = 0;
+ session.type = type;
+ session.version = GAMEVERSION;
+ 
+ return;
+}
+
+void centerfocus(int* sx, int* sy, level_t* level, screen_t* screen) {
  int xs, ys;
  
- if (!sx || !sy || !screen || !level) {
+ if (!level || !screen || !sx || !sy) {
   LOGREPORT("received invalid position or arguments.");
   return;
  }
@@ -64,20 +154,20 @@ void centerspace(int* sx, int* sy, level_t* level, screen_t* screen) {
  xs = *sx - screen->w / 2;
  ys = *sy - (screen->h - 8) / 2;
  
- if (xs < 16) {
-  xs = 16;
+ if (xs < BLOCKSCALE) {
+  xs = BLOCKSCALE;
  }
  
- if (ys < 16) {
-  ys = 16;
+ if (ys < BLOCKSCALE) {
+  ys = BLOCKSCALE;
  }
  
- if (xs > level->w * 16 - screen->w - 16) {
-  xs = level->w * 16 - screen->w - 16;
+ if (xs > level->w * BLOCKSCALE - screen->w - BLOCKSCALE) {
+  xs = level->w * BLOCKSCALE - screen->w - BLOCKSCALE;
  }
  
- if (ys > level->h * 16 - screen->h - 16) {
-  ys = level->h * 16 - screen->h - 16;
+ if (ys > level->h * BLOCKSCALE - screen->h - BLOCKSCALE) {
+  ys = level->h * BLOCKSCALE - screen->h - BLOCKSCALE;
  }
  
  *sx = xs;
@@ -86,78 +176,31 @@ void centerspace(int* sx, int* sy, level_t* level, screen_t* screen) {
  return;
 }
 
-void chainemptylevels() {
- int i, j;
+void renderdue(screen_t* screen) {
+ int color;
  
- for (i = MAX_LEVELS - 1, j = 1; i > -1; i--, j--) {
-  bindlevel(&session.levels[i]);
-  emptylevel(LEVELSIZE, LEVELSIZE, j);
- }
-}
-
-void chainlevels() {
- level_t* level;
- int i, j;
+ clearscreen(screen, 0);
  
- level = NULL;
- 
- for (i = MAX_LEVELS - 1, j = 1; i > -1; i--, j--) {
-  bindlevel(&session.levels[i]);
-  createlevel(LEVELSIZE, LEVELSIZE, j, level);
-  
-  level = &session.levels[i];
- }
+ color = getcolor(0, 555, 555, 555);
+   
+ renderfont("Casting the skies", 0, 1 * TILESCALE, color, screen);
+ renderfont("and creating the grounds;", 0, 2 * TILESCALE, color, screen);
+ renderfont("bringing all earthwrought", 0, 3 * TILESCALE, color, screen);
+ renderfont("from the underground.", 0, 4 * TILESCALE, color, screen);
+ renderfont("and waiting...", 0, 5 * TILESCALE, color, screen);
  
  return;
 }
 
-void kickclient(int index) {
- gameclient_t* client;
- message_t message;
- 
- if (index < 0 || index >= MAX_GAMECLIENTS) {
-  LOGREPORT("received out of bounds client index.");
-  return;
- }
- 
- client = &session.clients[index];
- 
- if (!client->name || !client->being) {
-  LOGREPORT("attempted to kick unheld client.");
-  return;
- }
- 
- if (client->player) {
-//  cullunit(client->player);
- }
- 
-// directmessage(&message, MSG_REMOVECLIENT, 0, 0);
-// appendclientmessage(&message, client->being);
- 
- dropclient(client->being);
- 
- memset(client, 0, sizeof(gameclient_t));
- 
- return;
-}
-
-void putclient(int index, const char* name, int being) {
- gameclient_t* client;
- 
- client = &session.clients[index];
- 
- client->name = reprintstring(name);
- client->being = being;
- client->deadtime = client->livetime = 0;
- client->finished = 0;
- 
- LOGREPORT("added client '%s' at index %i.", name, index);
- 
- return;
-}
-
-void renderGUI(pliant_t* player, screen_t* screen) {
+void renderGUI(refer_t player, screen_t* screen) {
+ pliant_t* pliant;
  int i, x, y;
+ 
+ if (!hasunit(player)) {
+  return;
+ }
+ 
+ pliant = (pliant_t*) getunit(player);
  
  for (y = 0; y < 2; y++) {
   for (x = 0; x < 20; x++) {
@@ -166,15 +209,15 @@ void renderGUI(pliant_t* player, screen_t* screen) {
  }
  
  for (i = 0; i < 10; i++) {
-  if (i < player->health) {
+  if (i < pliant->health) {
    rendersprite(i * 8, screen->h - 16, 0 + 12 * 32, getcolor(000, 200, 500, 533), 0, screen);
   }
   else {
    rendersprite(i * 8, screen->h - 16, 0 + 12 * 32, getcolor(000, 100, 000, 000), 0, screen);
   }
   
-  if (player->rechargedelay > 0) {
-   if (player->rechargedelay / 4 % 2 == 0) {
+  if (pliant->tireddelay > 0) {
+   if (pliant->tireddelay / 4 % 2 == 0) {
 	rendersprite(i * 8, screen->h - 8, 1 + 12 * 32, getcolor(000, 555, 000, 000), 0, screen);
    }
    else {
@@ -182,7 +225,7 @@ void renderGUI(pliant_t* player, screen_t* screen) {
    }
   }
   else {
-   if (i < player->stamina) {
+   if (i < pliant->stamina) {
 	rendersprite(i * 8, screen->h - 8, 1 + 12 * 32, getcolor(000, 220, 550, 553), 0, screen);
    }
    else {
@@ -191,35 +234,46 @@ void renderGUI(pliant_t* player, screen_t* screen) {
   }
  }
 
- if (player->item != NOITEM) {
+ if (pliant->item != NOITEM) {
 //  renderhotbaritem(player->item, 10 * 8, screen->h - 16, screen);
  }
 }
 
-
 void rendergame(screen_t* screen) {
- refer_t player;
- pliant_t* unit;
- level_t* level;
- int color, depth;
+ extern screen_t lightscreen;
+ pliant_t* player;
+ int client;
+ int color, level;
  int x, y, xs, ys;
- static int l = 0;
-// depth = seekplayer(&player, self->player);
  
- l = 3;
+ if (!session.open) {
+  renderdue(screen);
+  return;
+ }
  
- depth = l;
- player = 0;
+ client = getgameclient(session.self);
  
- level = &session.levels[depth];
- unit = (pliant_t*) &level->units[player];//seekbond(clients[SELF].player);
+ if (client == INVALIDCLIENT) {
+  renderdue(screen);
+  return;
+ }
  
- xs = unit->x;
- ys = unit->y;
+ level = session.clients[client].level;
  
- centerspace(&xs, &ys, level, screen);
+ bindlevel(&session.levels[level]);
  
- if (depth > 3) {
+ if (!hasunit(session.clients[client].entity)) {
+  return;
+ }
+ 
+ player = (pliant_t*) getunit(session.clients[client].entity);
+ 
+ xs = player->x;
+ ys = player->y;
+ 
+ centerfocus(&xs, &ys, &session.levels[level], screen);
+ 
+ if (level > 3) {
   color = getcolor(20, 20, 121, 121);
   
   for (y = 0; y < 14; y++) {
@@ -229,142 +283,48 @@ void rendergame(screen_t* screen) {
   }
  }
  
- if (level) {
-  bindlevel(level);
-  
-  renderbackground(xs, ys, screen);
-  rendersprites(xs, ys, screen);
-  
-  if (depth > 3) {
-   clearscreen(&lightscreen, 0);
-   renderlights(xs, ys, &lightscreen);
-   overlayscreens(screen, &lightscreen, xs, ys);
-  }
-  
-  renderGUI(unit, screen);
+ renderbackground(xs, ys, screen);
+ rendersprites(xs, ys, screen);
+ 
+ if (level > 3) {
+  clearscreen(&lightscreen, 0);
+  renderlights(xs, ys, &lightscreen);
+  overlayscreens(screen, &lightscreen, xs, ys);
  }
+ 
+ renderGUI(player->id, screen);
  
  bindlevel(NULL);
  
  return;
 }
 
-int seekplayer(refer_t* unit, int bond) {
- level_t* level;
- int i, found;
+void renderhost(screen_t* screen) {
  
- for (i = 0; i < MAX_LEVELS; i++) {
-  level = &session.levels[i];
-  
-  bindlevel(level);
-  
-  found = seekbond(bond);
-  
-  if (found != NOUNIT) {
-   *unit = found;
-   
-   return i;
-  }
- }
- 
- return -1;
-}
-
-void startsession(gametype_e type, char* name, char* address, int port) {
- message_t message;
- //gameclient_t* self;
- refer_t pliant;
- int content[2] = { 0 };
- 
- if (session.open) {
-  LOGREPORT("game session already open.");
-  return;
- }
- 
- putclient(SELF, name, 0);
- 
- //self = &session.clients[SELF];
- 
- switch (type) {
- case GAME_CLIENT:
-  joinhost(address, port, 54321);
-  
-  chainemptylevels();
-  
-  strncpy((char*) content, name, sizeof(content));
-  
-  directmessage(&message, MSG_ADDCLIENT, content, sizeof(content));
-  appendmessage(&message);
-  
-  break;
-  
- case GAME_HOST:
-  openhost(port);
-  /* no break */
-  
- case GAME_PRIVATE:
-  chainlevels();
-  
-  session.id = randomid();
-  
-  bindlevel(&session.levels[SPAWNLEVEL]);
-  
-  // nonmob entities are spawned at random world coordinates
-  pliant = spawn("pliant.Player");
-  
-  assignplayer(pliant, SPAWNLEVEL, SELF);
-  
-  session.open = 1;
-  
-  break;
-  
- default:
-  LOGREPORT("invalid session type.");
-  return;
- }
- 
- settimer(&session.watch, TIMER_SIMPLELAPSE, CURRENTTIME, GAMERATE);
- 
- session.ticks = 0;
- session.type = type;
- session.version = GAMEVERSION;
- 
- return;
 }
 
 void tickgame() {
- int unprocessed;
+ int ticks;
  
  if (!session.open) {
-  //LOGREPORT("session unopened.");
   return;
  }
  
- unprocessed = readtimer(&session.watch);
+ handlehost();
  
- // player commands are updated in the handlequeues function
+ ticks = readtimer(&session.timer);
  
- while (unprocessed > 0) {
-  switch (session.type) {
-  case GAME_CLIENT:
-   break;
-   
-  case GAME_HOST:
-   /* no break*/
-   
-  case GAME_PRIVATE:
-   
-   break;
-   
-  default:
-   LOGREPORT("unknown session type.");
-   return;
-  }
+ while (ticks > 0) {
+  assortlevels();
   
-  // send host update
+  session.ticks++;
   
-  unprocessed--;
+  ticks -= 1;
  }
  
+ updatehost();
+ 
  bindlevel(NULL);
+ 
+ return;
 }

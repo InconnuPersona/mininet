@@ -13,6 +13,22 @@
 #define SHORTMASK 0xffff
 #define SHORTWIDTH (sizeof(short) * BYTEWIDTH)
 
+#define BOUNDVALUE(Value, Minimum, Maximum) \
+ if (Value < Minimum) { \
+  Value = Minimum; \
+ } \
+ if (Value > Maximum) { \
+  Value = Maximum; \
+ }
+
+#define SIGNED(Type) ((Type) -1 < (Type) 0)
+
+#define SIGNEDEXTENT(Type) (Type) (((unsigned Type) ~(unsigned Type) 0) >> 1)
+
+#define UNSIGNEDEXTENT(Type) (Type) (~(Type) 0)
+
+#define INTEGEREXTENT(Type) (unsigned int) (SIGNED(Type) ? SIGNEDEXTENT(Type) : UNSIGNEDEXTENT(Type))
+
 #define LOGREPORT(...) \
  { printf("%s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n"); }
 
@@ -47,6 +63,7 @@ typedef enum {
  TIMER_STEPPED,
  TIMER_FALSELAPSE,
  TIMER_SIMPLELAPSE,
+ TIMER_SPACEDLAPSE,
  TIMER_PATTERN,
 } timer_e;
 
@@ -78,7 +95,7 @@ void delaythread(float seconds);
 float readtimer(watch_t* watch);
 void settimer(watch_t* watch, timer_e type, float start, float value);
 
-void seedrandom(int seed);
+void seedrandom(double seed);
 void seedrandomtime();
 
 int randomid();
@@ -87,5 +104,7 @@ float randomfloat();
 double randomdouble();
 double gaussian();
 
+void binddomain(aabb_t* aabb, float x0, float y0, float x1, float y1);
 void boundbox(aabb_t* aabb, float x0, float y0, float x1, float y1);
+void ensuredomain(aabb_t* aabb);
 char* reprintstring(const char* string);

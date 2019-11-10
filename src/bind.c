@@ -1,6 +1,8 @@
 #include "bind.h"
 #include "main.h"
 
+#include <stdarg.h>
+
 // ==================================================
 // lua external globals
 
@@ -170,6 +172,9 @@ BEGINLUATABLE(input)
 ENDLUATABLE;
 
 BEGINLUATABLE(screen)
+ LUANUMBER(MIRROR_X, MIRROR_X),
+ LUANUMBER(MIRROR_Y, MIRROR_Y),
+ 
  LUAFUNCTION(clear),
  LUAFUNCTION(font),
  LUAFUNCTION(frame),
@@ -187,20 +192,58 @@ ENDLUATABLE;
 // ==================================================
 // functions
 
-void callmethod(const char* method, const char* table, lua_State* L) {
- lua_getglobal(L, table);
+int callmethod(const char* method, const char* table, lua_State* L, const char* format, ...) {
+ va_list args;
+ int value;
  
- if (lua_istable(L, -1)) {
-  lua_getfield(L, -1, method);
-  
-  if (lua_isfunction(L, -1)) {
-   lua_call(L, 0, 0);
-  }
+ if (!L || !method || !table) {
+  LOGREPORT("received invalid arguments.");
+  return 0;
  }
  
- lua_settop(L, 0);
+ va_start(args, format);
  
- return;
+ value = passmethod(method, table, NULL, L, format, args, NULL);
+ 
+ va_end(args);
+ 
+ return value;
+}
+
+void dumpluastack(lua_State* L) {
+ int i, type;
+ 
+ if (!L) {
+  LOGREPORT("received null argument.");
+  return;
+ }
+ 
+ LOGREPORT("dumping lua stack;");
+ 
+ for (i = 1; i <= lua_gettop(L); i++) {
+  type = lua_type(L, i);
+  
+  printf(" %i: %s [", i, lua_typename(L, type));
+  
+  switch (type) {
+  case LUA_TBOOLEAN:
+   printf(lua_toboolean(L, i) ? "true" : "false");
+   break;
+   
+  case LUA_TNUMBER:
+   printf("%g", lua_tonumber(L, i));
+   break;
+   
+  case LUA_TSTRING:
+   printf("%s", lua_tostring(L, i));
+   break;
+   
+  default:
+   break;
+  }
+  
+  printf("]\n");
+ }
 }
 
 int getinternal(const char* internal, const char* table, lua_State* L) {
@@ -211,6 +254,9 @@ int getinternal(const char* internal, const char* table, lua_State* L) {
  if (lua_istable(L, -1)) {
   lua_getfield(L, -1, internal);
   
+  if (lua_isboolean(L, -1)) {
+   value = lua_toboolean(L, -1);
+  }
   if (lua_isnumber(L, -1)) {
    value = lua_tonumber(L, -1);
   }
@@ -222,6 +268,32 @@ int getinternal(const char* internal, const char* table, lua_State* L) {
  lua_settop(L, 0);
  
  return value;
+}
+
+int getinternaltype(const char* internal, const char* table, lua_State* L) {
+ if (!L || !internal || !table) {
+  LOGREPORT("received invalid arguments.");
+  return 0;
+ }
+ 
+ lua_getglobal(L, table);
+ 
+ if (lua_istable(L, -1)) {
+  lua_getfield(L, -1, internal);
+  
+  return lua_type(L, -1);
+ }
+ 
+ return 0;
+}
+
+int hasluamethod(const char* method, const char* table, lua_State* L) {
+ if (!L || !method || !table) {
+  LOGREPORT("received invalid arguments.");
+  return 0;
+ }
+ 
+ return getinternaltype(method, table, L) == LUA_TFUNCTION;
 }
 
 void pushtable(luatable_t table, lua_State* L) {
@@ -254,6 +326,141 @@ void pushtable(luatable_t table, lua_State* L) {
   
   lua_setfield(L, -2, table[index].name);
  }
+}
+
+int passmethod(const char* method, const char* table, const char* subtable, lua_State* L, const char* passformat, va_list passed, const char* format, ...) {
+ va_list args;
+ int count, type, value;
+ 
+ if (!L || !method || !table) {
+  LOGREPORT("received invalid arguments.");
+  return 0;
+ }
+ 
+ lua_getglobal(L, table);
+ 
+ if (subtable && lua_istable(L, -1)) {
+  lua_getfield(L, -1, subtable);
+ }
+ 
+ if (!lua_istable(L, -1)) {
+  LOGREPORT("unable to locate lua table '%s.%s'.", table, subtable);
+  return 0;
+ }
+ 
+ lua_getfield(L, -1, method);
+ 
+ if (!lua_isfunction(L, -1)) {
+  LOGREPORT("unable to load function '%s' from table '%s.%s'.", method, table, subtable);
+  return 0;
+ }
+ 
+ count = 0;
+ 
+ if (format) {
+  va_start(args, format);
+  
+  while (*format) {
+   switch (*format) {
+   case 'b':
+	lua_pushboolean(L, va_arg(args, int));
+	break;
+	
+   case 'f':
+   case 'i':
+   case 'n':
+	lua_pushnumber(L, va_arg(args, int));
+	break;
+	
+   case 's':
+	lua_pushstring(L, va_arg(args, char*));
+	break;
+	
+   default:
+	LOGREPORT("parameter string includes inoperable character.");
+	break;
+   }
+   
+   count++;
+   
+   format += sizeof(char);
+  }
+  
+  va_end(args);
+ }
+
+ if (passformat) {
+  if (!passed) {
+   LOGREPORT("received invalid arguments.");
+   return 0;
+  }
+  
+  while (*passformat) {
+   switch (*passformat) {
+   case 'b':
+	lua_pushboolean(L, va_arg(passed, int));
+	break;
+	
+   case 'f':
+   case 'i':
+   case 'n':
+	lua_pushnumber(L, va_arg(passed, int));
+	break;
+	
+   case 's':
+	lua_pushstring(L, va_arg(passed, char*));
+	break;
+	
+   default:
+	LOGREPORT("passed parameter string includes inoperable character.");
+	break;
+   }
+   
+   count++;
+   
+   passformat += sizeof(char);
+  }
+ }
+ 
+ lua_call(L, count, 1);
+ 
+ if (lua_gettop(L) > 0) {
+  type = lua_type(L, -1);
+  
+  switch (type) {
+  case LUA_TNUMBER:
+   value = lua_tonumber(L, -1);
+   break;
+   
+  case LUA_TBOOLEAN:
+   value = lua_toboolean(L, -1);
+   break;
+   
+  case LUA_TSTRING:
+   value = (int) reprintstring(lua_tostring(L, -1));
+   break;
+   
+  default:
+   value = 0;
+   break;
+  }
+ }
+ else {
+  value = 0;
+ }
+ 
+ lua_settop(L, 0);
+ 
+ return value;
+}
+
+int rollmethod(const char* method, const char* table, lua_State* L, const char* format, va_list args) {
+ if (!L || !method || !table) {
+  LOGREPORT("received invalid arguments.");
+  return 0;
+ }
+ 
+ return passmethod(method, table, NULL, L, format, args, NULL);
 }
 
 void uploadfile(const char* file, const char* label, lua_State* L) {

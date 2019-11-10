@@ -5,14 +5,13 @@
 #define GAMETITLE "Mininet"
 #define RENDERWIDTH 160
 #define RENDERHEIGHT 120
-
 #define SCALE 3
 #define TILESCALE 8
 
 typedef enum {
- BIT_MIRROR_X = 0x01,
- BIT_MIRROR_Y = 0x02,
-} spriteflag_e;
+ MIRROR_X = 0x01,
+ MIRROR_Y = 0x02,
+} sprite_e;
 
 typedef struct {
  int width, height;

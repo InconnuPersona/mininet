@@ -5,13 +5,25 @@
 #include <SDL2/SDL_net.h>
 
 #define MAX_PACKETLENGTH 1024
-#define MAX_POOLLENGTH 512
-#define MAX_POOLSECTIONS (MAX_POOLLENGTH / SECTIONANGTH / BYTEWIDTH)
+#define MAX_POOLLENGTH (1024 * 10)
+#define MAX_POOLSECTIONS (MAX_POOLLENGTH / SECTIONANGTH)
+#define MAX_POOLWIDTH (MAX_POOLSECTIONS / BYTEWIDTH)
+#define MESSAGEWIDTH (sizeof(message_t) - sizeof(int))
 
 #define BROADCASTCLIENT 0
 #define CHECKUP 5
 #define SECTIONANGTH (sizeof(int) * 2)
 #define TIMEOUT 30 // if no responses are received in this amount of seconds, a client is dropped
+
+#define CHECKMESSAGE(Message, ...) \
+ if (!Message) { \
+  LOGREPORT("received invalid message."); \
+  __VA_ARGS__; \
+ } \
+ if (!Message->data.pointer || Message->stored > SIGNEDEXTENT(short) || Message->length > Message->stored) { \
+  LOGREPORT("received unformed message."); \
+  __VA_ARGS__; \
+ }
 
 #define CHECKNETWORKHOST(...) \
  if (host.type == HOST_UNMADE || !host.socket) { \
@@ -31,25 +43,26 @@
  int id; \
  float last; \
  IPaddress address; \
- queue_t queue;
+ queue_t queue; \
+ int sequence; \
+ heldpacket_t held[NETWORKRATE];
 
-// dimensionless values
 typedef enum {
- EXT_ACCEPT = 0,
- EXT_RESERVE,
- EXT_ALREADYMET,
- EXT_MEETUP, // acknowledge connection
- EXT_NOSPACE,
- EXT_GOODBYE,
- EXT_TIMEOUT,
- EXT_FAULTED,
-} extra_e;
+ PKTFLG_UNRELIABLE = 0,
+ PKTFLG_RELIABLE = 1,
+} packetflag_e;
 
 typedef struct {
- char* label;
- int queued; // boolean
- int count;
+ packet_t packet;
+ byte_t reserve[MAX_POOLLENGTH];
+} heldpacket_t;
+
+typedef struct {
+ int queued;
+ int messagecount;
  message_t messages[MAX_MESSAGES];
+ int reliablecount;
+ message_t reliable[MAX_MESSAGES];
 } queue_t;
 
 typedef struct {
@@ -61,13 +74,21 @@ typedef struct {
  
  host_e type;
  
- int remoteid; // remote host id (client host only)
+ int remoteid;
  
  UDPsocket socket;
  
- byte_t used[MAX_POOLSECTIONS];
+ byte_t used[MAX_POOLWIDTH];
  byte_t reserve[MAX_POOLLENGTH];
 } host_t;
+
+typedef struct {
+ MESSAGESHEADER;
+} messagesheader_t;
+
+typedef struct {
+ PACKETHEADER;
+} packetheader_t;
 
 extern client_t clients[];
 extern host_t host;
@@ -81,6 +102,7 @@ int fetchclient(refer_t id);
 void markstretch(int start, int length);
 void packpacket(packet_t* packet);
 void postmessages(packet_t* packet, IPaddress address);
+void printhostreserve();
 void receivehandshake(int type, int extra, packet_t* packet, IPaddress address);
 void receivepackets();
 void sendpacket(IPaddress address);

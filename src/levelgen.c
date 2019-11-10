@@ -5,7 +5,7 @@
 // ==================================================
 // structures
 
-typedef struct {
+typedef struct map_s {
  int w, h;
  float* values;
 } map_t;
@@ -133,7 +133,7 @@ void generatedeserts(level_t* level) {
 	 for (xx = xo - 1; xx <= xo + 1; xx++) {
 	  if (xx >= 0 && yy >= 0 && xx < w && yy < h) {
 	   if (level->tiles[xx + yy * w].id == tileid("grass")) {
-//		level->tiles[xx + yy * w].id = tileid("sand");
+		level->tiles[xx + yy * w].id = tileid("sand");
 	   }
 	  }
 	 }

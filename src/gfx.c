@@ -4,6 +4,11 @@
 
 const int dither[] = { 0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5 };
 const char* chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ      " "0123456789.,!?'\"-+=/\\%()<>:;     ";
+// "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮ"
+// "Я"
+// "アイウエオカキクケコガギグゲゴサシスセソザジズゼゾタチツテトダヂ"
+// "ヅデドナニヌネノハヒフヘホバビブベボパピプペポマミムメモヤ ユ"
+// " ヨラリルレロワヰ ヱヲンー";
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -99,8 +104,8 @@ void rendersprite(int xp, int yp, int tile, int color, int bits, screen_t* scree
  xp -= screen->x;
  yp -= screen->y;
  
- mx = bits & BIT_MIRROR_X;
- my = bits & BIT_MIRROR_Y;
+ mx = bits & MIRROR_X;
+ my = bits & MIRROR_Y;
  
  tx = tile % 32;
  ty = tile / 32;

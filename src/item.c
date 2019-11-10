@@ -6,8 +6,8 @@ item_t items[MAX_ITEMS] = { 0 };
 pile_t piles[MAX_PILES] = { 0 }; 
 
 void additem(refer_t item, int count, refer_t pile) {
- int i;
- /*
+ /*int i;
+ 
  if (items[item].word) {
   for (i = 0; i < MAX_INVENTORY; i++) {
    if (items[item].type == ITEM_RESOURCE) {
@@ -31,7 +31,7 @@ void additem(refer_t item, int count, refer_t pile) {
 
 int countitem(refer_t item, refer_t pile) {
  //slot_t* slot;
- int count, i;
+ int count;//, i;
  
  count = 0;
  
@@ -49,7 +49,7 @@ int countitem(refer_t item, refer_t pile) {
 //int finditem(refer_t, inventory) {
 
 int hasitem(refer_t item, int need, refer_t pile) {
- int count, i;
+ int count;//, i;
  
  count = 0;
  
@@ -65,7 +65,7 @@ int hasitem(refer_t item, int need, refer_t pile) {
 }
 
 int pullitem(refer_t item, int need, refer_t pile) {
- int i, lack;
+ //int i, lack;
  
  /*
  if (items[item - 1].word) {

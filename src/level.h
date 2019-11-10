@@ -1,14 +1,11 @@
 #pragma once
 
 #include "gfx.h"
-#include "unit.h"
 #include "tile.h"
+#include "unit.h"
 
-#define CHUNKANGTH 4
-#define INVALIDUNIT -1
-#define LEVELSIZE 128
+#define BLOCKSCALE (TILESCALE * 2)
 #define MAX_SAMPLES 128
-#define MAX_TILEUNITS 4
 #define MAX_UNITS 256
 
 typedef struct level_s {
@@ -16,15 +13,12 @@ typedef struct level_s {
  int depth;
  
  int dirtcolor, sandcolor, grasscolor;
- int monsterdensity;
+ int density; // monster, unit, and mob density
  
  byte_t* dirties; // chunk bitmap
  
  tile_t* tiles;
  refer_t* tileunits;
- 
- int spritecount;
- refer_t* sprites;
  
  unit_u units[MAX_UNITS];
 } level_t;
@@ -40,23 +34,18 @@ void rendersprites(int xs, int ys, screen_t* screen);
 
 int getdata(int x, int y);
 int gettile(int x, int y);
-
-int getdepth();
-int getunitid(refer_t unit);
-
 refer_t* getunits(aabb_t aabb);
-refer_t seekbond(int bond);
-refer_t* seekclass(const char* word, aabb_t aabb);
 
 void setdata(int x, int y, int value);
 void settile(int x, int y, int tile, int value);
 
-void efface(refer_t unit);
-refer_t initiate(const char* unit, int x, int y);
-refer_t place(unit_u* unit, int x, int y);
-refer_t spawn(const char* unit);
-void spawnfiends(int count);
-refer_t summon(unit_u* unit);
+unit_u* getunit(refer_t id);
+int hasunit(refer_t id);
+refer_t* seekunits(const char* word, aabb_t aabb);
 
-void renderunit(unit_u* unit, level_t* level, screen_t* screen);
-void tickunit(unit_u* unit, level_t* level);
+refer_t createunitid();
+refer_t dropitem(refer_t item, int x, int y);
+void efface(refer_t unit);
+refer_t initiate(const char* word, int x, int y);
+refer_t relay(refer_t unit, level_t* other);
+refer_t spawn(const char* word);

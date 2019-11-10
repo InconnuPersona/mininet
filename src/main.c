@@ -6,10 +6,14 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_net.h>
 
+#define MAX_CRCVALUES 256
+
+int crctable[MAX_CRCVALUES];
+
 // ==================================================
 // random number functions
 
-void seedrandom(int seed) {
+void seedrandom(double seed) {
  srand(seed);
 }
 
@@ -22,7 +26,8 @@ int randomid() {
 }
 
 int randominteger(int range) {
- return rand() % (range + 1);
+ //return rand() % (range + 1);
+ return rand() % range;
 }
 
 float randomfloat() {
@@ -61,6 +66,41 @@ double gaussian() {
  }
  
  return 0;
+}
+
+// ==================================================
+// checksum functions
+
+void initiatechecksum() {
+ int i, j, r;
+ 
+ for (i = 0; i < MAX_CRCVALUES; i++) {
+  r = i;
+  
+  for (j = 0; j < 8; j++) {
+   if (r & 1) {
+	r >>= 1;
+	r ^= 0xedb88320;
+   }
+   else {
+	r >>= 1;
+   }
+  }
+  
+  crctable[i] = r;
+ }
+}
+
+int checksum(byte_t* bytes, int length, int checksum) {
+ int i;
+ 
+ checksum = ~checksum;
+ 
+ for (i = 0; i < length; i++) {
+  checksum = (checksum >> 8) ^ crctable[(checksum & 0xff) ^ bytes[i]];
+ }
+ 
+ return ~checksum;
 }
 
 // ==================================================
@@ -134,7 +174,12 @@ void settimer(watch_t* watch, timer_e type, float start, float value) {
 }
 
 float readtimer(watch_t* watch) {
- float value, other;
+ float other, value;
+ 
+ if (!watch->set) {
+  LOGREPORT("received unset timer to read.");
+  return 0;
+ }
  
  switch (watch->type) {
  case TIMER_FALSELAPSE:
@@ -155,6 +200,17 @@ float readtimer(watch_t* watch) {
   
   if (other >= 0) {
    watch->end = value;
+  }
+  
+  return other;
+  
+ case TIMER_SPACEDLAPSE:
+  value = currenttime();
+  
+  other = floor((value - watch->end) / watch->value);
+  
+  if (other > 0) {
+   watch->end += other * watch->value;
   }
   
   return other;
@@ -188,6 +244,39 @@ void boundbox(aabb_t* aabb, float x0, float y0, float x1, float y1) {
  aabb->y0 = y0;
  aabb->x1 = x1;
  aabb->y1 = y1;
+}
+
+void binddomain(aabb_t* aabb, float x0, float y0, float x1, float y1) {
+ if (!aabb) {
+  return;
+ }
+ 
+ BOUNDVALUE(aabb->x0, x0, x1);
+ BOUNDVALUE(aabb->x1, x0, x1);
+ BOUNDVALUE(aabb->y0, y0, y1);
+ BOUNDVALUE(aabb->y1, y0, y1);
+ 
+ return;
+}
+
+void ensuredomain(aabb_t* aabb) {
+ int medium;
+ 
+ if (!aabb) {
+  return;
+ }
+ 
+ if (aabb->x1 < aabb->x0) {
+  medium = aabb->x1;
+  aabb->x1 = aabb->x0;
+  aabb->x0 = medium;
+ }
+ 
+ if (aabb->y1 < aabb->y0) {
+  medium = aabb->y1;
+  aabb->y1 = aabb->y0;
+  aabb->y0 = medium;
+ }
 }
 
 void loadlibraries() {

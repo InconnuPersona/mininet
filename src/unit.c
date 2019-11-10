@@ -1,4 +1,7 @@
+#include "host.h"
 #include "level.h"
+
+#define INVALIDUNITWORD -1
 
 // ==================================================
 // declarations
@@ -6,36 +9,75 @@
 unitword_t unitwords[MAX_UNITWORDS];
 
 // ==================================================
+// externals
+
+int fetchunitword(refer_t id);
+
+// ==================================================
 // unitword functions
 
-int createunitid() {
- int id;
+void bindunitword(const char* word, refer_t id) {
+ int i;
  
- do {
-  id = randomid();
+ if (!word) {
+  LOGREPORT("can not bind an invalid unitword.");
+  return;
  }
- while (fetchunitword(id) > -1);
  
- return id;
+ for (i = 0; i < MAX_UNITWORDS; i++) {
+  if (unitwords[i].word && !strcmp(unitwords[i].word, word)) {
+   unitwords[i].id = id;
+   
+   LOGREPORT("redefined unitword '%s' [%x].", unitwords->word, id);
+   return;
+  }
+ }
+ 
+ return;
 }
 
-void defaultmob(mob_t* mob) {
- mob->x = 8;
- mob->y = 8;
+void defaultmob(mob_t* unit) {
+ unitword_t* word;
+ 
+ if (!unit || !isclass(SUPER_MOB, unit->word)) {
+  LOGREPORT("unable to default mob.");
+  return;
+ }
+ 
+ word = getunitword(unit->word);
+ 
+ if (!word) {
+  LOGREPORT("received invalidword bound unit.");
+  return;
+ }
+ 
+ unit->x = TILESCALE;
+ unit->y = TILESCALE;
+ unit->health = word->maxhealth;
  
  return;
 }
 
 void defaultpliant(pliant_t* unit) {
+ unitword_t* word;
+ 
+ if (!unit || !isclass(SUPER_PLIANT, unit->word)) {
+  LOGREPORT("unable to default pliant.");
+  return;
+ }
+ 
+ word = getunitword(unit->word);
+ 
+ if (!word) {
+  LOGREPORT("received invalidword bound unit.");
+  return;
+ }
+ 
+ defaultmob((mob_t*) unit);
+ 
  unit->x = 24;
  unit->y = 24;
- unit->stamina = unitwords[unitid("pliant")].maxstamina;
- 
- return;
-}
-
-void defaultunit(unit_u* unit) {
- 
+ unit->stamina = word->maxstamina;
  
  return;
 }
@@ -48,30 +90,18 @@ void definemob(unitword_t* word) {
  
  word->halfheight = 3;
  word->halfwidth = 4;
- 
- word->attitude = ATT_NEUTRAL;
  word->maxhealth = 10;
  
  return;
 }
-
-//void createunit(unit_u* unit, const char* word);
-
-int buoyant(refer_t unit);
-void cullunit(refer_t unit);
-void touchunit(refer_t other, refer_t unit);
-
-void findspawn(mob_t* mob);
-void freestrike();
-void strike();
-
-void commandpliant(pliant_t* unit, command_e command);
 
 void definepliant(unitword_t* word) {
  if (!word) {
   LOGREPORT("received invalid unitword.");
   return;
  }
+ 
+ definemob(word);
  
  word->maxstamina = 10;
  
@@ -87,18 +117,12 @@ void defineunit(unitword_t* word) {
  word->halfheight = word->halfwidth = 6;
  
  switch (word->super) {
- case SUPER_DROP:
-  break;
- 
  case SUPER_MOB:
   definemob(word);
   break;
   
  case SUPER_PLIANT:
   definepliant(word);
-  break;
-  
- case SUPER_UNIT:
   break;
   
  default:
@@ -108,9 +132,70 @@ void defineunit(unitword_t* word) {
  return;
 }
 
+void createunit(unit_t* unit, const char* word) {
+ unitword_t* unitword;
+ 
+ if (!unit || !word) {
+  LOGREPORT("received invalid arguments.");
+  return;
+ }
+ 
+ unitword = getunitbyword(word);
+ 
+ if (!unitword) {
+  LOGREPORT("unable to create unit from word '%s'.", word);
+  return;
+ }
+ 
+ unit->extant = 1;
+ unit->id = createunitid();
+ unit->owner = 0;
+ unit->word = unitword->id;
+ unit->x = unit->y = 0;
+ 
+ switch (unitword->super) {
+ case SUPER_MOB:
+  defaultmob((mob_t*) unit);
+  break;
+  
+ case SUPER_PLIANT:
+  defaultpliant((pliant_t*) unit);
+  break;
+  
+ case SUPER_UNIT:
+  break;
+  
+ default:
+  LOGREPORT("received invalid unit word class.");
+  break;
+ }
+ 
+ LOGDEBUG("created unit from word '%s' with id [%x] and word [%x].", word, unit->id, unit->word);
+ 
+ return;
+}
+
+int createunitwordid() {
+ int id;
+ 
+ do {
+  id = randomid();
+ }
+ while (fetchunitword(id) > INVALIDUNITWORD);
+ 
+ return id;
+}
+
+void cullunit(unit_u* unit) {
+ if (!unit) {
+  return;
+ }
+ 
+ unit->base.extant = 0;
+}
+
 refer_t designunit(const char* word, int extra) {
- int super;
- int i, length, slot;
+ int i, length, slot, super;
  
  if (!word || extra < 0) {
   LOGREPORT("received invalid constructors.");
@@ -132,18 +217,18 @@ refer_t designunit(const char* word, int extra) {
  }
  
  if (slot != -1) {
-  super = unitwordclass(word);
+  super = getclass(word);
   
-  if (super == SUPER_DROP) {
+  /*if (super == SUPER_DROP) {
    LOGREPORT("unit word 'drop' can not be used as an-unit word.");
    return NOUNIT;
   }
-  else if (super == SUPER_NULL) {
+  else*/ if (super == SUPER_NULL) {
    LOGREPORT("can not define an unknown unitword class.");
    return NOUNIT;
   }
   
-  length = unitwordclassdepth(super);
+  length = getclassdepth(super);
   
   if (length + extra > MAX_ELEMENTS) {
    LOGREPORT("unit word size %i exceeds maximum transmissible unit size.", length + extra);
@@ -151,13 +236,14 @@ refer_t designunit(const char* word, int extra) {
   }
   
   unitwords[slot].extra = extra;
-  unitwords[slot].id = createunitid();
+  unitwords[slot].id = createunitwordid();
   unitwords[slot].super = super;
   unitwords[slot].word = reprintstring(word);
+  unitwords[slot].name = strchr(unitwords[slot].word, '.') + sizeof(char);
   
   defineunit(&unitwords[slot]);
-
-  LOGREPORT("defined unit '%s' with id [%x] and %i elements.", unitwords[slot].word, unitwords[slot].id, length + extra);
+  
+  LOGREPORT("defined unit '%s' (%s) with id [%x] in %i elements.", unitwords[slot].word, unitwords[slot].name, unitwords[slot].id, length + extra);
  }
  else {
   LOGREPORT("unable to reserve an unitword index.");
@@ -176,15 +262,15 @@ int fetchunitword(refer_t id) {
   }
  }
  
- return -1;
+ return INVALIDUNITWORD;
 }
 
-int unitwordclass(const char* word) {
+int getclass(const char* word) {
  char* c;
  int super;
  
  if (!word) {
-  LOGREPORT("received invalid unit word");
+  LOGREPORT("received invalid unit class word.");
   return SUPER_NULL;
  }
  
@@ -201,22 +287,22 @@ int unitwordclass(const char* word) {
   super = SUPER_UNIT;
  }
  else if (!strcmp("drop", word)) {
-  super = SUPER_DROP;
+//  super = SUPER_DROP;
  }
  else if (!strcmp("fiend", word)) {
-  super = SUPER_FIEND;
+//  super = SUPER_FIEND;
  }
  else if (!strcmp("mob", word)) {
   super = SUPER_MOB;
  }
  else if (!strcmp("movable", word)) {
-  super = SUPER_MOVABLE;
+//  super = SUPER_MOVABLE;
  }
  else if (!strcmp("pliant", word)) {
   super = SUPER_PLIANT;
  }
  else if (!strcmp("trace", word)) {
-  super = SUPER_TRACE;
+//  super = SUPER_TRACE;
  }
  else if (!strcmp("unit", word)) {
   super = SUPER_UNIT;
@@ -231,14 +317,8 @@ int unitwordclass(const char* word) {
  return super;
 }
 
-int unitwordclassdepth(int super) {
+int getclassdepth(unit_e super) {
  switch (super) {
- case SUPER_DROP:
-//  return sizeof(drop_t);
- 
- case SUPER_FIEND:
-//  return sizeof(fiend_t);
-  
  case SUPER_MOB:
   return sizeof(mob_t) / ELEMENTSIZE;
   
@@ -249,20 +329,84 @@ int unitwordclassdepth(int super) {
   return sizeof(unit_t) / ELEMENTSIZE;
   
  default:
-  LOGREPORT("m");
+  LOGREPORT("could not retrieve undefined class length.");
   return 0;
  }
 }
 
-//void bindunitwords(refer_t*) {
-// 
-//}
+const char* getclassword(unit_e super) {
+ switch (super) {
+ case SUPER_MOB:
+  return "mob";
+  
+ case SUPER_PLIANT:
+  return "pliant";
+  
+ case SUPER_UNIT:
+  return "unit";
+  
+ default:
+  return NULL;
+ }
+}
 
-//void packunitwords(message_t* message) {
+unitword_t* getunitbyword(const char* word) {
+ int i;
  
-//}
+ for (i = 0; i < MAX_UNITWORDS; i++) {
+  if (unitwords[i].word && !strcmp(unitwords[i].word, word)) {
+   return &unitwords[i];
+  }
+ }
+ 
+ return NULL;
+}
 
-refer_t unitid(const char* word) {
+unitword_t* getunitword(refer_t word) {
+ int i;
+ 
+ for (i = 0; i < MAX_UNITWORDS; i++) {
+  if (unitwords[i].id == word) {
+   return &unitwords[i];
+  }
+ }
+ 
+ return NULL;
+}
+
+// Returns whether the specified unit word is a class or subclass of the super class;
+// all classes are subclasses of the unit class, therefore returning false means the word
+// was either invalid or unclassed.
+int isclass(unit_e super, refer_t id) {
+ unitword_t* word;
+ 
+ word = getunitword(id);
+ 
+ if (!word) {
+  LOGREPORT("unable to classify unit word.");
+  return 0;
+ }
+ 
+ if (super == SUPER_UNIT) {
+  return 1;
+ }
+ 
+ return (super & word->super) <= super;
+}
+
+const char* scribeunitword(refer_t id) {
+ int i;
+ 
+ for (i = 0; i < MAX_UNITWORDS; i++) {
+  if (unitwords[i].id == id) {
+   return unitwords[i].word;
+  }
+ }
+ 
+ return NULL;
+}
+
+/*refer_t unitid(const char* word) {
  int i;
  
  for (i = 0; i < MAX_UNITWORDS; i++) {
@@ -274,38 +418,26 @@ refer_t unitid(const char* word) {
  return NOUNIT;
 }
 
-char* unitname(refer_t word) {
- 
-}
-
-char* unitword(refer_t word) {
+const char* unitname(refer_t id) {
  int i;
  
  for (i = 0; i < MAX_UNITWORDS; i++) {
-  if (unitwords[i].id == word) {
-   return unitwords[i].word;
+  if (unitwords[i].id == id) {
+   return unitwords[i].name;
   }
  }
  
  return NULL;
 }
 
-char* unitwordname(const char* word) {
+const char* unitword(refer_t id) {
+ int i;
  
-}
-
-void tickunit(unit_u* unit, level_t* level) {
+ for (i = 0; i < MAX_UNITWORDS; i++) {
+  if (unitwords[i].id == id) {
+   return unitwords[i].word;
+  }
+ }
  
-}
-
-// ==================================================
-// unit functions
-
-int bioluminance(unit_u* unit) {
- 
- return 0;
-}
-
-void blankunit(unit_u* unit, refer_t word) {
- 
-}
+ return NULL;
+}*/

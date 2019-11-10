@@ -3,16 +3,26 @@
 #include "base.h"
 
 #define MAX_TILEWORDS 128
-
+#define MAX_DEIGNS 2
 #define NOTILE 0
 
 typedef enum {
- TILEFLAG_PASSABLE = 0x01,
- TILEFLAG_TOGRASS = 0x02,
- TILEFLAG_TOLAVA = 0x04,
- TILEFLAG_TOSAND = 0x08,
- TILEFLAG_TOWATER = 0x10,
+ TILE_NOFLAG = 0x00,
+ TILE_TOGRASS = 0x01,
+ TILE_TOLAVA = 0x02,
+ TILE_TOSAND = 0x04,
+ TILE_TOWATER = 0x08,
+ 
+ TILE_TOLIQUID = TILE_TOLAVA | TILE_TOWATER,
 } tileflag_e;
+
+typedef union {
+ float floats[MAX_DEIGNS];
+ int integers[MAX_DEIGNS];
+ void* pointers[MAX_DEIGNS];
+ refer_t referrals[MAX_DEIGNS];
+ char* strings[MAX_DEIGNS];
+} deign_t;
 
 typedef struct {
  byte_t id;
@@ -20,23 +30,24 @@ typedef struct {
 } tile_t;
 
 typedef struct {
- int falsed; // whether the tileword is  
- char* word; // script
- char* name;
- //int extras[4];
- 
+ refer_t word;
+ int x, y;
+} vtile_t;
+
+typedef struct {
+ char* word;
+ deign_t deign;
  tileflag_e flags;
- int luminance;
 } tileword_t;
 
-int adjoinsliquid(refer_t tile);
-//int flagged(tileflag_e flag, refer_t tile);
-int luminance(refer_t tile);
-int surpassable(refer_t tile);
+refer_t tileid(const char* word);
+const char* tilename(refer_t id);
+int flagtile(refer_t id, int flags);
+int hasflags(int flags, refer_t id);
 
-refer_t tileid(const char* string);
-const char* tilename(refer_t code);
-
-//int tileflag();
-
-//int interact(pliant_t*, refer_t item, int aim);
+int actontile(int x, int y, refer_t unit, refer_t item);
+int gettileglow(int x, int y);
+void stepontile(int x, int y, refer_t unit);
+void striketile(int x, int y, refer_t unit, int damage);
+int surpassable(int x, int y, refer_t unit);
+void touchtile(int x, int y, refer_t unit);

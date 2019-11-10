@@ -7,6 +7,7 @@
 #define MAX_ITEMS 64
 #define MAX_PILES 16
 #define MAX_RECIPES 64
+#define MAX_SURFACES 32
 
 #define NOITEM 0
 
@@ -19,8 +20,14 @@ typedef enum {
 } item_e;
 
 typedef struct {
+ char* name;
+ int value;
+} detail_t;
+
+typedef struct {
  char* word;
  item_e type;
+ int source; // wood, rock, etc.
  int sprite;
  int color;
 } item_t;

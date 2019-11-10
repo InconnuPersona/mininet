@@ -2,17 +2,43 @@
 
 #include "base.h"
 
-#define MAX_CLIENTS 16
-#define MAX_MESSAGES 64
-
 #define BROADCAST -2
 #define INVALIDCLIENT -1
+#define MAX_CLIENTS 16
+#define MAX_MESSAGES 64
+#define NETWORKRATE 20
+
+#define PACKETHEADER \
+ int type; \
+ int flags; \
+ int sequence; \
+ int sender; \
+ int length;
+
+#define MESSAGESHEADER \
+ int session; \
+ int bufferlength; \
+ int messagecount;
 
 typedef enum {
  CLIENT_EMPTY = 0,
  CLIENT_READY,
  CLIENT_FAULT,
 } client_e;
+
+typedef enum {
+ EXT_ACCEPT = 0,
+ EXT_RESERVE,
+ EXT_ALREADYMET,
+ EXT_MEETUP, // acknowledge connection
+ EXT_NOSPACE,
+ EXT_GOODBYE,
+ EXT_TIMEOUT,
+ EXT_FAULTED,
+ EXT_TAKEN,
+ EXT_SEQUENCE, // submit latest sequence number
+ EXT_REQUEST, // request packet by sequence number
+} extra_e; // dimensionless values
 
 typedef enum {
  HOST_UNMADE = 0,
@@ -36,24 +62,22 @@ typedef union {
  char* string;
  short* shorts;
  void* pointer;
+ void** pointers;
 } abstract_u;
 
 typedef struct {
- short type;
- short length;
+ int length; // zero length mandates that all stored data be sent
  
  abstract_u data;
+ 
+ int stored;
 } message_t;
 
 typedef struct {
- netmessage_e type;
- int sender; // sender ID
- int length;
- float posttime;
+ PACKETHEADER;
  
- int session, client;
- int messagecount;
- int bufferlength;
+ MESSAGESHEADER;
+ 
  message_t messages[MAX_MESSAGES];
 } packet_t;
 
@@ -62,13 +86,20 @@ void openhost(int port);
 void closehost();
 
 int countclients();
-void dropclient(int client);
+void dropclient(int client, int reason);
+int hasclient(int client);
 int clientstate(int client);
 
-void appendclientmessage(message_t* message, int client);
-void appendmessage(message_t* message);
+void appendclientmessage(message_t* message, int reliable, int client);
+void appendmessage(message_t* message, int reliable);
 
-void directmessage(message_t* message, int type, void* data, int length);
+void directmessage(message_t* message, void* data, int length);
+
+int pullbytes(byte_t* bytes, int count, message_t* message);
+int pullvalue(int* value, int size, message_t* message);
+
+int pushbytes(const void* bytes, int count, message_t* message);
+int pushvalue(const int value, int size, message_t* message);
 
 void handlequeues();
 void updatequeues();

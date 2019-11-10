@@ -1,101 +1,149 @@
 #include "main.h"
 
-void handlehostpacket(packet_t* packet) {
- message_t* message;
- byte_t content[128];
- int i;
+game_t session = { 0 };
+
+int newgameclientid() {
+ int id;
  
- for (i = 0; i < packet->messagecount; i++) {
-  message = &packet->messages[i];
+ do {
+  id = randomid();
   
-  switch (message->type) {
-  case MSG_ADDCLIENT:
-   //reprintstring(message->data);
-   
-   //directmessage(&message, MSG_ADDCLIENT, content, 15);
-   //appendclientmessage(&message, packet->sender);
-   
-   //putclient();
-   
-   //directmessage(&message, MSG_UNITWORDS, DEFAULTQUEUE, content, ~);
-   //appendclientmessage(&message, );
-   break;
-   
-  case MSG_LEVELBITMAP:
-   break;
-   
-  case MSG_REMOVECLIENT:
-   break;
-   
-  case MSG_COMMAND:
-   // command, operand (crafted item)
-   break;
-   
-  default:
-   LOGREPORT("received an unhandled message type.");
-   break;
+  if (getgameclient(id) || id == session.id) {
+   continue;
   }
+  
+  return id;
  }
+ while (1);
 }
 
-void handleclientpacket(packet_t* packet) {
- message_t* message;
- int i;
+int putgameclient(const char* name, int bind) {
+ gameclient_t* client;
+ int i, j;
  
- for (i = 0; i < packet->messagecount; i++) {
-  message = &packet->messages[i];
+ j = -1;
+ 
+ LOGREPORT("name '%s' bind [%i].", name, bind);
+ 
+ for (i = 0; i < MAX_GAMECLIENTS; i++) {
+  client = &session.clients[i];
   
-  switch (message->type) {
-  case MSG_ADDCLIENT:
-   //
-   break;
+  if (j < 0 && !client->id) {
+   j = i;
+  }
+  else if (!strncmp(client->name, name, MAX_NAMELENGTH)) {
+   j = -1;
    
-  case MSG_REMOVECLIENT:
-   // nada
-   closehost();
-   break;
-   
-  case MSG_PLAYSOUND:
-   // x, y, sound (15 characters)
-   playsound("");
-   break;
-   
-  case MSG_SYNCHRONIZE:
-   break;
-   
-  case MSG_UPDATECHUNK:
-   // level, section, tiles
-   break;
-   
-  case MSG_UPDATEUNIT:
-   // level, unit (unit id, unit data)
-   break;
-   
-  default:
-   LOGREPORT("received an unhandled message type.");
+   LOGREPORT("client name '%s' already taken.", name);
    break;
   }
  }
  
+ if (j > -1) {
+  client = &session.clients[j];
+  
+  client->bind = bind;
+  client->id = newgameclientid();
+  client->deadtime = client->livetime = 0;
+  client->finished = client->inmenu = 0;
+  
+  strncpy(client->name, name, MAX_NAMELENGTH);
+  
+  LOGREPORT("put client '%s' of bind [%i] in slot %i", name, bind, j);
+  
+  return j;
+ }
+ else {
+  LOGREPORT("unable to find free slot for client '%s'.", name);
+ }
+ 
+ return INVALIDCLIENT;
 }
 
-void routepacket(packet_t* packet) {
- // TODO: handle other packet types
+void spawngameclient(refer_t client, int level) {
+ client = getgameclient(client);
  
- switch (hoststate()) {
- case HOST_CLIENT:
-  handleclientpacket(packet);
-  break;
+ if (client == INVALIDCLIENT) {
+  LOGREPORT("received unknown gameclient id.");
+  return;
+ }
+ 
+ if (level < 0 || level >= MAX_LEVELS) {
+  LOGREPORT("received out of bounds level index.");
+  return;
+ }
+ 
+ bindlevel(&session.levels[level]);
+ 
+ session.clients[client].level = level;
+ session.clients[client].entity = spawn("pliant.Player");
+ 
+ return;
+}
+
+void kickgameclient(refer_t client) {
+ return;
+}
+
+int getgameclient(refer_t client) {
+ int i;
+ 
+ if (client == INVALIDCLIENT) {
+  return INVALIDCLIENT;
+ }
+ 
+ if (client == LOCALCLIENT) {
+  return getgameclient(session.id);
+ }
+ 
+ for (i = 0; i < MAX_GAMECLIENTS; i++) {
+  if (session.clients[i].id == client) {
+   return i;
+  }
+ }
+ 
+ return INVALIDCLIENT;
+}
+
+void handlehost() {
+ if (session.type == GAME_CLIENT) {
+  //if (client not in menu) {
+   // send client movements and actions
+  //}
+ }
+ else if (session.type == GAME_HOST) {
+  // check client synchronizations
+ }
+}
+
+refer_t getboundclient(int bind) {
+ return 0;
+}
+
+refer_t getgameplayer(refer_t client) {
+ return 0;
+}
+
+void setgameplayer(refer_t client, int player, int level) {
+// session.clients[client].level = level;
+// session.clients[client].entity = spawn("pliant.Player");
+}
+
+void tickclients() {
+ 
+}
+
+void updatehost() {
+ refer_t player;
+ 
+ if (session.type == GAME_CLIENT) {
+  player = getgameplayer(session.self);
   
- case HOST_LOCAL:
-  handlehostpacket(packet);
-  break;
-  
- case HOST_UNMADE:
-  /* no break */
-  
- default:
-  LOGREPORT("unpredicted or invalid host state.");
-  break;
+  if (player != NOUNIT) {
+   // push client orders
+  }
+ }
+ else if (session.type == GAME_HOST) {
+  // update level local chunks and units to clients
  }
 }

@@ -1,58 +1,132 @@
-#include "level.h"
+#include "levelaid.h"
 #include "bind.h"
 
+#define NEWTILEMETHOD(Name) NEWLUAFUNCTION(tile##Name)
+#define LUATILEMETHOD(Name) LUAMETHOD(Name, tile##Name)
+
 #define CHECKTILEWORD(Word, ...) \
- if (Word < 0 || Word >= MAX_TILEWORDS) { \
-  LOGREPORT("received out of range tile identifier."); \
+ if (Word < 0 || Word >= MAX_TILEWORDS || !tilewords[Word].word) { \
+  LOGREPORT("received unbound tile identifier '%i'.", Word); \
   __VA_ARGS__; \
  }
-
-#define TILEFLAG(Index, Flag) (tiles[Index].flags & Flag)
 
 // ==================================================
 // declarations
 
-int tickcount;
-tileword_t tiles[MAX_TILEWORDS] = { 0 };
+tileword_t tilewords[MAX_TILEWORDS] = { 0 };
+
+// ==================================================
+// externals
+
+extern lua_State* L_game;
+extern screen_t* le_screen;
 
 // ==================================================
 // functions
 
-int adjoinsliquid(refer_t tile) {
- CHECKTILEWORD(tile, return 0);
+int hastilemethod(const char* method, refer_t tile) {
+ if (!method || tile == NOTILE) {
+  LOGREPORT("received invalid arguments.");
+  return 0;
+ }
  
- return TILEFLAG(tile, TILEFLAG_TOLAVA) | TILEFLAG(tile, TILEFLAG_TOWATER);
+ return hasluamethod(method, tilename(tile), L_game);
 }
 
-void assigntile(int index, const char* name, int flags) {
+int calltilemethod(const char* method, int x, int y, const char* format, ...) {
+ va_list args;
+ int tile, value;
+ 
+ if (!method) {
+  LOGREPORT("received invalid method.");
+  return 0;
+ }
+ 
+ tile = gettile(x, y);
+ 
+ if (tile == NOTILE || !hastilemethod(method, tile)) {
+  return 0;
+ }
+ 
+ va_start(args, format);
+ 
+ value = passmethod(method, tilename(tile), NULL, L_game, format, args, "nn", x, y);
+ 
+ va_end(args);
+ 
+ return value;
+}
+
+void assigntile(int index, const char* name) {
  int i;
  
- if (tiles[index].name) {
-  LOGREPORT("duplicate tile IDs for index %i; assigned [%s], attempted [%s].", index, tiles[index].name, name);
+ if (index < 0) {
+  LOGDEBUG("received false tile '%s'", name);
+  return;
+ }
+ 
+ if (tilewords[index].word) {
+  LOGREPORT("duplicate tile IDs for index %i; assigned '%s', attempted '%s'.", index, tilewords[index].word, name);
   exit(EXIT_FAILURE);
  }
  
  for (i = 0; i < MAX_TILEWORDS; i++) {
-  if (tiles[i].name && !strcmp(tiles[i].name, name)) {
-   LOGREPORT("duplicate tile SIDs for tag '%s'.", name);
+  if (tilewords[i].word && !strcmp(tilewords[i].word, name)) {
+   LOGREPORT("duplicate tile words for tag '%s'.", name);
    exit(EXIT_FAILURE);
   }
  }
  
- tiles[index].name = (char*) name;
- tiles[index].flags = flags;
+ tilewords[index].word = (char*) name;
+ tilewords[index].flags = 0;
+ 
+ return;
 }
 
-int luminance(refer_t tile) {
- CHECKTILEWORD(tile, return 0);
+int actontile(int x, int y, refer_t unit, refer_t item) {
+ //CHECKTILE(x, y);
  
- return tiles[tile].luminance;
+ //calltilemethod("interact", gettile(x, y), x, y, "n", unit);
+ 
+ return 0;
 }
 
-int surpassable(refer_t tile) {
+int flagtile(refer_t tile, int flags) {
  CHECKTILEWORD(tile, return 0);
  
- return TILEFLAG(tile, TILEFLAG_PASSABLE);
+ tilewords[tile].flags |= flags;
+ 
+ return tilewords[tile].flags;
+}
+
+int gettileglow(int x, int y) {
+ //return calltilemethod("light", gettile(x, y), x, y, NULL);
+ return 0;
+}
+
+int hasflags(int flags, refer_t tile) {
+ CHECKTILEWORD(tile, return 0);
+ 
+ return tilewords[tile].flags & flags;
+}
+
+int surpassable(int x, int y, refer_t unit) {
+ if (hastilemethod("blocks", gettile(x, y))) {
+  return !calltilemethod("blocks", x, y, "n", unit);
+ }
+ else {
+  return 1;
+ }
+}
+
+void stepontile(int x, int y, refer_t unit) {
+ //CHECKTILE(x, y);
+ 
+ //calltilemethod("step", gettile(x, y), x, y, "n", unit);
+}
+
+void striketile(int x, int y, refer_t unit, int damage) {
+// calltilemethod("hurt" or "struck");
 }
 
 refer_t tileid(const char* string) {
@@ -63,7 +137,7 @@ refer_t tileid(const char* string) {
  }
  
  for (i = 0; i < MAX_TILEWORDS; i++) {
-  if (tiles[i].name && !strcmp(tiles[i].name, string)) {
+  if (tilewords[i].word && !strcmp(tilewords[i].word, string)) {
    return i;
   }
  }
@@ -71,92 +145,166 @@ refer_t tileid(const char* string) {
  return NOTILE;
 }
 
-const char* tilename(refer_t code) {
- int i;
+const char* tilename(refer_t word) {
+ CHECKTILEWORD(word, return NULL);
  
- CHECKTILEWORD(code, return NULL);
- 
- return tiles[code].name;
+ return tilewords[word].word;
 }
 
-// ==================================================
-// lua binding
+void touchtile(int x, int y, refer_t unit) {
+}
 
-extern lua_State* L_game;
-int le_tileX, le_tileY;
 
-void rendertile(int x, int y, level_t* level, screen_t* screen) {
- int tile;
- 
- tile = level->tiles[x + y * level->w].id;
- 
- if (tile < 1 || tile > MAX_TILEWORDS) {
+void rendertile(int x, int y, screen_t* screen) {
+ if (!screen) {
+  LOGREPORT("received unusable screen.");
   return;
  }
  
- le_tileX = x;
- le_tileY = y;
+ if (x < 0 || y < 0) {
+  LOGREPORT("received out of bounds tile coordinates.");
+  return;
+ }
  
- callmethod("render", tilename(level->tiles[x + y * level->w].id), L_game);
+ le_screen = screen;
+ 
+ calltilemethod("render", x, y, NULL);
 }
 
-NEWLUAFUNCTION(name) {
- int id;
+void ticktile(int x, int y) {
+ if (x < 0 || y < 0) {
+  LOGREPORT("received out of bounds tile coordinates.");
+  return;
+ }
  
- id = luaL_checknumber(L, 1);
+ calltilemethod("tick", x, y, NULL);
+}
+
+NEWTILEMETHOD(deign) {
+ return 1;
+}
+
+NEWTILEMETHOD(flagged) {
+ int held, i, out, value, word;
  
- lua_pushstring(L, tilename(id));
+ held = out = 0;
+ 
+ if (lua_gettop(L) > 0) {
+  word = luaL_checknumber(L, 1);
+  
+  CHECKTILEWORD(word, LOGREPORT("received out of bounds tile word."); goto lf_flagged_exit);
+  
+  for (i = 2; i <= lua_gettop(L); i++) {
+   value = luaL_checknumber(L, i);
+   
+   held |= value;
+   
+   out |= tilewords[word].flags & value;
+  }
+  
+  if (held != out) {
+   out = 0;
+  }
+ }
+ else {
+  LUAARGUE("tile.flagged");
+ }
+ 
+lf_flagged_exit:
+ lua_pushboolean(L, out);
  
  return 1;
 }
 
-NEWLUAFUNCTION(word) {
- char* word;
- 
- word = (char*) luaL_checkstring(L, 1);
- 
- lua_pushnumber(L, tileid(word));
- 
- return 1;
-}
-
-NEWLUAFUNCTION(x) {
- lua_pushnumber(L, le_tileX);
+NEWTILEMETHOD(id) {
+ if (lua_gettop(L) > 0) {
+  lua_pushnumber(L, tileid(luaL_checkstring(L, 1)));
+ }
+ else {
+  LUAARGUE("tile.id");
+  
+  lua_pushnumber(L, NOTILE);
+ }
  
  return 1;
 }
 
-NEWLUAFUNCTION(y) {
- lua_pushnumber(L, le_tileY);
+NEWTILEMETHOD(interact) {
+ return 0;
+}
+
+NEWTILEMETHOD(luminance) {
+ return 0;
+}
+
+NEWTILEMETHOD(name) {
+ int word;
+ 
+ if (lua_gettop(L) > 0) {
+  word = luaL_checknumber(L, 1);
+ }
+ else {
+ // word = vtile.word;
+ }
+ 
+ CHECKTILEWORD(word, lua_pushstring(L, "")) else {
+  lua_pushstring(L, tilewords[word].word);
+ }
  
  return 1;
 }
 
-NEWLUAFUNCTION(tograss) {
-// lua_pushnumber(L, )
+NEWTILEMETHOD(blocks) {
+ return 0;
 }
 
-NEWLUAFUNCTION(tolava) {
+NEWTILEMETHOD(setflag) {
+ int i, word;
  
+ if (lua_gettop(L) > 0) {
+  word = luaL_checknumber(L, 1);
+  
+  CHECKTILEWORD(word, return 0);
+  
+  for (i = 2; i <= lua_gettop(L); i++) {
+   tilewords[word].flags |= (int) luaL_checknumber(L, i);
+  }
+ }
+ else {
+  LUAARGUE("tile.setflag");
+ }
+ 
+ return 0;
 }
 
-NEWLUAFUNCTION(tosand) {
- 
+NEWTILEMETHOD(step) {
+ return 0;
 }
 
-NEWLUAFUNCTION(towater) {
- 
+NEWTILEMETHOD(strike) {
+ return 0;
+}
+
+NEWTILEMETHOD(touch) {
+ return 0;
 }
 
 BEGINLUATABLE(tile)
- //LUAFUNCTION(luminance),
- //LUAFUNCTION(surpassable),
- LUAFUNCTION(name),
- LUAFUNCTION(tograss),
- LUAFUNCTION(tolava),
- LUAFUNCTION(tosand),
- LUAFUNCTION(towater),
- LUAFUNCTION(word),
- LUAFUNCTION(x),
- LUAFUNCTION(y),
+ LUANUMBER(ALIAS, -1),
+ LUANUMBER(TOGRASS, TILE_TOGRASS),
+ LUANUMBER(TOLAVA, TILE_TOLAVA),
+ LUANUMBER(TOSAND, TILE_TOSAND),
+ LUANUMBER(TOWATER, TILE_TOWATER),
+ LUANUMBER(TOLIQUID, TILE_TOLIQUID),
+ 
+ LUATILEMETHOD(deign),
+ LUATILEMETHOD(flagged),
+ LUATILEMETHOD(blocks),
+ LUATILEMETHOD(id),
+ LUATILEMETHOD(interact),
+ LUATILEMETHOD(luminance),
+ LUATILEMETHOD(setflag),
+ LUATILEMETHOD(step),
+ LUATILEMETHOD(strike),
+ LUATILEMETHOD(touch),
 ENDLUATABLE;
