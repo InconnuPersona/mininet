@@ -54,3 +54,6 @@ dkms.conf
 # Assets
 *.png
 *.wav
+
+# Extra files
+*.stackdump

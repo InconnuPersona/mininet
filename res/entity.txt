@@ -1,7 +1,7 @@
 Itemdrops are special cases only instantiable by the game level; they may never be defined under a class.
 
 ==============================
-Entity:
+Entity (unit):
 ==============================
 
 bioluminance():
@@ -45,5 +45,7 @@ Deals attack to entity in the specified direction or interacts with entity.
 Pliant:
 ==============================
 
-command:
-Handles clientsent command.
+==============================
+
+LUA entities may summon() another unit, which is bound to the summoner under
+its ownership.

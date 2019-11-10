@@ -6,3 +6,17 @@ class unit.beast
  }
  
  level.drop("goldOre", x, y)
+ 
+ 
+//refer_t place(unit_u* unit, int x, int y) {
+// int i;
+// 
+// CHECKLEVEL(level, exit(EXIT_FAILURE));
+// 
+// i = 0;
+// 
+// dirtychunk(x / TILESCALE / CHUNKANGTH, y / TILESCALE / CHUNKANGTH, level);
+// 
+// return i;
+//}
+ 

@@ -15,9 +15,10 @@ MSG_COMMAND:
  refer pliant;
  byte command;
  refer result; // if the command was to craft something, this would be the desired output; if it were to place something, this would be the entity ID
+ refer surface; // this is where the item was crafted; 0 would represent the player's own inventory
 
-MSG_LEVELBITMAP:
- array bitmap;
+//MSG_LEVELBITMAP:
+// array bitmap;
 
 
 ]
@@ -28,6 +29,7 @@ MSG_ADDCLIENT:
  int sessionID;
  int state; // accepted or refused; 0 stands for acceptance while another number encodes a reason for refusal
  refer bond; // player bond
+ int level;
 
 MSG_ITEMWORD:
  int id;
