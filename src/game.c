@@ -14,6 +14,8 @@ void assortlevels() {
   return;
  }
  
+ // TODO: if host sort all levels, otherwise, sort only own level as client
+ 
  for (i = 0; i < MAX_LEVELS; i++) {
   level = &session.levels[i];
   
@@ -33,6 +35,17 @@ void assortlevels() {
    ticklevel();
   }
  }
+ 
+ return;
+}
+
+void bindgamelevel(int level) {
+ if (level < 0 || level >= MAX_LEVELS) {
+  LOGREPORT("attempted to bind invalid game level [%i].", level);
+  return;
+ }
+ 
+ bindlevel(&session.levels[level]);
  
  return;
 }
@@ -237,14 +250,44 @@ void renderGUI(refer_t player, screen_t* screen) {
  if (pliant->item != NOITEM) {
 //  renderhotbaritem(player->item, 10 * 8, screen->h - 16, screen);
  }
+ 
+ return;
+}
+
+void renderlevel(int level, int xs, int ys, screen_t* screen) {
+ extern screen_t lightscreen;
+ int color;
+ int x, y;
+ 
+ if (level > 3) {
+  color = getcolor(20, 20, 121, 121);
+  
+  for (y = 0; y < 14; y++) {
+   for (x = 0; x < 24; x++) {
+	rendersprite(x * 8 - ((xs / 4) & 7), y * 8 - ((ys / 4) & 7), 0, color, 0, screen);
+   }
+  }
+ }
+ 
+ renderbackground(xs, ys, screen);
+ rendersprites(xs, ys, screen);
+ 
+ if (level > 3) {
+  clearscreen(&lightscreen, 0);
+  
+  renderlights(xs, ys, &lightscreen);
+  
+  overlayscreens(screen, &lightscreen, xs, ys);
+ }
+ 
+ return;
 }
 
 void rendergame(screen_t* screen) {
- extern screen_t lightscreen;
  pliant_t* player;
  int client;
- int color, level;
- int x, y, xs, ys;
+ int level;
+ int xs, ys;
  
  if (!session.open) {
   renderdue(screen);
@@ -273,24 +316,7 @@ void rendergame(screen_t* screen) {
  
  centerfocus(&xs, &ys, &session.levels[level], screen);
  
- if (level > 3) {
-  color = getcolor(20, 20, 121, 121);
-  
-  for (y = 0; y < 14; y++) {
-   for (x = 0; x < 24; x++) {
-	rendersprite(x * 8 - ((xs / 4) & 7), y * 8 - ((ys / 4) & 7), 0, color, 0, screen);
-   }
-  }
- }
- 
- renderbackground(xs, ys, screen);
- rendersprites(xs, ys, screen);
- 
- if (level > 3) {
-  clearscreen(&lightscreen, 0);
-  renderlights(xs, ys, &lightscreen);
-  overlayscreens(screen, &lightscreen, xs, ys);
- }
+ renderlevel(level, xs, ys, screen);
  
  renderGUI(player->id, screen);
  
@@ -299,31 +325,23 @@ void rendergame(screen_t* screen) {
  return;
 }
 
-void renderhost(screen_t* screen) {
- 
-}
-
 void tickgame() {
  int ticks;
  
- if (!session.open) {
-  return;
- }
- 
  handlehost();
- 
+
  ticks = readtimer(&session.timer);
- 
+
  while (ticks > 0) {
   assortlevels();
-  
+
   session.ticks++;
-  
+
   ticks -= 1;
  }
- 
+
  updatehost();
- 
+
  bindlevel(NULL);
  
  return;

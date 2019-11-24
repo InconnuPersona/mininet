@@ -92,7 +92,7 @@ void menuchar(int character) {
 }
 
 void tickmenu() {
- if (menu) {
+ if (menu && hasluamethod("tick", menu, L_menu)) {
   callmethod("tick", menu, L_menu, NULL);
  }
 }

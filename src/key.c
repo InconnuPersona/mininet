@@ -57,7 +57,7 @@ int addkey(int code) {
  return last;
 }
 
-int getkey(int key) {
+int getckey(int key) {
  for (int i = 0; i < MAX_CKEYS; i++) {
   if (keys[i].code == key) {
    return i;
@@ -67,8 +67,8 @@ int getkey(int key) {
  return -1;
 }
 
-void setkey(int code, int state) {
- int i = getkey(code);
+void setckey(int code, int state) {
+ int i = getckey(code);
  
  if (i < 0) {
   i = addkey(code);
@@ -84,7 +84,7 @@ void setkey(int code, int state) {
 }
 
 int getkeyclicked(int key) {
- int i = getkey(key);
+ int i = getckey(key);
  
  if (i > -1) {
   return keys[i].clicked;
@@ -95,7 +95,7 @@ int getkeyclicked(int key) {
 }
 
 int getkeydown(int key) {
- int i = getkey(key);
+ int i = getckey(key);
  
  if (i > -1) {
   return keys[i].state;
@@ -206,7 +206,7 @@ void pollevents() {
 	menuchar(e.key.keysym.sym);
    }
    
-   setkey(e.key.keysym.sym, e.key.state);
+   setckey(e.key.keysym.sym, e.key.state);
    break;
    
   default:

@@ -166,7 +166,7 @@ void createunit(unit_t* unit, const char* word) {
   break;
   
  default:
-  LOGREPORT("received invalid unit word class.");
+  LOGREPORT("received invalid unit word class '%s'.", word);
   break;
  }
  

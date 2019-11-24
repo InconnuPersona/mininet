@@ -56,4 +56,9 @@ dkms.conf
 *.wav
 
 # Extra files
+/.settings/
+.project
+.cproject
+/Debug/
+/Release/
 *.stackdump

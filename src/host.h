@@ -23,7 +23,6 @@ typedef enum {
  MSG_NONE,
  
  // host messages
- 
  MSG_ADDCLIENT,
  MSG_REMOVECLIENT,
  
@@ -33,7 +32,6 @@ typedef enum {
  MSG_POSTCLIENTS,
  
  // ingame messages
- 
  MSG_COMMAND,
  MSG_POSTCHUNK,
  MSG_POSTITEMWORDS,
@@ -73,10 +71,12 @@ typedef struct {
 
 extern game_t session;
 
-refer_t getboundclient(int binde);
+void bindgamelevel(int level);
+
+refer_t getboundclient(int bind);
 int getgameclient(refer_t client);
 void kickgameclient(refer_t client);
-int putgameclient(const char* name, int binde);
+int putgameclient(const char* name, int bind);
 void spawngameclient(refer_t client, int level);
 
 void handlehost();

@@ -8,7 +8,7 @@ int newgameclientid() {
  do {
   id = randomid();
   
-  if (getgameclient(id) || id == session.id) {
+  if (getgameclient(id) != INVALIDCLIENT || id == session.id) {
    continue;
   }
   
@@ -17,13 +17,11 @@ int newgameclientid() {
  while (1);
 }
 
-int putgameclient(const char* name, int bind) {
+refer_t putgameclient(const char* name, int bind) {
  gameclient_t* client;
  int i, j;
  
  j = -1;
- 
- LOGREPORT("name '%s' bind [%i].", name, bind);
  
  for (i = 0; i < MAX_GAMECLIENTS; i++) {
   client = &session.clients[i];
@@ -49,9 +47,9 @@ int putgameclient(const char* name, int bind) {
   
   strncpy(client->name, name, MAX_NAMELENGTH);
   
-  LOGREPORT("put client '%s' of bind [%i] in slot %i", name, bind, j);
+  LOGREPORT("put game client id [%x] '%s' in slot %i under bind [%x].", client->id, name, j, bind);
   
-  return j;
+  return client->id;
  }
  else {
   LOGREPORT("unable to find free slot for client '%s'.", name);
@@ -105,22 +103,77 @@ int getgameclient(refer_t client) {
  return INVALIDCLIENT;
 }
 
-void handlehost() {
+int handleinput() {
+ int commands;
+ 
+ commands = 0;
+ 
+ if (getaliasclicked("attack")) {
+  commands |= CMD_ATTACK;
+ }
+ 
+ if (getaliasdown("menu")) {
+  commands |= CMD_MENU;
+ }
+ 
+ if (getaliasdown("down")) {
+  commands |= CMD_MOVEDOWN;
+ }
+ 
+ if (getaliasdown("left")) {
+  commands |= CMD_MOVELEFT;
+ }
+ 
+ if (getaliasdown("right")) {
+  commands |= CMD_MOVERIGHT;
+ }
+
+ if (getaliasdown("up")) {
+  commands |= CMD_MOVEUP;
+ }
+ 
+ return commands;
+}
+
+// TODO: implement game client menus
+void handlegameclient(refer_t client) {
+ unit_u* player;
+ int commands;
+ 
+ client = getgameclient(client);
+ 
+ commands = handleinput();
+ 
+ if (client != INVALIDCLIENT) {
+  bindgamelevel(session.clients[client].level);
+  
+  player = getunit(session.clients[client].entity);
+  
+  if (!player) {
+   return;
+  }
+  
+  player->pliant.commands = commands;
+ }
+ 
  if (session.type == GAME_CLIENT) {
   //if (client not in menu) {
-   // send client movements and actions
+  // send client movements and actions
   //}
  }
- else if (session.type == GAME_HOST) {
+ 
+ bindlevel(NULL);
+}
+
+void handlehost() {
+ handlegameclient(session.self);
+ 
+ if (session.type == GAME_HOST) {
   // check client synchronizations
  }
 }
 
 refer_t getboundclient(int bind) {
- return 0;
-}
-
-refer_t getgameplayer(refer_t client) {
  return 0;
 }
 
@@ -134,14 +187,12 @@ void tickclients() {
 }
 
 void updatehost() {
- refer_t player;
- 
  if (session.type == GAME_CLIENT) {
-  player = getgameplayer(session.self);
+  //player = getgameplayer(session.self);
   
-  if (player != NOUNIT) {
+  //if (player != NOUNIT) {
    // push client orders
-  }
+  //}
  }
  else if (session.type == GAME_HOST) {
   // update level local chunks and units to clients
