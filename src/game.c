@@ -1,8 +1,8 @@
 #include "main.h"
 
-extern void handleclientsend(gamesend_t* sent);
-extern void handlehostsend(gamesend_t* sent);
-
+extern void handleclientsend(gamesend_t* sent, refer_t sender);
+extern void handlehostsend(gamesend_t* sent, refer_t sender);
+ 
 void assortlevels() {
  aabb_t aabb;
  level_t* level;
@@ -14,29 +14,40 @@ void assortlevels() {
   return;
  }
  
- // TODO: if host sort all levels, otherwise, sort only own level as client
+ if (awaited()) {
+  return;
+ }
  
- for (i = 0; i < MAX_LEVELS; i++) {
-  level = &session.levels[i];
-  
-  bindlevel(level);
-  
-  boundbox(&aabb, 0, 0, level->w, level->h);
-  
-  pliants = seekunits("pliant.Player", aabb);
-  
-  if (!pliants) {
-   continue;
-  }
-  
-  for (j = 0; pliants[j]; j++);
-  
-  if (j > 0) {
-   ticklevel();
+ if (session.type == GAME_CLIENT) {
+  // TODO: tick player level
+ }
+ else {
+  for (i = 0; i < MAX_LEVELS; i++) {
+   level = &session.levels[i];
+   
+   bindlevel(level);
+   
+   boundbox(&aabb, 0, 0, level->w, level->h);
+   
+   pliants = seekunits("pliant.Player", aabb);
+   
+   if (!pliants) {
+	continue;
+   }
+   
+   for (j = 0; pliants[j]; j++);
+   
+   if (j > 0) {
+	ticklevel();
+   }
   }
  }
  
  return;
+}
+
+int awaited() {
+ return session.type == GAME_CLIENT && !session.id;
 }
 
 void bindgamelevel(int level) {
@@ -46,112 +57,6 @@ void bindgamelevel(int level) {
  }
  
  bindlevel(&session.levels[level]);
- 
- return;
-}
-
-void chainlevels(int chained) {
- level_t* level;
- int i, j;
- 
- level = NULL;
- 
- for (i = MAX_LEVELS - 1, j = 1; i > -1; i--, j--) {
-  bindlevel(&session.levels[i]);
-  
-  if (chained) {
-   createlevel(LEVELANGTH, LEVELANGTH, j, level);
-   
-   level = &session.levels[i];
-  }
-  else {
-   emptylevel(LEVELANGTH, LEVELANGTH, j);
-  }
- }
- 
- return;
-}
-
-void routepacket(packet_t* packet) {
- gamesend_t sent;
- int i;
- 
- if (session.type != GAME_CLIENT || session.type != GAME_HOST) {
-  LOGREPORT("routed packet under unpredicted or invalid host state.");
-  return;
- }
- 
- for (i = 0; i < packet->messagecount; i++) {
-//  memcpy(sent, packet->messages[i].data.pointer);
-//  
-//  sent = packet->messages[i].data.pointer;
-//  
-//  if (sent->marker == GAMESMARKER) {
-//   
-//   
-//   if (session.type == GAME_CLIENT) {
-//    handlehostsend(sent);
-//   }
-//   else if (session.type == GAME_HOST) {
-//    handleclientsend(sent);
-//   }
-//  } else {
-//   LOGREPORT("received unknown message.");
-//  }
- }
-}
-
-void startsession(gametype_e type, char* name, char* address, int port) {
- gamesend_t send;
- 
- if (session.open) {
-  LOGREPORT("game session already open.");
-  return;
- }
- 
- switch (type) {
- case GAME_CLIENT:
-  joinhost(address, port, 54321);
-  
-  chainlevels(0);
-  
-  //directmessage(&message, MSG_ADDCLIENT, session.clients[LOCALCLIENT].name, MAX_NAMELENGTH);
-  //appendmessage(&message, 1);
-  
-  //pushgamesend();
-  
-  break;
-  
- case GAME_HOST:
-  openhost(port);
-  /* no break */
-  
- case GAME_PRIVATE:
-  chainlevels(1);
-  
-  session.id = randomid();
-  
-  LOGREPORT("opened game session under id [%x].", session.id);
-  
-  session.self = putgameclient(name, LOCALCLIENT);
-  
-  spawngameclient(session.self, SPAWNLEVEL);
-  
-  break;
-  
- default:
-  LOGREPORT("invalid session type.");
-  return;
- }
- 
- // TODO: improve timer accuracy
- settimer(&session.timer, TIMER_SPACEDLAPSE, CURRENTTIME, 1.f / GAMERATE);
- 
- session.marker = GAMESMARKER;
- session.open = 1;
- session.ticks = 0;
- session.type = type;
- session.version = GAMEVERSION;
  
  return;
 }
@@ -187,6 +92,33 @@ void centerfocus(int* sx, int* sy, level_t* level, screen_t* screen) {
  *sy = ys;
  
  return;
+}
+
+void chainlevels(int chained) {
+ level_t* level;
+ int i, j;
+ 
+ level = NULL;
+ 
+ for (i = MAX_LEVELS - 1, j = 1; i > -1; i--, j--) {
+  bindlevel(&session.levels[i]);
+  
+  if (chained) {
+   createlevel(LEVELANGTH, LEVELANGTH, j, level);
+   
+   level = &session.levels[i];
+  }
+  else {
+   emptylevel(LEVELANGTH, LEVELANGTH, j);
+  }
+ }
+ 
+ return;
+}
+
+// TODO: implement close session
+void closesession() {
+ session.open = 0;
 }
 
 void renderdue(screen_t* screen) {
@@ -289,14 +221,14 @@ void rendergame(screen_t* screen) {
  int level;
  int xs, ys;
  
- if (!session.open) {
+ if (!session.open || awaited()) {
   renderdue(screen);
   return;
  }
  
  client = getgameclient(session.self);
  
- if (client == INVALIDCLIENT) {
+ if (session.type == GAME_CLIENT || client == INVALIDCLIENT) {
   renderdue(screen);
   return;
  }
@@ -325,23 +257,106 @@ void rendergame(screen_t* screen) {
  return;
 }
 
+void routepacket(packet_t* packet) {
+ gamesend_t sent;
+ int i;
+ 
+ if (session.type != GAME_CLIENT && session.type != GAME_HOST) {
+  LOGREPORT("routed packet under unpredicted or invalid host state.");
+  return;
+ }
+ 
+ for (i = 0; i < packet->messagecount; i++) {
+  memcpy(&sent, packet->messages[i].data.pointer, sizeof(gamesend_t));
+  
+  if (session.type == GAME_CLIENT) {
+   handlehostsend(&sent, packet->sender);
+  }
+  else if (session.type == GAME_HOST) {
+   handleclientsend(&sent, packet->sender);
+  }
+  else {
+   LOGREPORT("received message under invalid host state.");
+   return;
+  }
+ }
+ 
+ return;
+}
+
+void startsession(gametype_e type, char* name, char* address, int port) {
+ if (session.open) {
+  LOGREPORT("game session already open.");
+  return;
+ }
+ 
+ switch (type) {
+ case GAME_CLIENT:
+  joinhost(address, port, 54321);
+  
+  chainlevels(0);
+  
+  session.id = 0;
+  
+  session.self = putgameclient(name, LOCALCLIENT);
+  
+  break;
+  
+ case GAME_HOST:
+  openhost(port);
+  /* no break */
+  
+ case GAME_PRIVATE:
+  chainlevels(1);
+  
+  session.id = randomid();
+  
+  LOGREPORT("opened game session under id [%x].", session.id);
+  
+  session.self = putgameclient(name, LOCALCLIENT);
+  
+  spawngameclient(session.self, SPAWNLEVEL);
+  
+  break;
+  
+ default:
+  LOGREPORT("invalid session type.");
+  return;
+ }
+ 
+ // TODO: improve timer accuracy
+ settimer(&session.timer, TIMER_SPACEDLAPSE, CURRENTTIME, 1.f / GAMERATE);
+ 
+ session.marker = GAMESMARKER;
+ session.open = 1;
+ session.ticks = 0;
+ session.type = type;
+ session.version = GAMEVERSION;
+ 
+ return;
+}
+
 void tickgame() {
  int ticks;
  
+ if (!session.open) {
+  return;
+ }
+ 
  handlehost();
-
+ 
  ticks = readtimer(&session.timer);
-
+ 
  while (ticks > 0) {
   assortlevels();
-
+  
   session.ticks++;
-
+  
   ticks -= 1;
  }
-
+ 
  updatehost();
-
+ 
  bindlevel(NULL);
  
  return;

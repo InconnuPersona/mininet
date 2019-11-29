@@ -367,8 +367,6 @@ void updatequeue(client_t* holder, client_t* broadcast) {
   return;
  }
  
- packet.session = session.id;
- 
  // reliable messages
  {
   for (i = 0; broadcast && broadcast->usable && i < broadcast->queue.reliablecount; i++) {

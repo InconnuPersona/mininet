@@ -17,7 +17,14 @@ int newgameclientid() {
  while (1);
 }
 
-refer_t putgameclient(const char* name, int bind) {
+// TODO: implement kick client function
+void kickgameclient(refer_t client) {
+ 
+ 
+ return;
+}
+
+refer_t putgameclient(const char* name, refer_t bind) {
  gameclient_t* client;
  int i, j;
  
@@ -28,6 +35,12 @@ refer_t putgameclient(const char* name, int bind) {
   
   if (j < 0 && !client->id) {
    j = i;
+  }
+  else if (client->bind && client->bind == bind) {
+   j = -1;
+   
+   LOGREPORT("client bind [%x] already taken", bind);
+   break;
   }
   else if (!strncmp(client->name, name, MAX_NAMELENGTH)) {
    j = -1;
@@ -47,7 +60,7 @@ refer_t putgameclient(const char* name, int bind) {
   
   strncpy(client->name, name, MAX_NAMELENGTH);
   
-  LOGREPORT("put game client id [%x] '%s' in slot %i under bind [%x].", client->id, name, j, bind);
+  LOGREPORT("put game client '%s' [%x] in slot %i under bind [%x].", name, client->id, j, bind);
   
   return client->id;
  }
@@ -58,6 +71,7 @@ refer_t putgameclient(const char* name, int bind) {
  return INVALIDCLIENT;
 }
 
+// TODO: handle game client spawn effectively; return unit referral
 void spawngameclient(refer_t client, int level) {
  client = getgameclient(client);
  
@@ -77,30 +91,6 @@ void spawngameclient(refer_t client, int level) {
  session.clients[client].entity = spawn("pliant.Player");
  
  return;
-}
-
-void kickgameclient(refer_t client) {
- return;
-}
-
-int getgameclient(refer_t client) {
- int i;
- 
- if (client == INVALIDCLIENT) {
-  return INVALIDCLIENT;
- }
- 
- if (client == LOCALCLIENT) {
-  return getgameclient(session.id);
- }
- 
- for (i = 0; i < MAX_GAMECLIENTS; i++) {
-  if (session.clients[i].id == client) {
-   return i;
-  }
- }
- 
- return INVALIDCLIENT;
 }
 
 int handleinput() {
@@ -142,6 +132,14 @@ void handlegameclient(refer_t client) {
  
  client = getgameclient(client);
  
+ if (awaited()) {
+  if (session.ticks % 5 == 0) {
+   pushjoin(session.clients[client].name);
+  }
+  
+  return;
+ }
+ 
  commands = handleinput();
  
  if (client != INVALIDCLIENT) {
@@ -174,9 +172,82 @@ void handlehost() {
 }
 
 refer_t getboundclient(int bind) {
- return 0;
+ int i;
+ 
+ if (bind == INVALIDCLIENT) {
+  return INVALIDCLIENT;
+ }
+ 
+ if (bind == LOCALCLIENT) {
+  return getgameclient(session.self);
+ }
+ 
+ for (i = 0; i < MAX_GAMECLIENTS; i++) {
+  if (session.clients[i].bind == bind) {
+   return session.clients[i].id;
+  }
+ }
+ 
+ return INVALIDCLIENT;
 }
 
+int getgameclient(refer_t client) {
+ int i;
+ 
+ if (client == INVALIDCLIENT) {
+  return INVALIDCLIENT;
+ }
+ 
+ if (client == LOCALCLIENT) {
+  return getgameclient(session.self);
+ }
+ 
+ for (i = 0; i < MAX_GAMECLIENTS; i++) {
+  if (session.clients[i].id == client) {
+   return i;
+  }
+ }
+ 
+ return INVALIDCLIENT;
+}
+
+refer_t getgamepliant(refer_t client) {
+ int i;
+  
+  if (client == INVALIDCLIENT) {
+   return NOUNIT;
+  }
+  
+  if (client == LOCALCLIENT) {
+   return getgameclient(session.self);
+  }
+  
+  for (i = 0; i < MAX_GAMECLIENTS; i++) {
+   if (session.clients[i].id == client) {
+    return session.clients[i].entity;
+   }
+  }
+  
+  return NOUNIT;
+}
+
+refer_t getnamedclient(const char* name) {
+ int i;
+ 
+ if (!name) {
+  return INVALIDCLIENT;
+ }
+ 
+ for (i = 0; i < MAX_GAMECLIENTS; i++) {
+  if (strcmp(session.clients[i].name, name) == 0) {
+   return session.clients[i].id;
+  }
+ }
+ 
+ return INVALIDCLIENT;
+}
+
+// setgameclient
 void setgameplayer(refer_t client, int player, int level) {
 // session.clients[client].level = level;
 // session.clients[client].entity = spawn("pliant.Player");

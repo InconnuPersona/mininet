@@ -190,9 +190,8 @@ void postmessages(packet_t* packet, IPaddress address) {
  postmessages_send:
   packheader(NETMSG_MESSAGES, packet->flags, bufferlength + messagebufferlength + sizeof(messagesheader_t));
   
-  data.integers[0] = packet->session;
-  data.integers[1] = bufferlength;
-  data.integers[2] = index;
+  data.integers[0] = bufferlength;
+  data.integers[1] = index;
   
   data.pointer += sizeof(messagesheader_t);
   
@@ -214,7 +213,7 @@ void postmessages(packet_t* packet, IPaddress address) {
    data.pointer += packet->messages[sent + i].length;
   }
   
-  LOGREPORT("sent %i message(s) with %i bytes.", index, bufferlength);
+  LOGDEBUG("sent %i message(s) with %i bytes.", index, bufferlength);
   
   sendpacket(address);
   
@@ -228,9 +227,7 @@ void postmessages(packet_t* packet, IPaddress address) {
 void printhostreserve() {
  int i;
  
- LOGREPORT("host reserve;");
- 
- printf(" used:");
+ printf("host reserve;\n used:");
  
  for (i = 0; i < MAX_POOLSECTIONS; i++) {
   printf(" %02x", host.used[i]);
@@ -277,7 +274,7 @@ void printmessages(packet_t* packet) {
  LOGREPORT("packet content;");
  
  printf(" type: %i; flags: %x; sequence: %i; sender: %x; length: %i;\n", packet->type, packet->flags, packet->sequence, packet->sender, packet->length);
- printf(" session: %x; bufferlength: %i; messagecount: %i;\n", packet->session, packet->bufferlength, packet->messagecount);
+ printf(" bufferlength: %i; messagecount: %i;\n", packet->bufferlength, packet->messagecount);
  
  for (i = 0; i < packet->messagecount; i++) {
   printf(" message [length: %i, data:", packet->messages[i].length);
@@ -531,9 +528,8 @@ void unpackmessages(packet_t* packet) {
  
  abstract.pointer = transmission->data + HEADERLENGTH;
  
- packet->session = abstract.integers[0];
- packet->bufferlength = abstract.integers[1];
- packet->messagecount = abstract.integers[2];
+ packet->bufferlength = abstract.integers[0];
+ packet->messagecount = abstract.integers[1];
  
  abstract.pointer += sizeof(messagesheader_t);
  

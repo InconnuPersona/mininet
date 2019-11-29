@@ -54,7 +54,7 @@ typedef struct {
  short length;
  short type;
  int sender;
- byte_t data[];
+ byte_t data[MAX_GAMESENDLENGTH];
 } gamesend_t;
 
 typedef struct {
@@ -71,13 +71,21 @@ typedef struct {
 
 extern game_t session;
 
+int awaited();
 void bindgamelevel(int level);
+
+void closesession();
 
 refer_t getboundclient(int bind);
 int getgameclient(refer_t client);
+refer_t getgamepliant(refer_t client);
+refer_t getnamedclient(const char* name);
 void kickgameclient(refer_t client);
 int putgameclient(const char* name, int bind);
 void spawngameclient(refer_t client, int level);
+
+void pushgamesend(int type, void* data, int length, refer_t client);
+void pushjoin(const char* name);
 
 void handlehost();
 void updatehost();

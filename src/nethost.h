@@ -4,13 +4,13 @@
 
 #include <SDL2/SDL_net.h>
 
+#define BROADCASTCLIENT 0
 #define MAX_PACKETLENGTH 1024
 #define MAX_POOLLENGTH (1024 * 10)
 #define MAX_POOLSECTIONS (MAX_POOLLENGTH / SECTIONANGTH)
 #define MAX_POOLWIDTH (MAX_POOLSECTIONS / BYTEWIDTH)
 #define MESSAGEWIDTH (sizeof(message_t) - sizeof(int))
 
-#define BROADCASTCLIENT 0
 #define CHECKUP 5
 #define SECTIONANGTH (sizeof(int) * 2)
 #define TIMEOUT 30 // if no responses are received in this amount of seconds, a client is dropped
