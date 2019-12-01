@@ -1,7 +1,17 @@
 #include "main.h"
 #include "levelaid.h"
 
+#define LOCALANGTH 1
+
+void printgamesend(gamesend_t* send);
+
 extern unitword_t unitwords[];
+
+// all necessary client information is sent
+typedef struct {
+ int checksum;
+ int count;
+} clientsend_t;
 
 typedef struct {
  int data[4];
@@ -9,10 +19,9 @@ typedef struct {
 } tellsend_t;
 
 typedef struct {
- int level;
- int x, y;
- tile_t tiles[CHUNKANGTH * CHUNKANGTH];
-} chunksend_t;
+ refer_t id;
+ char word[32];
+} unitwordsend_t;
 
 typedef struct {
  int level;
@@ -20,7 +29,50 @@ typedef struct {
  unit_u unit;
 } unitsend_t;
 
+void readchunksend(gamesend_t* sent) {
+ chunk_t* chunk;
+ 
+ if (!sent) {
+  LOGREPORT("received invalid chunk send.");
+  return;
+ }
+ 
+ chunk = (chunk_t*) sent->data;
+ 
+ setchunk(chunk, &session.levels[chunk->level]);
+ 
+ LOGREPORT("set chunk [%i, %i] in level %i.", chunk->x, chunk->y, chunk->level);
+ 
+ return;
+}
+
+void readunitsend(gamesend_t* sent) {
+ 
+}
+
+void readunitwordsend(gamesend_t* sent) {
+ unitwordsend_t* word;
+ 
+ if (!sent) {
+  LOGREPORT("received invalid unit word send.");
+  return;
+ }
+ 
+ word = (unitwordsend_t*) sent->data;
+ 
+ bindunitword(word->word, word->id);
+ 
+ return;
+}
+
 void sendblin() {
+ tellsend_t tell;
+ 
+ strcpy(tell.name, "hello blin");
+ 
+ pushgamesend(MSG_NONE, &tell, sizeof(tellsend_t), 0);
+ 
+ return;
 }
 
 void printgamesend(gamesend_t* send) {
@@ -53,12 +105,78 @@ void printgamesend(gamesend_t* send) {
  return;
 }
 
-void pushgamedata() {
+void pushchunk(int level, int x, int y, refer_t bind) {
+ chunk_t chunk;
+ 
+ if (level < 0 || level >= MAX_LEVELS) {
+  LOGREPORT("attempted to bind invalid game level [%i].", level);
+  return;
+ }
+ 
+ if (!readchunk(x, y, &chunk, &session.levels[level])) {
+  LOGREPORT("unable to push chunk [%i, %i] in level %i.", x, y, level);
+  return;
+ }
+ 
+ chunk.level = level;
+ 
+ pushgamesend(MSG_POSTCHUNK, &chunk, sizeof(chunk_t), bind);
+ 
+ LOGREPORT("pushed chunk [%i, %i] in level %i.", x, y, level);
+ 
+ return;
 }
 
-void pushchunk(int level, int x, int y) {
- // pushing a chunk automatically pushes its units
+void pushclients(refer_t bind) {
 }
+
+void pushdeltachunks(refer_t client) {
+}
+
+void pushlocalchunks(refer_t client) {
+ pliant_t* pliant;
+ int level, x, y;
+ aabb_t bound;
+ 
+ client = getgameclient(client);
+ 
+ if (client == INVALIDCLIENT) {
+  LOGREPORT("attempted to push local chunks to invalid client.");
+  return;
+ }
+ 
+ level = session.clients[client].level;
+ 
+ bindgamelevel(level);
+ 
+ pliant = &getunit(session.clients[client].entity)->pliant;
+ 
+ if (!pliant) {
+  LOGREPORT("unable to push local chunks to unspawned client.");
+  return;
+ }
+ 
+ x = (pliant->x >> 4) / CHUNKANGTH;
+ y = (pliant->y >> 4) / CHUNKANGTH;
+ 
+ boundbox(&bound, x - LOCALANGTH, y - LOCALANGTH, x + LOCALANGTH, y + LOCALANGTH);
+ 
+ ensuredomain(&bound);
+ 
+ for (x = bound.x0; x < bound.x1; x++) {
+  for (y = bound.y0; y < bound.y1; y++) {
+   pushchunk(level, x, y, session.clients[client].bind);
+  }
+ }
+ 
+ // push units
+ 
+ bindlevel(NULL);
+ 
+ return;
+}
+
+#define GAMESENDHEADERWIDTH sizeof(int) * 2
 
 // TODO: implement broadcasts (use -2 or BROADCAST as the value)
 void pushgamesend(int type, void* data, int length, refer_t bind) {
@@ -86,11 +204,11 @@ void pushgamesend(int type, void* data, int length, refer_t bind) {
  
  send.type = type;
  
- memcpy(send.data, data, length);
+ memcpy(send.data, data, GAMESENDHEADERWIDTH + length);
  
- //printgamesend(&send);
+ INDEBUG(printgamesend(&send));
  
- directmessage(&message, &send, sizeof(gamesend_t));
+ directmessage(&message, &send, length);
  
  if (session.type == GAME_CLIENT) {
   appendmessage(&message, 1);
@@ -120,6 +238,8 @@ void pushjoin(const char* name) {
  memcpy(send.name, name, MAX_NAMELENGTH);
  
  pushgamesend(MSG_ADDCLIENT, &send, sizeof(tellsend_t), 0);
+ 
+ return;
 }
 
 void pushtell(int type, refer_t id, refer_t bind) {
@@ -131,7 +251,26 @@ void pushtell(int type, refer_t id, refer_t bind) {
  pushgamesend(MSG_ADDCLIENT, &send, sizeof(tellsend_t), bind);
 }
 
-void pushunit(int level, refer_t id, refer_t bind) {
+void pushunit(int level, refer_t id, refer_t client) {
+}
+
+void pushunitwords(refer_t bind) {
+ unitwordsend_t word;
+ int i;
+ 
+ for (i = 0; i < MAX_UNITWORDS; i++) {
+  if (unitwords[i].id && unitwords[i].word) {
+   word.id = unitwords[i].id;
+   
+   strncpy(word.word, unitwords[i].word, 32);
+   
+   LOGDEBUG("redefining '%s' [%x].", word.word, word.id);
+   
+   pushgamesend(MSG_POSTUNITWORD, &word, sizeof(unitwordsend_t), bind);
+  }
+ }
+ 
+ return;
 }
 
 void handleclientsend(gamesend_t* sent, refer_t sender) {
@@ -144,7 +283,7 @@ void handleclientsend(gamesend_t* sent, refer_t sender) {
   return;
  }
  
- //printgamesend(sent);
+ INDEBUG(printgamesend(sent));
  
  told = (tellsend_t*) sent->data;
  
@@ -179,7 +318,9 @@ void handleclientsend(gamesend_t* sent, refer_t sender) {
   
   LOGREPORT("accepted client '%s' to id [%x] under bind [%x].", told->name, id, sender);
   
-  // push local chunks
+  pushunitwords(sender);
+  
+  pushlocalchunks(id);
   
   break;
   
@@ -193,7 +334,7 @@ void handlehostsend(gamesend_t* sent, refer_t sender) {
  tellsend_t* told;
  int id;
  
- //printgamesend(sent);
+ INDEBUG(printgamesend(sent));
  
  told = (tellsend_t*) sent->data;
  
@@ -233,6 +374,36 @@ void handlehostsend(gamesend_t* sent, refer_t sender) {
    
    LOGREPORT("client connection accepted under client ID [%x] to host session [%x]; game client assigned unit id [%x] in level %i.", session.self, session.id, told->data[3], told->data[2]);
   }
+  
+  break;
+  
+ case MSG_POSTCHUNK:
+  if (sent->sender != session.id) {
+   LOGREPORT("received chunk send from unknown host session [%x].", sent->sender);
+   return;
+  }
+  
+  readchunksend(sent);
+  
+  break;
+  
+ case MSG_POSTUNIT:
+  if (sent->sender != session.id) {
+   LOGREPORT("received unit send from unknown host session [%x].", sent->sender);
+   return;
+  }
+  
+  readunitsend(sent);
+  
+  break;
+  
+ case MSG_POSTUNITWORD:
+  if (sent->sender != session.id) {
+   LOGREPORT("received unit word send from unknown host session [%x].", sent->sender);
+   return;
+  }
+  
+  readunitwordsend(sent);
   
   break;
   

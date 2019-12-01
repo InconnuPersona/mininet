@@ -6,7 +6,7 @@
 // ==================================================
 // declarations
 
-unitword_t unitwords[MAX_UNITWORDS];
+unitword_t unitwords[MAX_UNITWORDS] = { 0 };
 
 // ==================================================
 // externals
@@ -28,7 +28,7 @@ void bindunitword(const char* word, refer_t id) {
   if (unitwords[i].word && !strcmp(unitwords[i].word, word)) {
    unitwords[i].id = id;
    
-   LOGREPORT("redefined unitword '%s' [%x].", unitwords->word, id);
+   LOGREPORT("redefined unitword '%s' [%x].", unitwords[i].word, id);
    return;
   }
  }

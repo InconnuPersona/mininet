@@ -42,11 +42,13 @@ void tick() {
  }
  else {
   tickkeys();
-  
-  if (session.open) {
-   tickgame();
-  }
-  
+ }
+ 
+ if (session.open) {
+  tickgame();
+ }
+ 
+ if (hasfocus()) {
   tickmenu();
  }
  

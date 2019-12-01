@@ -8,7 +8,6 @@
 #define MAX_MESSAGES 64
 #define NETWORKRATE 20
 
-// TODO: add packet game marker
 #define PACKETHEADER \
  int type; \
  int flags; \

@@ -297,7 +297,6 @@ void startsession(gametype_e type, char* name, char* address, int port) {
   chainlevels(0);
   
   session.id = 0;
-  
   session.self = putgameclient(name, LOCALCLIENT);
   
   break;

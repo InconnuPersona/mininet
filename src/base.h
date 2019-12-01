@@ -21,6 +21,11 @@
   Value = Maximum; \
  }
 
+#define INDEBUG(...) \
+ if (debug) { \
+  __VA_ARGS__; \
+ };
+
 #define SIGNED(Type) ((Type) -1 < (Type) 0)
 
 #define SIGNEDEXTENT(Type) (Type) (((unsigned Type) ~(unsigned Type) 0) >> 1)
@@ -32,10 +37,7 @@
 #define LOGREPORT(...) \
  { printf("%s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n"); }
 
-#define LOGDEBUG(...) \
- if (debug) { \
-  LOGREPORT(__VA_ARGS__); \
- }
+#define LOGDEBUG(...) INDEBUG(LOGREPORT(__VA_ARGS__))
 
 #define MILLISECONDS(Time) (int) ((Time) * 1000)
 

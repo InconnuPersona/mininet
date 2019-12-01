@@ -46,6 +46,7 @@ int intersect(int unit, aabb_t bb, level_t* level);
 int readchunk(int x, int y, chunk_t* chunk, level_t* level);
 void removetileunit(refer_t unit, int x, int y, level_t* level);
 int seekunit(refer_t id, level_t* level);
+void setchunk(chunk_t* chunk, level_t* level);
 void sortandrender(refer_t* units, int count, level_t* level, screen_t* screen);
 void spawnfiends(int count, level_t* level);
 int spritesort(const void* v1, const void* v2);

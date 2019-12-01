@@ -186,6 +186,35 @@ int seekunit(refer_t id, level_t* level) {
  return INVALIDUNIT;
 }
 
+// Updates chunk tiles to received chunk data.
+void setchunk(chunk_t* chunk, level_t* level) {
+ int xt, yt;
+ 
+ CHECKLEVEL(level, return);
+ CHECKTILEBOUNDS(chunk->x * CHUNKANGTH, chunk->y * CHUNKANGTH, level, return);
+ 
+ if (!chunk) {
+  LOGREPORT("received invalid chunk.");
+  return;
+ }
+ 
+ for (yt = 0; yt < CHUNKANGTH; yt++) {
+  if (yt < 0 || yt >= level->h) {
+   continue;
+  }
+  
+  for (xt = 0; xt < CHUNKANGTH; xt++) {
+   if (xt < 0 || xt >= level->w) {
+	continue;
+   }
+   
+   memcpy(&level->tiles[xt + chunk->x * CHUNKANGTH + (yt + chunk->y * CHUNKANGTH) * level->w], &chunk->tiles[xt + yt * CHUNKANGTH], sizeof(tile_t));
+  }
+ }
+ 
+ return;
+}
+
 // Sorts through the tile units and renders them on the screen according to position.
 void sortandrender(refer_t* units, int count, level_t* level, screen_t* screen) {
  int i;

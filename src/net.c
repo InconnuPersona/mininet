@@ -4,6 +4,9 @@
 #define MESSAGESOFFSET (transmission->data + HEADERLENGTH + sizeof(messagesheader_t))
 
 // ==================================================
+// structures
+
+// ==================================================
 // declarations
 
 UDPpacket* transmission = NULL;
@@ -128,17 +131,17 @@ void openhost(int port) {
 }
 
 void packheader(int type, int flags, int length) {
- abstract_u abstract;
+ packetheader_t* header;
  
  CHECKNETWORKHOST(return);
  
- abstract.pointer = transmission->data;
+ header = (packetheader_t*) transmission->data;
  
- abstract.integers[0] = type;
- abstract.integers[1] = flags;
- abstract.integers[2] = 0;
- abstract.integers[3] = host.id;
- abstract.integers[4] = transmission->len = HEADERLENGTH + length;
+ header->type = type;
+ header->flags = flags;
+ header->sequence = 0;
+ header->sender = host.id;
+ header->length = transmission->len = HEADERLENGTH + length;
  
  return;
 }
@@ -170,7 +173,7 @@ void postmessages(packet_t* packet, IPaddress address) {
   while (sent + index < packet->messagecount) {
    length += MESSAGEWIDTH + packet->messages[sent + index].length;
    
-   if (length > MAX_PACKETLENGTH) {
+   if (length > MAX_PACKETLENGTH - HEADERLENGTH) {
 //	TODO: check if message buffer length exceeds host reserves.
 //	if (length - MAX_PACKETLENGTH > 2 * MAX_PACKETLENGTH) {
 //	 LOGREPORT("received intransmittable message.");
@@ -239,7 +242,13 @@ void printhostreserve() {
   printf(" %02x", host.reserve[i]);
  }
  
- printf("\n string: '%s'\n", host.reserve);
+ printf("\n string: '");
+ 
+ for (i = 0; i < MAX_POOLLENGTH; i++) {
+  printf("%c", host.reserve[i]);
+ }
+ 
+ printf("'\n");
  
  return;
 }
@@ -260,7 +269,13 @@ void printmessagecontent(message_t* message) {
   printf(" %02x", host.reserve[message->data.integer + i]);
  }
  
- printf("\n string: %s\n", &host.reserve[message->data.integer]);
+ printf("\n string: '");
+ 
+ for (i = 0; i < message->stored; i++) {
+  printf("%c", host.reserve[message->data.integer + i]);
+ }
+ 
+ printf("'\n");
 }
 
 void printmessages(packet_t* packet) {
@@ -283,7 +298,13 @@ void printmessages(packet_t* packet) {
    printf(" %02x", packet->messages[i].data.bytes[j]);
   }
   
-  printf(" or '%s']\n", packet->messages[i].data.string);
+  printf(" or '");
+  
+  for (j = 0; j < packet->messages[i].length; j++) {
+   printf("%c", packet->messages[i].data.bytes[j]);
+  }
+  
+  printf("']\n");
  }
  
  return;
@@ -313,7 +334,15 @@ void printpacketcontent() {
   printf(" %i", transmission->data[i * sizeof(int)]);
  }
  
- printf("\n string: %s\n", transmission->data);
+ printf("\n string: '");
+ 
+ for (i = 0; i < transmission->len; i++) {
+  printf("%c", transmission->data[i]);
+ }
+ 
+ printf("'\n");
+ 
+ return;
 }
 
 int pullbytes(byte_t* bytes, int count, message_t* message) {
@@ -460,7 +489,7 @@ void sendpacket(IPaddress address) {
  }
  
  if (transmission->len > transmission->maxlen) {
-  LOGREPORT("attempted to send an oversized packet.");
+  LOGREPORT("attempted to send an oversized packet of %i bytes.", transmission->len);
   return;
  }
  
@@ -501,17 +530,17 @@ void shakehands(IPaddress address, int type, int extra) {
 // preferred to retain this header across versions, since it must match the packheader
 // call.
 void unpackheader(packet_t* packet) {
- abstract_u abstract;
+ packetheader_t* header;
  
  CHECKNETWORKHOST(return);
  
- abstract.pointer = transmission->data;
+ header = (packetheader_t*) transmission->data;
  
- packet->type = abstract.integers[0];
- packet->flags = abstract.integers[1];
- packet->sequence = abstract.integers[2];
- packet->sender = abstract.integers[3];
- packet->length = abstract.integers[4] - HEADERLENGTH;
+ packet->type = header->type;
+ packet->flags = header->flags;
+ packet->sequence = header->sequence;
+ packet->sender = header->sender;
+ packet->length = header->length - HEADERLENGTH;
  
  return;
 }
