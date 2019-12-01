@@ -43,6 +43,7 @@ int emptyunit(level_t* level);
 void generate(level_t* level);
 void inserttileunit(refer_t unit, int x, int y, level_t* level);
 int intersect(int unit, aabb_t bb, level_t* level);
+int isdirtychunk(int x, int y, level_t* level);
 int readchunk(int x, int y, chunk_t* chunk, level_t* level);
 void removetileunit(refer_t unit, int x, int y, level_t* level);
 int seekunit(refer_t id, level_t* level);

@@ -16,17 +16,11 @@ function Player:buoyant()
 end
 
 function Player:findspawn()
- while true do
-  x = game.random(level.width())
-  y = game.random(level.height())
-  
-  if level.gettile(x, y) == tile.id("grass") then
-   unit.x(self, x * 16 + 8)
-   unit.y(self, y * 16 + 8)
-   
-   return true
-  end
- end
+ 
+ unit.x(self, 1024)
+ unit.y(self, 1024)
+ 
+ return true
 end
 
 function Player:render()

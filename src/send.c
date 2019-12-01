@@ -46,6 +46,40 @@ void readchunksend(gamesend_t* sent) {
  return;
 }
 
+void readcommandsend(gamesend_t* sent) {
+ unit_u* player;
+ refer_t client;
+ int* commands;
+ 
+ if (!sent) {
+  LOGREPORT("received invalid command send.");
+  return;
+ }
+ 
+ commands = (int*) sent->data;
+ 
+ client = getgameclient(sent->sender);
+ 
+ if (client == INVALIDCLIENT) {
+  LOGREPORT("unable to update unset client [%x] commands.", sent->sender);
+  return;
+ }
+ 
+ bindgamelevel(session.clients[client].level);
+ 
+ player = getunit(session.clients[client].entity);
+ 
+ if (!player) {
+  return;
+ }
+ 
+ player->pliant.commands = *commands;
+ 
+ LOGDEBUG("set client [%x] commands to '%x'.", session.clients[client].id, *commands);
+ 
+ return;
+}
+
 // TODO: implement removal of units clientside
 void readunitsend(gamesend_t* sent) {
  unitsend_t* unitsend;
@@ -130,7 +164,7 @@ void printgamesend(gamesend_t* send) {
  return;
 }
 
-void pushchunk(int level, int x, int y, refer_t bind) {
+void pushchunk(int x, int y, int level, refer_t bind) {
  chunk_t chunk;
  
  if (level < 0 || level >= MAX_LEVELS) {
@@ -186,7 +220,75 @@ void pushunit(int level, refer_t id, refer_t bind) {
 void pushclients(refer_t bind) {
 }
 
+void pushcommands(int commands) {
+ int copy;
+ 
+ if (awaited()) {
+  return;
+ }
+ 
+ copy = commands;
+ 
+ pushgamesend(MSG_COMMAND, &copy, sizeof(int), 0);
+ 
+ LOGDEBUG("pushed commands [%x].", commands);
+ 
+ return;
+}
+
 void pushdeltachunks(refer_t client) {
+ pliant_t* pliant;
+ refer_t* units;
+ aabb_t aabb;
+ int level, i;
+ int x, y;
+ 
+ client = getgameclient(client);
+ 
+ if (client == INVALIDCLIENT) {
+  LOGREPORT("attempted to push local chunks to invalid client.");
+  return;
+ }
+ 
+ level = session.clients[client].level;
+ 
+ bindgamelevel(level);
+ 
+ pliant = &getunit(session.clients[client].entity)->pliant;
+ 
+ if (!pliant) {
+  LOGREPORT("unable to push local chunks to unspawned client.");
+  return;
+ }
+ 
+ x = (pliant->x >> 4) / CHUNKANGTH;
+ y = (pliant->y >> 4) / CHUNKANGTH;
+ 
+ boundbox(&aabb, x - LOCALANGTH, y - LOCALANGTH, x + LOCALANGTH, y + LOCALANGTH);
+ 
+ ensuredomain(&aabb);
+ 
+ for (x = aabb.x0; x < aabb.x1; x++) {
+  for (y = aabb.y0; y < aabb.y1; y++) {
+   if (isdirtychunk(x, y, &session.levels[level])) {
+    pushchunk(x, y, level, session.clients[client].bind);
+   }
+  }
+ }
+ 
+ boundbox(&aabb, (aabb.x0 * CHUNKANGTH) << 4, (aabb.y0 * CHUNKANGTH) << 4, (aabb.x1 * CHUNKANGTH) << 4, (aabb.y1 * CHUNKANGTH) << 4);
+ 
+ units = getunits(aabb);
+ 
+ if (units) {
+  for (i = 0; i < MAX_SAMPLES && units[i] != NOUNIT; i++) {
+   pushunit(level, units[i], session.clients[client].bind);
+  }
+ }
+ 
+ bindlevel(NULL);
+ 
+ return;
 }
 
 void pushlocalchunks(refer_t client) {
@@ -223,7 +325,7 @@ void pushlocalchunks(refer_t client) {
  
  for (x = aabb.x0; x < aabb.x1; x++) {
   for (y = aabb.y0; y < aabb.y1; y++) {
-   pushchunk(level, x, y, session.clients[client].bind);
+   pushchunk(x, y, level, session.clients[client].bind);
   }
  }
  
@@ -386,6 +488,11 @@ void handleclientsend(gamesend_t* sent, refer_t sender) {
   pushunitwords(sender);
   
   pushlocalchunks(id);
+  
+  break;
+  
+ case MSG_COMMAND:
+  readcommandsend(sent);
   
   break;
   

@@ -85,6 +85,8 @@ void kickgameclient(refer_t client);
 int putgameclient(const char* name, int bind);
 void spawngameclient(refer_t client, int level);
 
+void pushcommands(int commands);
+void pushdeltachunks(refer_t client);
 void pushgamesend(int type, void* data, int length, refer_t client);
 void pushjoin(const char* name);
 

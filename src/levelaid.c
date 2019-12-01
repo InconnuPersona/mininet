@@ -37,6 +37,22 @@ void cleanlevel(level_t* level) {
  // TODO: implement level cleaning
 }
 
+int isdirtychunk(int x, int y, level_t* level) {
+ int byte, index;
+ 
+ CHECKLEVEL(level, return 0);
+ 
+ CHECKTILEBOUNDS(x, y, level, return 0);
+ 
+ index = x / CHUNKANGTH + y * level->w / (CHUNKANGTH * CHUNKANGTH);
+ 
+ byte = index / BYTEWIDTH;
+ byte = index - (byte * BYTEWIDTH);
+ byte = 1 << byte;
+ 
+ return level->dirties[index / BYTEWIDTH] & byte;
+}
+
 // Coordinates inputted are tile coordinates which are mapped to chunk coordinates.
 // When in a multiplayer game, dirty chunks are submitted to each player when in range
 // of the player entity alongside sounds and unit updates.
@@ -54,6 +70,8 @@ void dirtychunk(int x, int y, level_t* level) {
  byte = 1 << byte;
  
  level->dirties[index / BYTEWIDTH] |= byte;
+ 
+ return;
 }
 
 // Returns the first available index where a unit was successfully deallocated.

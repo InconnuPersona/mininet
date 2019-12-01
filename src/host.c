@@ -127,6 +127,7 @@ int handleinput() {
 
 // TODO: implement game client menus
 void handlegameclient(refer_t client) {
+ static int oldcommand = 0;
  unit_u* player;
  int commands;
  
@@ -157,10 +158,17 @@ void handlegameclient(refer_t client) {
  if (session.type == GAME_CLIENT) {
   //if (client not in menu) {
   // send client movements and actions
+   if (commands != oldcommand) {
+    pushcommands(commands);
+   }
   //}
  }
  
  bindlevel(NULL);
+ 
+ oldcommand = commands;
+ 
+ return;
 }
 
 void handlehost() {
@@ -254,7 +262,13 @@ void setgameplayer(refer_t client, int player, int level) {
 }
 
 void tickclients() {
+ int i;
  
+ for (i = 1; i < MAX_GAMECLIENTS; i++) {
+  if (session.clients[i].id) {
+   pushdeltachunks(session.clients[i].id);
+  }
+ }
 }
 
 void updatehost() {
@@ -267,5 +281,6 @@ void updatehost() {
  }
  else if (session.type == GAME_HOST) {
   // update level local chunks and units to clients
+  tickclients();
  }
 }
