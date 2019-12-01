@@ -188,6 +188,7 @@ unit_u* getunit(refer_t id) {
 refer_t* getunits(aabb_t aabb) {
  int xt0, yt0, xt1, yt1;
  int i, j, x, y;
+ int unit;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
  
@@ -203,8 +204,10 @@ refer_t* getunits(aabb_t aabb) {
    CHECKTILEBOUNDS(x, y, level, continue);
    
    for (i = 0; i < MAX_TILEUNITS; i++) {
-	if (intersect(GETTILEUNIT(x, y, i, level), aabb, level)) {
-	 samples[j] = GETTILEUNIT(x, y, i, level);
+	unit = GETTILEUNIT(i, x, y, level);
+	
+	if (unit != NOUNIT && getunit(unit)) {
+	 samples[j] = unit;
 	 j++;
 	}
    }
@@ -252,6 +255,46 @@ refer_t initiate(const char* word, int x, int y) {
  LOGREPORT("spawned unit '%s' with id '%x' at [%i, %i].", word, GETUNIT(unit, level).id, GETUNIT(unit, level).x, GETUNIT(unit, level).y);
  
  return GETUNIT(unit, level).id;
+}
+
+refer_t place(unit_u* unit) {
+ unit_u* held;
+ int slot;
+ 
+ CHECKLEVEL(level, exit(EXIT_FAILURE));
+ 
+ if (!unit) {
+  LOGREPORT("received invalid unit.");
+  return NOUNIT;
+ }
+ 
+ held = getunit(unit->base.id);
+ 
+ if (!held) {
+  slot = emptyunit(level);
+  
+  if (slot == INVALIDUNIT) {
+   LOGREPORT("unable to find free slot for unit [%x].", unit->base.id);
+   return NOUNIT;
+  }
+  
+  held = (unit_u*) &GETUNIT(slot, level);
+  
+  if (!held) {
+   LOGREPORT("unable to place unit [%x].", unit->base.id);
+   return NOUNIT;
+  }
+ }
+ 
+ removetileunit(held->base.id, held->base.x >> 4, held->base.y >> 4, level);
+ 
+ memcpy(held, unit, sizeof(unit_u));
+ 
+ inserttileunit(held->base.id, held->base.x >> 4, held->base.y >> 4, level);
+ 
+ LOGREPORT("placed unit [%x] at [%i, %i].", held->base.id, held->base.x, held->base.y);
+ 
+ return held->base.id;
 }
 
 // The function must handle instances of duplicate ids in the target level, therefore it shall change
@@ -388,6 +431,8 @@ refer_t* seekunits(const char* word, aabb_t aabb) {
  
  for (y = aabb.y0; y <= aabb.y1; y++) {
   for (x = aabb.x0; x <= aabb.x1; x++) {
+   CHECKTILEBOUNDS(x, y, level, continue);
+   
    for (i = 0; i < MAX_TILEUNITS; i++) {
 	tileunit = GETTILEUNIT(i, x, y, level);
 	

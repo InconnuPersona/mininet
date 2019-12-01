@@ -246,8 +246,8 @@ void dumpluastack(lua_State* L) {
  }
 }
 
-int getinternal(const char* internal, const char* table, lua_State* L) {
- int value = 0;
+long getinternal(const char* internal, const char* table, lua_State* L) {
+ long value = 0;
  
  lua_getglobal(L, table);
  
@@ -261,7 +261,7 @@ int getinternal(const char* internal, const char* table, lua_State* L) {
    value = lua_tonumber(L, -1);
   }
   else if (lua_isstring(L, -1)) {
-   value = (int) lua_tostring(L, -1);
+   value = (long) lua_tostring(L, -1);
   }
  }
  

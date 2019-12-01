@@ -25,10 +25,10 @@ typedef struct {
 
 typedef struct {
  int level;
- int id;
  unit_u unit;
 } unitsend_t;
 
+// TODO: make printchunk function
 void readchunksend(gamesend_t* sent) {
  chunk_t* chunk;
  
@@ -46,8 +46,33 @@ void readchunksend(gamesend_t* sent) {
  return;
 }
 
+// TODO: implement removal of units clientside
 void readunitsend(gamesend_t* sent) {
+ unitsend_t* unitsend;
+ refer_t id;
  
+ if (!sent) {
+  LOGREPORT("received invalid unit send.");
+  return;
+ }
+ 
+ unitsend = (unitsend_t*) sent->data;
+
+ if (unitsend->level < 0 || unitsend->level >= MAX_LEVELS) {
+  LOGREPORT("attempted to bind invalid game level [%i].", unitsend->level);
+  return;
+ }
+ 
+ bindgamelevel(unitsend->level);
+ 
+ id = place(&unitsend->unit);
+ 
+ if (id != unitsend->unit.base.id) {
+  LOGREPORT("unable to update unit [%x].", unitsend->unit.base.id);
+  return;
+ }
+ 
+ return;
 }
 
 void readunitwordsend(gamesend_t* sent) {
@@ -127,6 +152,37 @@ void pushchunk(int level, int x, int y, refer_t bind) {
  return;
 }
 
+void pushunit(int level, refer_t id, refer_t bind) {
+ unitsend_t send;
+ unit_u* unit;
+ 
+ if (level < 0 || level >= MAX_LEVELS) {
+  LOGREPORT("attempted to bind invalid game level [%i].", level);
+  return;
+ }
+ 
+ bindgamelevel(level);
+ 
+ unit = getunit(id);
+ 
+ if (!unit) {
+  LOGREPORT("unable to push unit [%x] in level %i.", id, level);
+  return;
+ }
+ 
+ send.level = level;
+ 
+ memcpy(&send.unit, unit, sizeof(unit_u));
+ 
+ pushgamesend(MSG_POSTUNIT, &send, sizeof(unitsend_t), bind);
+ 
+ LOGREPORT("pushed unit [%x] in level %i.", id, level);
+ 
+ bindlevel(NULL);
+ 
+ return;
+}
+
 void pushclients(refer_t bind) {
 }
 
@@ -135,8 +191,10 @@ void pushdeltachunks(refer_t client) {
 
 void pushlocalchunks(refer_t client) {
  pliant_t* pliant;
- int level, x, y;
- aabb_t bound;
+ refer_t* units;
+ aabb_t aabb;
+ int level, i;
+ int x, y;
  
  client = getgameclient(client);
  
@@ -159,17 +217,25 @@ void pushlocalchunks(refer_t client) {
  x = (pliant->x >> 4) / CHUNKANGTH;
  y = (pliant->y >> 4) / CHUNKANGTH;
  
- boundbox(&bound, x - LOCALANGTH, y - LOCALANGTH, x + LOCALANGTH, y + LOCALANGTH);
+ boundbox(&aabb, x - LOCALANGTH, y - LOCALANGTH, x + LOCALANGTH, y + LOCALANGTH);
  
- ensuredomain(&bound);
+ ensuredomain(&aabb);
  
- for (x = bound.x0; x < bound.x1; x++) {
-  for (y = bound.y0; y < bound.y1; y++) {
+ for (x = aabb.x0; x < aabb.x1; x++) {
+  for (y = aabb.y0; y < aabb.y1; y++) {
    pushchunk(level, x, y, session.clients[client].bind);
   }
  }
  
- // push units
+ boundbox(&aabb, (aabb.x0 * CHUNKANGTH) << 4, (aabb.y0 * CHUNKANGTH) << 4, (aabb.x1 * CHUNKANGTH) << 4, (aabb.y1 * CHUNKANGTH) << 4);
+ 
+ units = getunits(aabb);
+ 
+ if (units) {
+  for (i = 0; i < MAX_SAMPLES && units[i] != NOUNIT; i++) {
+   pushunit(level, units[i], session.clients[client].bind);
+  }
+ }
  
  bindlevel(NULL);
  
@@ -204,11 +270,11 @@ void pushgamesend(int type, void* data, int length, refer_t bind) {
  
  send.type = type;
  
- memcpy(send.data, data, GAMESENDHEADERWIDTH + length);
+ memcpy(send.data, data, length);
  
  INDEBUG(printgamesend(&send));
  
- directmessage(&message, &send, length);
+ directmessage(&message, &send, GAMESENDHEADERWIDTH + length);
  
  if (session.type == GAME_CLIENT) {
   appendmessage(&message, 1);
@@ -249,9 +315,8 @@ void pushtell(int type, refer_t id, refer_t bind) {
  send.data[1] = id;
  
  pushgamesend(MSG_ADDCLIENT, &send, sizeof(tellsend_t), bind);
-}
-
-void pushunit(int level, refer_t id, refer_t client) {
+ 
+ return;
 }
 
 void pushunitwords(refer_t bind) {

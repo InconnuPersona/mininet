@@ -228,7 +228,7 @@ void rendergame(screen_t* screen) {
  
  client = getgameclient(session.self);
  
- if (session.type == GAME_CLIENT || client == INVALIDCLIENT) {
+ if (client == INVALIDCLIENT) {
   renderdue(screen);
   return;
  }

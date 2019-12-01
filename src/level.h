@@ -47,5 +47,6 @@ refer_t createunitid();
 refer_t dropitem(refer_t item, int x, int y);
 void efface(refer_t unit);
 refer_t initiate(const char* word, int x, int y);
+refer_t place(unit_u* unit);
 refer_t relay(refer_t unit, level_t* other);
 refer_t spawn(const char* word);

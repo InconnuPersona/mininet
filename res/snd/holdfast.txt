@@ -1,0 +1,1 @@
+This file is here to ensure the sound folder is preserved. Seeing this should mean that the sound directory was properly copied.

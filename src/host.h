@@ -8,7 +8,7 @@
 #define GAMESMARKER 0x4d494e49 // mini in hexadecimal
 #define LEVELANGTH 128
 #define MAX_GAMECLIENTS 16
-#define MAX_GAMESENDLENGTH 128
+#define MAX_GAMESENDLENGTH 256
 #define MAX_LEVELS 5
 #define MAX_NAMELENGTH 16
 #define LOCALCLIENT 0
@@ -20,7 +20,7 @@
 //} command_e;
 
 typedef enum {
- MSG_NONE,
+ MSG_NONE = 0,
  
  // host messages
  MSG_ADDCLIENT,
