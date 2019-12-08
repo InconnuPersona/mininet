@@ -5,7 +5,7 @@ The repository does not include the assets of minicraft, but they may be easily 
  res - icons.png
  res/snd - .wav files
 
-## differences from origin:
+## Differences from origin:
 
 The code is in C and lua, which use SDL2 to aid platform rendering, sound, and network. The development began in summer of 2019, and was based off another project, [castle]() or [ai]() (Annexatio Imperii), which are both private repositories at the time.
 
@@ -15,7 +15,7 @@ All unit, tile, and menu scripts are modifiable, but editing them decreases the 
 
 Although the crossplatform ability of the program is hindered by specific errors, the code is made to be cross platform as possible.
 
-## dependency:
+## Dependency:
 - [lua](https://www.lua.org/) 5.2 or later supporting b32; the minimum version may change in the future.
 - [SDL2](https://www.libsdl.org/download-2.0.php)
 - [SDL2_image](https://www.libsdl.org/projects/SDL_image/)
