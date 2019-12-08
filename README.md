@@ -2,8 +2,8 @@
 A C networked port of minicraft by Markus "Notch" Persson; lua scripting is used for entity, item, menu, and tile code to ease content creation.
 
 The repository does not include the assets of minicraft, but they may be easily taken from their source and inserted. When put in, they should correspond to the folders:
- res - icons.png
- res/snd - .wav files
+- res - icons.png
+- res/snd - .wav files
 
 ## Differences from origin:
 
