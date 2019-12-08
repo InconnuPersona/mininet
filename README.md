@@ -16,11 +16,10 @@ All unit, tile, and menu scripts are modifiable, but editing them decreases the 
 Although the crossplatform ability of the program is hindered by specific errors, the code is made to be cross platform as possible.
 
 ## dependency:
-
-### [lua](https://www.lua.org/) 5.2 or later supporting b32; the minimum version may change in the future.
-### [SDL2](https://www.libsdl.org/download-2.0.php)
-### [SDL2_image](https://www.libsdl.org/projects/SDL_image/)
-### [SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/)
-### [SDL2_net](https://www.libsdl.org/projects/SDL_net/)
+- [lua](https://www.lua.org/) 5.2 or later supporting b32; the minimum version may change in the future.
+- [SDL2](https://www.libsdl.org/download-2.0.php)
+- [SDL2_image](https://www.libsdl.org/projects/SDL_image/)
+- [SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/)
+- [SDL2_net](https://www.libsdl.org/projects/SDL_net/)
 
 Haven fun.
