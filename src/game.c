@@ -2,7 +2,7 @@
 
 extern void handleclientsend(gamesend_t* sent, refer_t sender);
 extern void handlehostsend(gamesend_t* sent, refer_t sender);
- 
+
 void assortlevels() {
  aabb_t aabb;
  level_t* level;
@@ -19,7 +19,11 @@ void assortlevels() {
  }
  
  if (session.type == GAME_CLIENT) {
-  // TODO: tick player level
+  bindgamelevel(session.clients[LOCALCLIENT].level);
+  
+  boundunit(session.clients[LOCALCLIENT].entity, CLIENTANGTH, &aabb);
+  
+  tickunits(aabb);
  }
  else {
   for (i = 0; i < MAX_LEVELS; i++) {
@@ -42,6 +46,8 @@ void assortlevels() {
    }
   }
  }
+ 
+ bindlevel(NULL);
  
  return;
 }

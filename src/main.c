@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include <math.h>
 #include <time.h>
 
 #include <SDL2/SDL_image.h>
@@ -257,6 +258,10 @@ void binddomain(aabb_t* aabb, float x0, float y0, float x1, float y1) {
  BOUNDVALUE(aabb->y1, y0, y1);
  
  return;
+}
+
+int onbounds(int x, int y, aabb_t* aabb) {
+ return (x == aabb->x0) || (x == aabb->x1) || (y == aabb->y0) || (y == aabb->y1);
 }
 
 void ensuredomain(aabb_t* aabb) {

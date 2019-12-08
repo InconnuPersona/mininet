@@ -1,6 +1,8 @@
 #include "host.h"
 #include "nethost.h"
 
+#include <math.h>
+
 // ==================================================
 // declarations
 
@@ -462,6 +464,8 @@ void updatequeues() {
  else {
   LOGREPORT("attempted to update unknown host state.");
  }
+ 
+ memset(host.used, 0, MAX_POOLWIDTH);
  
  return;
 }

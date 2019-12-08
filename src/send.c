@@ -41,7 +41,7 @@ void readchunksend(gamesend_t* sent) {
  
  setchunk(chunk, &session.levels[chunk->level]);
  
- LOGREPORT("set chunk [%i, %i] in level %i.", chunk->x, chunk->y, chunk->level);
+ LOGDEBUG("set chunk [%i, %i] in level %i.", chunk->x, chunk->y, chunk->level);
  
  return;
 }
@@ -181,7 +181,7 @@ void pushchunk(int x, int y, int level, refer_t bind) {
  
  pushgamesend(MSG_POSTCHUNK, &chunk, sizeof(chunk_t), bind);
  
- LOGREPORT("pushed chunk [%i, %i] in level %i.", x, y, level);
+ LOGDEBUG("pushed chunk [%i, %i] in level %i.", x, y, level);
  
  return;
 }
@@ -210,7 +210,7 @@ void pushunit(int level, refer_t id, refer_t bind) {
  
  pushgamesend(MSG_POSTUNIT, &send, sizeof(unitsend_t), bind);
  
- LOGREPORT("pushed unit [%x] in level %i.", id, level);
+ LOGDEBUG("pushed unit [%x] in level %i.", id, level);
  
  bindlevel(NULL);
  
@@ -270,7 +270,7 @@ void pushdeltachunks(refer_t client) {
  
  for (x = aabb.x0; x < aabb.x1; x++) {
   for (y = aabb.y0; y < aabb.y1; y++) {
-   if (isdirtychunk(x, y, &session.levels[level])) {
+   if (isdirtychunk(x, y, &session.levels[level]) || onbounds(x, y, &aabb)) {
     pushchunk(x, y, level, session.clients[client].bind);
    }
   }
@@ -342,6 +342,10 @@ void pushlocalchunks(refer_t client) {
  bindlevel(NULL);
  
  return;
+}
+
+void pushrequest() {
+ 
 }
 
 #define GAMESENDHEADERWIDTH sizeof(int) * 2

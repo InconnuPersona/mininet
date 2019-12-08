@@ -26,7 +26,7 @@ extern screen_t* le_screen;
 
 int hastilemethod(const char* method, refer_t tile) {
  if (!method || tile == NOTILE) {
-  LOGREPORT("received invalid arguments.");
+  LOGDEBUG("received invalid arguments.");
   return 0;
  }
  

@@ -193,8 +193,8 @@ refer_t* getunits(aabb_t aabb) {
  CHECKLEVEL(level, exit(EXIT_FAILURE));
  
  xt0 = (aabb.x0 >> 4) - 1;
- xt1 = (aabb.x1 >> 4) - 1;
- yt0 = (aabb.y0 >> 4) + 1;
+ yt0 = (aabb.y0 >> 4) - 1;
+ xt1 = (aabb.x1 >> 4) + 1;
  yt1 = (aabb.y1 >> 4) + 1;
  
  j = 0;
@@ -292,7 +292,7 @@ refer_t place(unit_u* unit) {
  
  inserttileunit(held->base.id, held->base.x >> 4, held->base.y >> 4, level);
  
- LOGREPORT("placed unit [%x] at [%i, %i].", held->base.id, held->base.x, held->base.y);
+ LOGDEBUG("placed unit [%x] at [%i, %i].", held->base.id, held->base.x, held->base.y);
  
  return held->base.id;
 }
@@ -502,6 +502,37 @@ refer_t spawn(const char* word) {
  return GETUNIT(unit, level).id;
 }
 
+// FIXME: fix code
+void boundunit(refer_t id, int angth, aabb_t* aabb) {
+ unit_t* unit;
+ int x, y;
+ 
+ CHECKLEVEL(level, exit(EXIT_FAILURE));
+ 
+ if (!id || angth < 0 || !aabb) {
+  LOGREPORT("received invalid arguments.");
+  return;
+ }
+ 
+ unit = &getunit(id)->base;
+ 
+ if (!unit) {
+  LOGREPORT("unable to bound unit [%x].", id);
+  return;
+ }
+ 
+ x = unit->x >> 4;
+ y = unit->y >> 4;
+ 
+ boundbox(aabb, x - angth, y - angth, x + angth, y + angth);
+ 
+ binddomain(aabb, 0, 0, level->w, level->h);
+ 
+ ensuredomain(aabb);
+ 
+ return;
+}
+
 void ticklevel() {
  unit_t* unit;
  int i, xt, yt, xto, yto;
@@ -515,7 +546,7 @@ void ticklevel() {
   xt = randominteger(level->w);
   yt = randominteger(level->h);
   
-  //ticktile(xt, yt);
+  ticktile(xt, yt);
  }
  
  for (i = 0; i < MAX_UNITS; i++) {
@@ -541,6 +572,42 @@ void ticklevel() {
    }
    
    dirtychunk(xto, yto, level);
+  }
+ }
+}
+
+void tickunits(aabb_t aabb) {
+ refer_t* units;
+ unit_t* unit;
+ int i, xt, yt, xto, yto;
+ 
+ CHECKLEVEL(level, exit(EXIT_FAILURE));
+ 
+ units = getunits(aabb);
+ 
+ for (i = 0; i < MAX_SAMPLES && units[i] != NOUNIT; i++) {
+  unit = &getunit(units[i])->base;
+  
+  if (!unit) {
+   continue;
+  }
+  
+  xto = unit->x >> 4;
+  yto = unit->y >> 4;
+  
+  if (GETUNIT(units[i], level).extant) {
+   tickunit(unit->id);
+   
+   xt = unit->x >> 4;
+   yt = unit->y >> 4;
+   
+   if (xto != xt || yto != yt) {
+	removetileunit(unit->id, xto, yto, level);
+	inserttileunit(unit->id, xt, yt, level);
+   }
+  }
+  else {
+   efface(unit->id);
   }
  }
 }

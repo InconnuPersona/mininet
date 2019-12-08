@@ -27,6 +27,7 @@ void bindlevel(level_t* level);
 void createlevel(int width, int height, int depth, level_t* parent);
 void emptylevel(int width, int height, int depth);
 void ticklevel();
+void tickunits(aabb_t aabb);
 
 void renderbackground(int xs, int ys, screen_t* screen);
 void renderlights(int xs, int ys, screen_t* screen);
@@ -50,3 +51,4 @@ refer_t initiate(const char* word, int x, int y);
 refer_t place(unit_u* unit);
 refer_t relay(refer_t unit, level_t* other);
 refer_t spawn(const char* word);
+void boundunit(refer_t unit, int angth, aabb_t* aabb);

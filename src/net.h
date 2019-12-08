@@ -85,11 +85,11 @@ void openhost(int port);
 void closehost();
 
 int countclients();
-void dropclient(int client, int reason);
-int hasclient(int client);
-int clientstate(int client);
+void dropclient(refer_t client, int reason);
+int hasclient(refer_t client);
+int clientstate(refer_t client);
 
-void appendclientmessage(message_t* message, int reliable, int client);
+void appendclientmessage(message_t* message, int reliable, refer_t client);
 void appendmessage(message_t* message, int reliable);
 
 void directmessage(message_t* message, void* data, int length);

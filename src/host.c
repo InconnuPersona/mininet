@@ -279,8 +279,7 @@ void updatehost() {
    // push client orders
   //}
  }
- else if (session.type == GAME_HOST) {
-  // update level local chunks and units to clients
+ else if (session.type == GAME_HOST && (session.ticks % 3 == 0)) {
   tickclients();
  }
 }

@@ -5,6 +5,7 @@
 #include "menu.h"
 #include "net.h"
 
+#define CLIENTANGTH 4
 #define GAMESMARKER 0x4d494e49 // mini in hexadecimal
 #define LEVELANGTH 128
 #define MAX_GAMECLIENTS 16
@@ -27,17 +28,17 @@ typedef enum {
  MSG_REMOVECLIENT,
  
  //MSG_GAMEDATA,
- //MSG_SYNCHRONIZE,
  //MSG_PLAYSOUND,
- MSG_POSTCLIENTS,
+ //MSG_POSTCLIENTS,
+ MSG_REQUEST,
  
  // ingame messages
  MSG_COMMAND,
  MSG_POSTCHUNK,
- MSG_POSTITEMWORD,
+ //MSG_POSTITEMWORD,
+ //MSG_POSTPILE,
+ MSG_POSTUNIT,
  MSG_POSTUNITWORD,
- MSG_POSTPILE,
- MSG_POSTUNIT
 } message_e;
 
 typedef struct {

@@ -109,4 +109,5 @@ double gaussian();
 void binddomain(aabb_t* aabb, float x0, float y0, float x1, float y1);
 void boundbox(aabb_t* aabb, float x0, float y0, float x1, float y1);
 void ensuredomain(aabb_t* aabb);
+int onbounds(int x, int y, aabb_t* aabb);
 char* reprintstring(const char* string);
