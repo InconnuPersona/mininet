@@ -21,7 +21,7 @@ void assortlevels() {
  if (session.type == GAME_CLIENT) {
   bindgamelevel(session.clients[LOCALCLIENT].level);
   
-  boundunit(session.clients[LOCALCLIENT].entity, CLIENTANGTH, &aabb);
+  boundunit(session.clients[LOCALCLIENT].entity, LOCALANGTH, &aabb);
   
   tickunits(aabb);
  }

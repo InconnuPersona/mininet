@@ -334,6 +334,18 @@ void renderbackground(int xs, int ys, screen_t* screen) {
   }
  }
  
+ for (y = yo; y <= h + yo; y++) {
+  for (x = xo; x <= w + xo; x++) {
+   if (x % CHUNKANGTH == 0 && y % CHUNKANGTH == 0) {
+	char chars[16];
+	
+	sprintf(chars, "%i,%i", x / CHUNKANGTH, y / CHUNKANGTH);
+	
+	renderfont(chars, x * 16, y * 16, getcolor(0, 555, 555, 555), screen);
+   }
+  }
+ }
+  
  offsetscreen(screen, 0, 0);
 }
 

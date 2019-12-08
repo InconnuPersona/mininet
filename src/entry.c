@@ -83,6 +83,8 @@ int main(int argc, char** argv) {
  
  LOGREPORT("compiled executable on " __DATE__ " " __TIME__ ".");
  
+ LOGDEBUG("character width '%i', integer width '%i', pointer width '%i'.", sizeof(char), sizeof(int), sizeof(void*));
+ 
  init();
  
  settimer(&timer, TIMER_SPACEDLAPSE, CURRENTTIME, delay);

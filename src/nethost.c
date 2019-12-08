@@ -210,6 +210,10 @@ void handlequeues() {
  if (host.type != HOST_UNMADE && host.socket) {
   receivepackets();
  }
+ 
+ memset(host.used, 0, MAX_POOLWIDTH);
+ 
+ return;
 }
 
 int hasclient(refer_t client) {
@@ -464,8 +468,6 @@ void updatequeues() {
  else {
   LOGREPORT("attempted to update unknown host state.");
  }
- 
- memset(host.used, 0, MAX_POOLWIDTH);
  
  return;
 }

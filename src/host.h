@@ -5,9 +5,9 @@
 #include "menu.h"
 #include "net.h"
 
-#define CLIENTANGTH 4
 #define GAMESMARKER 0x4d494e49 // mini in hexadecimal
 #define LEVELANGTH 128
+#define LOCALANGTH 1
 #define MAX_GAMECLIENTS 16
 #define MAX_GAMESENDLENGTH 256
 #define MAX_LEVELS 5

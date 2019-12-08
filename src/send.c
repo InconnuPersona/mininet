@@ -1,8 +1,6 @@
 #include "main.h"
 #include "levelaid.h"
 
-#define LOCALANGTH 1
-
 void printgamesend(gamesend_t* send);
 
 extern unitword_t unitwords[];
@@ -264,7 +262,11 @@ void pushdeltachunks(refer_t client) {
  x = (pliant->x >> 4) / CHUNKANGTH;
  y = (pliant->y >> 4) / CHUNKANGTH;
  
+ LOGREPORT("pliant [%i, %i], chunk [%i, %i].", pliant->x, pliant->y, x, y);
+ 
  boundbox(&aabb, x - LOCALANGTH, y - LOCALANGTH, x + LOCALANGTH, y + LOCALANGTH);
+ 
+ binddomain(&aabb, 0, 0, session.levels[level].w, session.levels[level].h);
  
  ensuredomain(&aabb);
  
