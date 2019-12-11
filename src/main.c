@@ -319,6 +319,19 @@ void closelibraries() {
  SDL_Quit();
 }
 
+void printhostdata() {
+ int endian = 0x01;
+ 
+ LOGREPORT("host;");
+ 
+ printf(" character width: '%i'\n integer width: '%i'\n", sizeof(char), sizeof(int));
+ printf(" pointer width: '%i'\n endian: %s", sizeof(void*), (int) ((byte_t*) &endian)[0] ? "big" : "little");
+ 
+ printf("\n");
+ 
+ return;
+}
+
 void bindkeys() {
  alias(SDLK_UP, "up");
  alias(SDLK_w, "up");

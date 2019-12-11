@@ -192,6 +192,8 @@ void cullunit(unit_u* unit) {
  }
  
  unit->base.extant = 0;
+ 
+ return;
 }
 
 refer_t designunit(const char* word, int extra) {

@@ -262,7 +262,7 @@ void pushdeltachunks(refer_t client) {
  x = (pliant->x >> 4) / CHUNKANGTH;
  y = (pliant->y >> 4) / CHUNKANGTH;
  
- LOGREPORT("pliant [%i, %i], chunk [%i, %i].", pliant->x, pliant->y, x, y);
+ LOGDEBUG("pliant [%i, %i], chunk [%i, %i].", pliant->x, pliant->y, x, y);
  
  boundbox(&aabb, x - LOCALANGTH, y - LOCALANGTH, x + LOCALANGTH, y + LOCALANGTH);
  

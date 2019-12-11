@@ -27,6 +27,7 @@ int checksum(byte_t* bytes, int length, int checksum);
 
 void loadlibraries();
 void closelibraries();
+void printhostdata();
 
 void enablegame();
 //void endsession() or closesession()

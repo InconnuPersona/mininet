@@ -21,6 +21,8 @@ void preinit() {
 void init() {
  preinit();
  
+ INDEBUG(printhostdata());
+ 
  createscreen(&screen, RENDERWIDTH, RENDERHEIGHT, "res/icons.png");
  createscreen(&lightscreen, RENDERWIDTH, RENDERHEIGHT, "res/icons.png");
  
@@ -82,8 +84,6 @@ int main(int argc, char** argv) {
  int shouldrender, unprocessed;
  
  LOGREPORT("compiled executable on " __DATE__ " " __TIME__ ".");
- 
- LOGDEBUG("character width '%i', integer width '%i', pointer width '%i'.", sizeof(char), sizeof(int), sizeof(void*));
  
  init();
  
