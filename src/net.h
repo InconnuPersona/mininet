@@ -9,15 +9,15 @@
 #define NETWORKRATE 20
 
 #define PACKETHEADER \
- int type; \
+ short type; \
  int flags; \
  int sequence; \
  int sender; \
- int length;
+ short length;
 
 #define MESSAGESHEADER \
- int bufferlength; \
- int messagecount;
+ short bufferlength; \
+ short messagecount;
 
 typedef enum {
  CLIENT_EMPTY = 0,

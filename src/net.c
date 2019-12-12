@@ -130,7 +130,7 @@ void openhost(int port) {
  return;
 }
 
-void packheader(int type, int flags, int length) {
+void packheader(short type, int flags, int length) {
  packetheader_t* header;
  
  CHECKNETWORKHOST(return);
@@ -524,6 +524,8 @@ void shakehands(IPaddress address, int type, int extra) {
  LOGDEBUG("sent handshake [%i][%x].", type, extra);
  
  sendpacket(address);
+ 
+ return;
 }
 
 // This function unpacks the packet header and decodes the packet content length. It is
@@ -550,27 +552,28 @@ void unpackheader(packet_t* packet) {
 // where the data may be passed off to the game session.
 //// Check if received seuence number is in order ith 
 void unpackmessages(packet_t* packet) {
- abstract_u abstract;
+ messagesheader_t* header;
+ void* pointer;
  int i;
  
  CHECKUSABLEHOST(return);
  
- abstract.pointer = transmission->data + HEADERLENGTH;
+ header = (messagesheader_t*) transmission->data + HEADERLENGTH;
  
- packet->bufferlength = abstract.integers[0];
- packet->messagecount = abstract.integers[1];
+ packet->bufferlength = header->bufferlength;
+ packet->messagecount = header->messagecount;
  
- abstract.pointer += sizeof(messagesheader_t);
+ pointer = header + sizeof(messagesheader_t);
  
  for (i = 0; i < packet->messagecount; i++) {
-  memcpy(&packet->messages[i], abstract.pointer, MESSAGEWIDTH);
+  memcpy(&packet->messages[i], pointer, MESSAGEWIDTH);
   
   packet->messages[i].data.pointer += (int) host.reserve;
   
-  abstract.pointer += MESSAGEWIDTH;
+  pointer += MESSAGEWIDTH;
  }
  
- memcpy(host.reserve, abstract.pointer, packet->bufferlength);
+ memcpy(host.reserve, pointer, packet->bufferlength);
  
  markstretch(0, packet->bufferlength / SECTIONANGTH);
  

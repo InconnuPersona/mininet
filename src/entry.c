@@ -4,6 +4,7 @@
 
 screen_t lightscreen, screen;
 int debug = 0;
+int renders = 0;
 int ticks = 0;
 
 void preinit() {
@@ -58,6 +59,8 @@ void tick() {
 }
 
 void render() {
+ renders++;
+ 
  rendermenu(&screen);
  
  if (!hasfocus()) {
@@ -65,6 +68,8 @@ void render() {
  }
  
  updatetexture(&screen);
+ 
+ return;
 }
 
 void quit() {
@@ -77,8 +82,25 @@ void quit() {
  exit(EXIT_SUCCESS);
 }
 
+void printgameframes() {
+ static int lastrender = 0, lasttick = 0;
+ static float lasttime = 0;
+ float current;
+ 
+ current = currenttime();
+ 
+ if (current - lasttime >= 1) {
+  LOGDEBUG("rendered %i frames and %i ticks in %f seconds.", renders - lastrender, ticks - lasttick, current - lasttime);
+  
+  lastrender = renders;
+  lasttick = ticks;
+  lasttime = current;
+ }
+ 
+ return;
+}
+
 int main(int argc, char** argv) {
- static int r = 0, t = 0;
  watch_t timer;
  float delay = 1.f / TICKRATE;
  int shouldrender, unprocessed;
@@ -106,10 +128,9 @@ int main(int argc, char** argv) {
   
   if (shouldrender) {
    render();
-   LOGDEBUG("renders %i.", r++);
   }
   
-  LOGDEBUG("ticks %i.", t++);
+  INDEBUG(printgameframes());
   
   delaythread(delay);
  }
