@@ -58,6 +58,8 @@ void appendclientmessage(message_t* message, int reliable, refer_t client) {
  }
  
  adjoinmessage(message, &clients[client].queue, reliable);
+ 
+ return;
 }
 
 void appendmessage(message_t* message, int reliable) {
@@ -69,6 +71,8 @@ void appendmessage(message_t* message, int reliable) {
  CHECKMESSAGE(message, return);
  
  adjoinmessage(message, &host.queue, reliable);
+ 
+ return;
 }
 
 int clientstate(refer_t client) {

@@ -48,6 +48,11 @@ void directmessage(message_t* message, void* data, int length) {
   return;
  }
  
+ if (!data) {
+  LOGREPORT("received invalid data pointer.");
+  return;
+ }
+ 
  if (length < 1 || length > SIGNEDEXTENT(short)) {
   LOGREPORT("received invalid message length.");
   return;
@@ -66,11 +71,11 @@ void joinhost(const char* address, int port, int local) {
   return;
  }
  
+ SDLNEGATIVEPRONE(SDLNet_ResolveHost(&host.address, address, port), "'SDL2' network error");
+ 
  host.socket = SDLNet_UDP_Open(local);
  
  SDLNULLPRONE(host.socket, "'SDL2' network error");
- 
- SDLNEGATIVEPRONE(SDLNet_ResolveHost(&host.address, address, port), "'SDL2' network error");
  
  transmission = SDLNet_AllocPacket(MAX_PACKETLENGTH);
  
@@ -100,11 +105,11 @@ void openhost(int port) {
   return;
  }
  
+ SDLNEGATIVEPRONE(SDLNet_ResolveHost(&host.address, 0, port), "'SDL2' network error");
+ 
  host.socket = SDLNet_UDP_Open(port);
  
  SDLNULLPRONE(host.socket, "'SDL2' network error");
- 
- SDLNEGATIVEPRONE(SDLNet_ResolveHost(&host.address, 0, port), "'SDL2' network error");
  
  transmission = SDLNet_AllocPacket(MAX_PACKETLENGTH);
  
@@ -151,6 +156,7 @@ void packheader(short type, int flags, int length) {
 // fit inside the constraints of a transmission so that it may be unpacked easily.
 void postmessages(packet_t* packet, IPaddress address) {
  abstract_u data;
+ messagesheader_t header;
  message_t* message;
  int buffered, bufferlength, i, index, length;
  int messagebufferlength, sent;
@@ -465,8 +471,6 @@ void receivepackets() {
    receivehandshake(data.integers[0], data.integers[1], &packet, transmission->address);
   }
   else if (packet.type == NETMSG_MESSAGES) {
-   memset(host.used, 0, MAX_POOLWIDTH);
-   
    unpackmessages(&packet); // packets sent over are expected to fit inside the limits of a full packet; therefore packets do not need division.
    
    routepacket(&packet);

@@ -4,6 +4,14 @@
 
 #include <SDL2/SDL_net.h>
 
+#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+ #define SWAPHALF(Integer) Integer
+ #define SWAPINTEGER(Integer) Integer
+#else
+ #define SWAPHALF(Integer) SDL_Swap16(Integer)
+ #define SWAPINTEGER(Integer) SDL_Swap32(Integer)
+#endif
+
 #define BROADCASTCLIENT 0
 #define MAX_PACKETLENGTH 1024
 #define MAX_POOLLENGTH (1024 * 10)
@@ -20,7 +28,7 @@
   LOGREPORT("received invalid message."); \
   __VA_ARGS__; \
  } \
- if (!Message->data.pointer || Message->stored > SIGNEDEXTENT(short) || Message->length > Message->stored) { \
+ if (!Message->data.pointer || Message->stored > SIGNEDEXTENT(short) || Message->stored < 1 || Message->length > Message->stored) { \
   LOGREPORT("received unformed message."); \
   __VA_ARGS__; \
  }
