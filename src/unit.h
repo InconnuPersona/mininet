@@ -9,19 +9,19 @@
 #define NOUNIT 0
 
 #define CLASS_UNIT \
- int id; \
+ refer_t id; \
  int extant; \
  refer_t word; \
  refer_t owner; \
  int x, y;
 
-//#define CLASS_DROP
-// CLASS_UNIT;
-// refer_t item;
-// float xa, ya, za;
-// float xx, yy, zz;
-// int aim, hurttime, lifetime, time;
-// int xk, yk;
+#define CLASS_DROP \
+ CLASS_UNIT; \
+ refer_t item; \
+ float xa, ya, za; \
+ float xx, yy, zz; \
+ int aim, hurttime, lifetime, time; \
+ int xk, yk;
 
 #define CLASS_MOB \
  CLASS_UNIT; \
@@ -93,6 +93,10 @@ typedef enum {
 } unit_e;
 
 typedef struct {
+ CLASS_DROP;
+} drop_t;
+
+typedef struct {
  CLASS_MOB;
 } mob_t;
 
@@ -107,6 +111,7 @@ typedef struct {
 typedef union {
  int data[MAX_ELEMENTS];
  
+ drop_t drop;
  mob_t mob;
  pliant_t pliant;
  unit_t base;

@@ -5,6 +5,11 @@
 int callunitmethod(const char* method, unit_t* unit, const char* format, ...);
 int hasunitmethod(const char* method, unit_t* unit);
 
+mob_t* castmob(refer_t id);
+pliant_t* castpliant(refer_t id);
+unit_t* castunit(refer_t id);
+
+void blankunit(refer_t unit);
 int buoyant(refer_t unit);
 int getlighting(refer_t unit);
 int inliquid(refer_t unit);

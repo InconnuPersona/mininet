@@ -1,6 +1,7 @@
 #include "nethost.h"
 
 #define HEADERLENGTH sizeof(packetheader_t)
+#define PACKETHEADERWIDTH sizeof(messagesheader_t) + sizeof(packetheader_t)
 #define MESSAGESOFFSET (transmission->data + HEADERLENGTH + sizeof(messagesheader_t))
 
 // ==================================================
@@ -156,13 +157,14 @@ void packheader(short type, int flags, int length) {
 // fit inside the constraints of a transmission so that it may be unpacked easily.
 void postmessages(packet_t* packet, IPaddress address) {
  abstract_u data;
- messagesheader_t header;
  message_t* message;
+ messagesheader_t* header;
  int buffered, bufferlength, i, index, length;
  int messagebufferlength, sent;
  
  CHECKUSABLEHOST(return);
  
+ // CHECKPACKET(packet);
  if (!packet) {
   LOGREPORT("received invalid packet.");
   return;
@@ -172,20 +174,19 @@ void postmessages(packet_t* packet, IPaddress address) {
  sent = 0;
  
  while (sent < packet->messagecount) {
-  data.pointer = transmission->data + HEADERLENGTH;
+  data.pointer = transmission->data + sizeof(packetheader_t);
   
   bufferlength = index = length = messagebufferlength = 0;
   
   while (sent + index < packet->messagecount) {
+   if (packet->messages[sent + index].length > MAX_PACKETLENGTH - PACKETHEADERWIDTH) {
+	LOGREPORT("received intransmittable message.");
+	exit(EXIT_FAILURE);
+   }
+   
    length += MESSAGEWIDTH + packet->messages[sent + index].length;
    
-   if (length > MAX_PACKETLENGTH - HEADERLENGTH) {
-//	TODO: check if message buffer length exceeds host reserves.
-//	if (length - MAX_PACKETLENGTH > 2 * MAX_PACKETLENGTH) {
-//	 LOGREPORT("received intransmittable message.");
-//	 exit(EXIT_FAILURE);
-//	}
-	
+   if (length > MAX_PACKETLENGTH - PACKETHEADERWIDTH) {
 	goto postmessages_send;
    }
    else {
@@ -199,12 +200,14 @@ void postmessages(packet_t* packet, IPaddress address) {
  postmessages_send:
   packheader(NETMSG_MESSAGES, packet->flags, bufferlength + messagebufferlength + sizeof(messagesheader_t));
   
-  data.integers[0] = bufferlength;
-  data.integers[1] = index;
+  header = (messagesheader_t*) data.pointer;
+  
+  header->bufferlength = bufferlength;
+  header->messagecount = index + 1;
   
   data.pointer += sizeof(messagesheader_t);
   
-  for (i = 0; i < index; i++) {
+  for (i = 0; i <= index; i++) {
    message = data.pointer + i * MESSAGEWIDTH;
    
    message->length = packet->messages[sent + i].length;
@@ -212,7 +215,7 @@ void postmessages(packet_t* packet, IPaddress address) {
   
   data.pointer += messagebufferlength;
   
-  for (i = 0; i < index; i++) {
+  for (i = 0; i <= index; i++) {
    message = (message_t*) (MESSAGESOFFSET + i * MESSAGEWIDTH);
    
    memcpy(data.bytes, host.reserve + packet->messages[sent + i].data.integer, packet->messages[sent + i].length);
@@ -562,15 +565,25 @@ void unpackmessages(packet_t* packet) {
  
  CHECKUSABLEHOST(return);
  
- header = (messagesheader_t*) transmission->data + HEADERLENGTH;
+ header = (messagesheader_t*) transmission->data + sizeof(packetheader_t);
  
  packet->bufferlength = header->bufferlength;
  packet->messagecount = header->messagecount;
  
  pointer = header + sizeof(messagesheader_t);
  
+ if (packet->bufferlength < 0 || packet->messagecount < 0) {
+  LOGREPORT("received malformed message packet.");
+  return;
+ }
+ 
  for (i = 0; i < packet->messagecount; i++) {
   memcpy(&packet->messages[i], pointer, MESSAGEWIDTH);
+  
+  if (packet->messages[i].data.integer >= MAX_POOLLENGTH || packet->messages[i].length >= MAX_POOLLENGTH) {
+   LOGREPORT("unpacked malformed message.");
+   exit(EXIT_FAILURE);
+  }
   
   packet->messages[i].data.pointer += (int) host.reserve;
   
@@ -579,13 +592,13 @@ void unpackmessages(packet_t* packet) {
  
  memcpy(host.reserve, pointer, packet->bufferlength);
  
- markstretch(0, packet->bufferlength / SECTIONANGTH);
+ markstretch(0, packet->bufferlength / SECTIONANGTH + 1);
  
  LOGDEBUG("unpacked message packet.");
  
- //printpacketcontent();
- //printhostreserve();
- //printmessages(packet);
+ printpacketcontent();
+ printhostreserve();
+ printmessages(packet);
  
  return;
 }

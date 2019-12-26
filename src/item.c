@@ -1,9 +1,11 @@
 #include "item.h"
-#include "bind.h"
+
+#define INVALIDPILE -1
 
 // all items are offset by 1 to allow NOITEM to exist
 item_t items[MAX_ITEMS] = { 0 };
-pile_t piles[MAX_PILES] = { 0 }; 
+pile_t piles[MAX_PILES] = { 0 };
+surface_t surfaces[MAX_SURFACES] = { 0 };
 
 void additem(refer_t item, int count, refer_t pile) {
  /*int i;
@@ -48,6 +50,18 @@ int countitem(refer_t item, refer_t pile) {
 
 //int finditem(refer_t, inventory) {
 
+int getpile(refer_t id) {
+ int i;
+ 
+ for (i = 0; i < MAX_PILES; i++) {
+  if (piles[i].id == id) {
+   return i;
+  }
+ }
+ 
+ return INVALIDPILE;
+}
+
 int hasitem(refer_t item, int need, refer_t pile) {
  int count;//, i;
  
@@ -62,6 +76,35 @@ int hasitem(refer_t item, int need, refer_t pile) {
  }*/
  
  return count >= need;
+}
+
+refer_t newpileid() {
+ int id;
+ 
+ do {
+  id = randomid();
+  
+  if (getpile(id) != INVALIDPILE) {
+   continue;
+  }
+  
+  return id;
+ }
+ while (1);
+}
+
+refer_t newpile() {
+ int i;
+ 
+ for (i = 0; i < MAX_PILES; i++) {
+  if (piles[i].id == NOITEM) {
+   piles[i].id = newpileid();
+   
+   return piles[i].id;
+  }
+ }
+ 
+ return NOPILE;
 }
 
 int pullitem(refer_t item, int need, refer_t pile) {
@@ -94,6 +137,3 @@ int pullitem(refer_t item, int need, refer_t pile) {
  
  return need < 1;
 }
-
-BEGINLUATABLE(item)
-ENDLUATABLE;

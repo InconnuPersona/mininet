@@ -29,7 +29,6 @@ typedef enum {
  
  //MSG_GAMEDATA,
  //MSG_PLAYSOUND,
- //MSG_POSTCLIENTS,
  MSG_REQUEST,
  
  // ingame messages

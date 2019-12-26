@@ -3,21 +3,30 @@
 #include "gfx.h"
 
 #define MAX_COSTS 8
+#define MAX_DETAILS 6
 #define MAX_INVENTORY 64
 #define MAX_ITEMS 64
-#define MAX_PILES 16
+#define MAX_PILES 128
 #define MAX_RECIPES 64
-#define MAX_SURFACES 32
+#define MAX_RESOURCES 32
+#define MAX_SURFACES 8
 
 #define NOITEM 0
+#define NOPILE 0
 
 typedef enum {
- ITEM_UNIQUE, // nonstackable item
+ ITEM_UNIQUE = 0, // nonstackable item
  ITEM_POWGLOVE, // power glove item
  ITEM_RESOURCE, // food, wood, etc.
  ITEM_TOOL, // pick, axe, etc.
  ITEM_PLACABLE, // furniture, lamp, etc.
 } item_e;
+
+typedef enum {
+ VIEW_NONE = 0,
+ VIEW_CONTAINER,
+ VIEW_CRAFT,
+} surface_e;
 
 typedef struct {
  char* name;
@@ -26,6 +35,7 @@ typedef struct {
 
 typedef struct {
  char* word;
+ char* name;
  item_e type;
  int source; // wood, rock, etc.
  int sprite;
@@ -39,7 +49,7 @@ typedef struct {
 } slot_t;
 
 typedef struct {
- int id;
+ refer_t id;
  slot_t slots[MAX_INVENTORY];
 } inventory_t, pile_t;
 
@@ -49,9 +59,12 @@ typedef struct {
 } recipe_t;
 
 typedef struct {
- int id;
+ refer_t id;
+ char* word;
+ surface_e type;
  recipe_t recipes[MAX_RECIPES];
-} surface_t; // recipe interface and item access
+ refer_t items;
+} surface_t, view_t; // recipe interface and item access
 
 refer_t newpile();
 

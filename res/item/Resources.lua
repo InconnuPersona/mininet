@@ -1,6 +1,7 @@
 Resources = {
  "wood",
- "stone"
+ "stone",
+ 
 }
 
 return Resources

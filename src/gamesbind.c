@@ -25,6 +25,16 @@ NEWLUAFUNCTION(dumpstack) {
  return 0;
 }
 
+NEWLUAFUNCTION(client) {
+ 
+ return 1;
+}
+
+NEWLUAFUNCTION(player) {
+ 
+ return 1;
+}
+
 NEWLUAFUNCTION(random) {
  int range;
  
@@ -88,6 +98,14 @@ NEWLUAFUNCTION(ticks) {
  return 1;
 }
 
+NEWLUAFUNCTION(view) {
+ char* view;
+ 
+ view = (char*) luaL_checkstring(L, 1);
+ 
+ return 0;
+}
+
 // ==================================================
 // lua table declaration
 
@@ -104,6 +122,7 @@ BEGINLUATABLE(game)
  LUAFUNCTION(seedrandom),
  LUAFUNCTION(start),
  LUAFUNCTION(ticks),
+ LUAFUNCTION(view),
 ENDLUATABLE;
 
 // ==================================================

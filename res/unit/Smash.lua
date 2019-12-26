@@ -1,8 +1,9 @@
-Smash = {}
+Smash = {
+ extra = 0,
+ word = "trace.Smash",
+}
 
-Smash.word = "trace.Smash"
-
-function Smash.blank()
+function Smash:blank()
  --sound.play("monsterHurt")
 end
 
@@ -17,7 +18,7 @@ function Smash.render()
  screen.sprite(x - 0, y - 0, 5 + 12 * 32, color, 1)
 end
 
-function tick()
+function etick()
  trace.time(trace.time() + 1)
  
  if (trace.time() > 10) {

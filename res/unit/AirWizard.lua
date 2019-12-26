@@ -6,7 +6,12 @@ AirWizard = {
  --},
  
  word = "fiend.AirWizard",
+ extra = 0,
  --extra = getn(extras),
 }
+
+function AirWizard:blank()
+ --level.initiate("Spark", )
+end
 
 return AirWizard

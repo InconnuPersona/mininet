@@ -51,6 +51,16 @@ int copysamples(refer_t* old, refer_t** new) {
 // ==================================================
 // unit functions
 
+void blankunit(refer_t id) {
+ unit_t* unit;
+ 
+ unit = castunit(id);
+ 
+ if (unit && hasunitmethod("blank", unit)) {
+  callunitmethod("blank", unit, NULL);
+ }
+}
+
 int buoyant(refer_t id) {
  unit_t* unit;
  
@@ -182,9 +192,15 @@ int movestep(refer_t unit, int xa, int ya) {
   }
   
   if (!passable(nowinside[i], unit)) {
+   free(nowinside);
+   free(wasinside);
+   
    return 0;
   }
  }
+ 
+ free(nowinside);
+ free(wasinside);
  
  self->x += xa;
  self->y += ya;

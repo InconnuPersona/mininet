@@ -11,8 +11,34 @@ Player = {
  end,
 }
 
+--function Player.bioluminance()
+-- radius = 2
+-- item = unit:pliant.item()
+-- 
+-- if item != nil and item:item.class == item.FURNITURE then
+--  rr = item:item.luminance()
+--  
+--  if rr > radius then
+--   radius = rr
+--  end
+-- end
+-- 
+-- return radius
+--end
+
+function Player:blank()
+ --unit.mob.additem(self, "powglove")
+ --unit.mob.additem(self, "workbench")
+end
+
 function Player:buoyant()
  return true
+end
+
+function Player:die()
+ --unit.mob.die(self)
+ 
+ sound.play("death")
 end
 
 function Player:findspawn()
@@ -115,9 +141,11 @@ function Player:tick()
   -- attack
  --end
  
- --if commanded(self, unit.pliant.INTERACT) then
-  -- use
- --end
+ if commanded(self, unit.pliant.MENU) then
+  -- if pliant.use
+   menu.change("InventoryMenu")
+  --end
+ end
  
  if attacktime(self) > 0 then
   attacktime(self, attacktime(self) - 1)

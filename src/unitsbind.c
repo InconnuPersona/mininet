@@ -130,6 +130,38 @@ LUAUNITELEMENT(mob, ticked, number)
 LUAUNITELEMENT(mob, swum, number)
 LUAUNITELEMENT(mob, walked, number)
 
+NEWLUAFUNCTION(mobadditem) {
+ mob_t* mob;
+ int count;
+ 
+ if (lua_gettop(L) >= 2) {
+  mob = castmob(luaL_checknumber(L, 1));
+  
+  if (!mob) {
+   LOGREPORT("received unbindable unit.");
+   return 0;
+  }
+  
+  if (mob->pile == NOPILE) {
+   mob->pile = newpile();
+  }
+  
+  if (lua_gettop(L) >= 3) {
+   count = luaL_checknumber(L, 3);
+  }
+  else {
+   count = 1;
+  }
+  
+  additem(luaL_checknumber(L, 2), count, mob->pile);
+ }
+ else {
+  LUAARGUE("mob.additem");
+ }
+ 
+ return 0;
+}
+
 NEWLUAFUNCTION(mobheal) {
  if (lua_gettop(L) >= 2) {
   healmob(luaL_checknumber(L, 1), luaL_checknumber(L, 2));
@@ -137,6 +169,11 @@ NEWLUAFUNCTION(mobheal) {
  else {
   LUAARGUE("mob.heal");
  }
+ 
+ return 0;
+}
+
+NEWLUAFUNCTION(mobhurt) {
  
  return 0;
 }
@@ -284,6 +321,7 @@ ENDLUATABLE;
 
 BEGINLUATABLE(unitmob)
  LUAUNITMETHOD(mob, heal),
+ LUAUNITMETHOD(mob, hurt),
  LUAUNITMETHOD(mob, move),
  
  LUAUNITMETHOD(mob, dir),

@@ -55,7 +55,7 @@ void tick() {
   tickmenu();
  }
  
- updatequeues();
+// updatequeues();
 }
 
 void render() {
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
   
   pollevents();
   
-  handlequeues();
+//  handlequeues();
   
   while (unprocessed > 0) {
    tick();

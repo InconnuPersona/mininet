@@ -1,6 +1,7 @@
-Anvil = {}
-
-Anvil.word = "movable.Anvil"
+Anvil = {
+ extra = 0,
+ word = "movable.Anvil",
+}
 
 function Anvil.define()
  

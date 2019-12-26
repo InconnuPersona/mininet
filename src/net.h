@@ -5,12 +5,12 @@
 #define BROADCAST -2
 #define INVALIDCLIENT -1
 #define MAX_CLIENTS 16
-#define MAX_MESSAGES 64
+#define MAX_MESSAGES 128
 #define NETWORKRATE 20
 
 #define PACKETHEADER \
- short type; \
- int flags; \
+ byte_t type; \
+ byte_t flags; \
  int sequence; \
  int sender; \
  short length;

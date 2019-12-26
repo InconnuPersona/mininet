@@ -11,6 +11,7 @@ unitword_t unitwords[MAX_UNITWORDS] = { 0 };
 // ==================================================
 // externals
 
+void blankunit(refer_t unit);
 int fetchunitword(refer_t id);
 
 // ==================================================
@@ -77,6 +78,7 @@ void defaultpliant(pliant_t* unit) {
  
  unit->x = 24;
  unit->y = 24;
+ unit->pile = newpile();
  unit->stamina = word->maxstamina;
  
  return;
@@ -169,6 +171,8 @@ void createunit(unit_t* unit, const char* word) {
   LOGREPORT("received invalid unit word class '%s'.", word);
   break;
  }
+ 
+ blankunit(unit->id);
  
  LOGDEBUG("created unit from word '%s' with id [%x] and word [%x].", word, unit->id, unit->word);
  
@@ -289,7 +293,7 @@ int getclass(const char* word) {
   super = SUPER_UNIT;
  }
  else if (!strcmp("drop", word)) {
-//  super = SUPER_DROP;
+  super = SUPER_DROP;
  }
  else if (!strcmp("fiend", word)) {
 //  super = SUPER_FIEND;

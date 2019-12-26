@@ -5,11 +5,15 @@ void printgamesend(gamesend_t* send);
 
 extern unitword_t unitwords[];
 
+typedef struct {
+ int inmenu;
+} clientsend_t;
+
 // all necessary client information is sent
 typedef struct {
  int checksum;
  int count;
-} clientsend_t;
+} sessionsend_t;
 
 typedef struct {
  int data[4];
