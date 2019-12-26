@@ -7,7 +7,7 @@ The repository does not include the assets of minicraft, but they may be easily 
 
 ## Differences from origin:
 
-The code is in C and lua, which use SDL2 to aid platform rendering, sound, and network. The development began in summer of 2019, and was based off another project, [castle]() or [ai](https://github.com/HandMadeSoftwareDevelopment/ai) (Annexatio Imperii), which are both private repositories at the time.
+The code is in C and lua, which use SDL2 to aid platform rendering, sound, and network. The development began in summer of 2019, and was based off another project, [castle](https://github.com/InconnuPersona/castle), which is a private repository at the time.
 
 In contrast to the original source code of minicraft, entities are told as units, inventories are managed under piles, and items are not unique structures. All implementation may be found in the unit-, item-, and resource files of the program. 
 
