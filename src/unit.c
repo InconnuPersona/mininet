@@ -225,11 +225,11 @@ refer_t designunit(const char* word, int extra) {
  if (slot != -1) {
   super = getclass(word);
   
-  /*if (super == SUPER_DROP) {
+  if (super == SUPER_DROP) {
    LOGREPORT("unit word 'drop' can not be used as an-unit word.");
    return NOUNIT;
   }
-  else*/ if (super == SUPER_NULL) {
+  else if (super == SUPER_NULL) {
    LOGREPORT("can not define an unknown unitword class.");
    return NOUNIT;
   }
@@ -249,7 +249,7 @@ refer_t designunit(const char* word, int extra) {
   
   defineunit(&unitwords[slot]);
   
-  LOGREPORT("defined unit '%s' (%s) with id [%x] in %i elements.", unitwords[slot].word, unitwords[slot].name, unitwords[slot].id, length + extra);
+  LOGDEBUG("defined unit '%s' (%s) with id [%x] in %i elements.", unitwords[slot].word, unitwords[slot].name, unitwords[slot].id, length + extra);
  }
  else {
   LOGREPORT("unable to reserve an unitword index.");

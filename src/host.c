@@ -98,7 +98,7 @@ int handleinput() {
  
  commands = 0;
  
- if (getaliasclicked("attack")) {
+ if (getaliasdown("attack")) {
   commands |= CMD_ATTACK;
  }
  
@@ -117,7 +117,7 @@ int handleinput() {
  if (getaliasdown("right")) {
   commands |= CMD_MOVERIGHT;
  }
-
+ 
  if (getaliasdown("up")) {
   commands |= CMD_MOVEUP;
  }

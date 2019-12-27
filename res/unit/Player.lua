@@ -134,12 +134,12 @@ function Player:tick()
   unit.mob.move(self, xa, ya)
  end
  
- --if unit.pliant.command(self, unit.pliant.ATTACK) and stamina > 0 then
-  --stamina = stamina - 1
+ if unit.pliant.command(self, unit.pliant.ATTACK) and stamina(self) > 0 then
+  stamina(self, stamina(self) - 1)
   --unit.pliant.tireddelay(self, 0)
   
   -- attack
- --end
+ end
  
  if commanded(self, unit.pliant.MENU) then
   -- if pliant.use

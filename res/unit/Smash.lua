@@ -7,7 +7,7 @@ function Smash:blank()
  --sound.play("monsterHurt")
 end
 
-function Smash.render()
+function Smash:render()
  color = screen.get(-1, 555, 555, 555)
  x = unit.x()
  y = unit.y()

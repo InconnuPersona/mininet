@@ -11,7 +11,7 @@ end
 -- return false
 --end
 
-function Spark.render()
+function Spark:render()
  if trace.time() >= trace.lifeTime - 6 * 20 then
   return
  end

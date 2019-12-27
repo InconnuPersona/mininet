@@ -10,6 +10,8 @@ function InventoryMenu.reset()
  
  game.view("inventory", player)
  
+ view.open("Inventory")
+ 
  --if unit.pliant.inhand(player)
 end
 

@@ -1,8 +1,9 @@
 Resources = {
- "wood",
- "stone",
- 
+ function impart()
+  item.bestow("ironIngot")
+  item.bestow("stone")
+  item.bestow("wood")
+ }
 }
 
 return Resources
-

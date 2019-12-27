@@ -29,9 +29,9 @@
  int health, dir, xk, yk; \
  int hurted, ticked, swum, walked;
 
-//#define CLASS_FIEND 
-// CLASS_MOB; 
-// int level, xa, ya;
+#define CLASS_FIEND \
+ CLASS_MOB; \
+ int level, xa, ya;
 
 // The command contains all movement and action command data while the medium of such acts is
 // identified under the object; the target is the acted character, whether an item or mob.
@@ -97,6 +97,10 @@ typedef struct {
 } drop_t;
 
 typedef struct {
+ CLASS_FIEND;
+} fiend_t;
+
+typedef struct {
  CLASS_MOB;
 } mob_t;
 
@@ -112,6 +116,7 @@ typedef union {
  int data[MAX_ELEMENTS];
  
  drop_t drop;
+ fiend_t fiend;
  mob_t mob;
  pliant_t pliant;
  unit_t base;

@@ -256,6 +256,8 @@ void sortandrender(refer_t* units, int count, level_t* level, screen_t* screen) 
 // Spawns counted fiends in the level according to its depth and random nature.
 // Fetment is a standword for the mob's difficulty.
 void spawnfiends(int count, level_t* level) {
+ unit_u* unit;
+ refer_t id;
  int i, max, min, fetment;
  
  CHECKLEVEL(level, return);
@@ -273,11 +275,24 @@ void spawnfiends(int count, level_t* level) {
   fetment = randominteger(max - min + 1) + min;
   
   if (randominteger(1) == 0) {
-   // spawn slime of level 'toughness' fetment
+   id = spawn("fiend.Slime");
   }
   else {
-   // spawn zombie of level 'toughness' fetment
+   id = spawn("fiend.Zombie");
   }
+  
+  if (id == NOUNIT) {
+   continue;
+  }
+  
+  unit = getunit(id);
+  
+  if (!unit) {
+   LOGREPORT("unable to set fiend fetment.");
+   continue;
+  }
+  
+  unit->fiend.level = fetment;
  }
 }
 

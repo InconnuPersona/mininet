@@ -2,10 +2,11 @@
 
 #define INVALIDPILE -1
 
+extern int getpile(refer_t id);
+
 // all items are offset by 1 to allow NOITEM to exist
 item_t items[MAX_ITEMS] = { 0 };
 pile_t piles[MAX_PILES] = { 0 };
-surface_t surfaces[MAX_SURFACES] = { 0 };
 
 void additem(refer_t item, int count, refer_t pile) {
  /*int i;
@@ -46,6 +47,10 @@ int countitem(refer_t item, refer_t pile) {
  }*/
  
  return count;
+}
+
+void createitem(const char* word) {
+ 
 }
 
 //int finditem(refer_t, inventory) {
