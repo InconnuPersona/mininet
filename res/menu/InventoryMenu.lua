@@ -8,9 +8,9 @@ function InventoryMenu.reset()
  
  --game.inmenu(true)
  
- game.view("inventory", player)
+ --game.view("inventory", player)
  
- view.open("Inventory")
+ --view.open("Inventory")
  
  --if unit.pliant.inhand(player)
 end

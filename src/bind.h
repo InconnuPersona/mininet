@@ -43,7 +43,7 @@ typedef struct {
 
 typedef luaobject_t luatable_t[];
 
-extern luatable_t lua_game, lua_input, lua_item, lua_level, lua_menu, lua_screen, lua_sound, lua_tile, lua_unit, lua_view;
+extern luatable_t lua_game, lua_input, lua_item, lua_level, lua_menu, lua_screen, lua_sound, lua_tile, lua_unit;
 
 int callmethod(const char* method, const char* table, lua_State* L, const char* parameters, ...);
 void dumpluastack(lua_State* L);

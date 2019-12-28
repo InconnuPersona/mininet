@@ -74,6 +74,7 @@ extern game_t session;
 
 int awaited();
 void bindgamelevel(int level);
+int ishost();
 
 void closesession();
 

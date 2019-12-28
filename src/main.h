@@ -41,3 +41,5 @@ void renderfocusnagger(screen_t* screen, int ticks);
 void loadsounds();
 void playsound(const char* sound);
 void unloadsounds();
+
+void loadviews();

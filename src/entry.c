@@ -33,6 +33,7 @@ void init() {
  enablegame();
  
  loadsounds();
+ loadviews();
  
  setmenu("TitleMenu");
 }

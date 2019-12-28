@@ -143,6 +143,10 @@ void renderdue(screen_t* screen) {
  return;
 }
 
+int ishost() {
+ return session.type == GAME_HOST || session.type == GAME_PRIVATE;
+}
+
 void renderGUI(refer_t player, screen_t* screen) {
  pliant_t* pliant;
  int i, x, y;

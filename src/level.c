@@ -551,14 +551,15 @@ void ticklevel() {
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
  
- spawnfiends(1, level);
+ // TODO: spawn level fiends
+ //spawnfiends(1, level);
  
  // TODO: hasten the tick tiles function
  for (i = 0; i < level->w * level->h; i++) {
   xt = randominteger(level->w);
   yt = randominteger(level->h);
   
-  ticktile(xt, yt);
+  //ticktile(xt, yt);
  }
  
  for (i = 0; i < MAX_UNITS; i++) {

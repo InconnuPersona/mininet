@@ -14,6 +14,7 @@ lua_State* L_game;
 
 extern void assigntile(int index, const char* name);
 extern refer_t designunit(const char* word, int extra);
+extern void formsurface(const char* word);
 //extern void appenditem();
 
 // ==================================================
@@ -119,6 +120,45 @@ ENDLUATABLE;
 // ==================================================
 // functions
 
+void loaditem(const char* string) {
+ char buffer[64];
+ char* c;
+ char* label;
+ 
+ c = strchr(string, '.');
+ 
+ if (c && !strncmp(c, ".lua", 4)) {
+  memset(buffer, 0, 64);
+  
+  sprintf(buffer, "res/item/%s", string);
+  
+  *c = '\0';
+  
+  label = reprintstring(string);
+  
+  if (strlen(label) > MAX_WORDLENGTH) {
+   LOGREPORT("surface word '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
+   exit(EXIT_FAILURE);
+  }
+  
+  *c = '.';
+  
+  uploadfile(buffer, label, L_game);
+  
+  {
+   if (hasluamethod("append", label, L_game)) {
+	callmethod("append", label, L_game, NULL);
+   }
+   
+   if (hasluamethod("define", label, L_game)) {
+	LOGREPORT("loading %s.define.", label);
+	
+	formsurface(label);
+   }
+  }
+ }
+}
+
 void loaditems() {
  DIR* d;
  struct dirent* dir;
@@ -127,7 +167,7 @@ void loaditems() {
  
  if (d) {
   while ((dir = readdir(d))) {
-   
+   loaditem(dir->d_name);
   }
   
   closedir(d);

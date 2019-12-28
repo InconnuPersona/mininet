@@ -1,59 +1,78 @@
 #include "item.h"
 
 #define INVALIDPILE -1
+#define INVALIDUNIT -1
 
 extern int getpile(refer_t id);
 
 // all items are offset by 1 to allow NOITEM to exist
 item_t items[MAX_ITEMS] = { 0 };
 pile_t piles[MAX_PILES] = { 0 };
+surface_t surfaces[MAX_SURFACES] = { 0 };
 
 void additem(refer_t item, int count, refer_t pile) {
- /*int i;
+ int i;
+ 
+ pile = getpile(pile);
+ 
+ if (pile == NOPILE) {
+  LOGREPORT("unable to retreive pile.");
+  return;
+ }
  
  if (items[item].word) {
   for (i = 0; i < MAX_INVENTORY; i++) {
    if (items[item].type == ITEM_RESOURCE) {
-    if (piles[pile]->slots[i].item == item) {
-	 piles[pile]->slots[i].count += count;
+    if (piles[pile].slots[i].item == item) {
+	 piles[pile].slots[i].count += count;
 	 
 	 return;
     }
    }
    else {
-	if (piles[pile]->slots[i].item == NOITEM) {
-	 piles[pile]->slots[i].item = item;
-	 piles[pile]->slots[i].count = count;
+	if (piles[pile].slots[i].item == NOITEM) {
+	 piles[pile].slots[i].item = item;
+	 piles[pile].slots[i].count = count;
 	 
 	 return;
 	}
    }
   }
- }*/
+ }
+}
+
+// binds the network view to the local view
+void bindsurface() {
+ 
 }
 
 int countitem(refer_t item, refer_t pile) {
- //slot_t* slot;
- int count;//, i;
+ int count, i;
  
  count = 0;
  
- /*if (items[item].word) {
+ pile = getpile(pile);
+ 
+ if (pile == NOPILE) {
+  LOGREPORT("unable to retreive pile.");
+  return 0;
+ }
+ 
+ if (items[item].word) {
   for (i = 0; i < MAX_ITEMS; i++) {
-   if (pile->slots[i].item - 1 == item) {
-   	count += pile->slots[i].count;
+   if (piles[pile].slots[i].item - 1 == item) {
+   	count += piles[pile].slots[i].count;
    }
   }
- }*/
+ }
  
  return count;
 }
 
-void createitem(const char* word) {
- 
-}
-
 //int finditem(refer_t, inventory) {
+
+void formsurface(const char* word) {
+}
 
 int getpile(refer_t id) {
  int i;
@@ -81,6 +100,10 @@ int hasitem(refer_t item, int need, refer_t pile) {
  }*/
  
  return count >= need;
+}
+
+void loadviews() {
+ 
 }
 
 refer_t newpileid() {

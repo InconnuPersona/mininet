@@ -1,12 +1,10 @@
-ViewMenu = {}
+SurfaceMenu = {}
 
-function ViewMenu.render()
+function SurfaceMenu.render()
  game.render()
- 
- 
 end
 
-function ViewMenu.tick()
+function SurfaceMenu.tick()
  if input.clicked("menu") then
   menu.change("GameMenu")
  end
@@ -22,4 +20,4 @@ function ViewMenu.tick()
  end
 end
 
-return ViewMenu
+return SurfaceMenu

@@ -10,6 +10,7 @@
 #define MAX_RECIPES 64
 #define MAX_RESOURCES 32
 #define MAX_SURFACES 8
+#define MAX_STOCKPILE 32
 
 #define NOITEM 0
 #define NOPILE 0
@@ -19,12 +20,17 @@ typedef enum {
  ITEM_POWGLOVE, // power glove item
  ITEM_RESOURCE, // food, wood, etc.
  ITEM_TOOL, // pick, axe, etc.
+  ITEM_AXETYPE = ITEM_TOOL | 0x10,
+  ITEM_HOETYPE = ITEM_TOOL | 0x10,
+  ITEM_PICKAXETYPE = ITEM_TOOL | 0x10,
+  ITEM_SWORDTYPE = ITEM_TOOL | 0x10,
+  ITEM_SHOVELTYPE = ITEM_TOOL | 0x10,
  ITEM_PLACABLE, // furniture, lamp, etc.
 } item_e;
 
 typedef enum {
  VIEW_NONE = 0,
- VIEW_CONTAINER,
+ VIEW_CONTAINER, // or STORAGE
  VIEW_CRAFT,
 } surface_e;
 
@@ -63,7 +69,7 @@ typedef struct {
  char* word;
  surface_e type;
  recipe_t recipes[MAX_RECIPES];
- refer_t items;
+ refer_t items[MAX_INVENTORY];
 } surface_t, view_t; // recipe interface and item access
 
 refer_t newpile();

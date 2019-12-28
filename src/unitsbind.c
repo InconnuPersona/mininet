@@ -253,6 +253,11 @@ lf_pliantcommand_exit:
  return 1;
 }
 
+NEWLUAFUNCTION(pliantview) {
+ 
+ return 0;
+}
+
 // ==================================================
 // lua_trace
 
@@ -348,6 +353,7 @@ BEGINLUATABLE(unitpliant)
  LUANUMBER(MOVEUP, CMD_MOVEUP),
  
  LUAUNITMETHOD(pliant, maxstamina),
+ LUAUNITMETHOD(pliant, view),
  
  LUAUNITMETHOD(pliant, command),
  LUAUNITMETHOD(pliant, object),

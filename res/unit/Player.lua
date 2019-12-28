@@ -27,7 +27,7 @@ Player = {
 --end
 
 function Player:blank()
- --unit.mob.additem(self, "powglove")
+ --unit.mob.additem(self, "powglove") -- adds one item
  --unit.mob.additem(self, "workbench")
 end
 
@@ -142,8 +142,8 @@ function Player:tick()
  end
  
  if commanded(self, unit.pliant.MENU) then
-  -- if pliant.use
-   menu.change("InventoryMenu")
+  -- if not unit.pliant.use(self, ) then
+   unit.pliant.view(self, "Inventory")
   --end
  end
  
