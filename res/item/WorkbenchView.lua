@@ -22,6 +22,7 @@ WorkbenchView = {
  levelaffixes = {
   "Wood ",
   "Rock ",
+  "Iron ",
   "Gold ",
   "Gem ",
  },
@@ -32,10 +33,10 @@ WorkbenchView = {
   --item.conceive("Pick", item.PICKAXETYPE, levelcount, levels, levelcolors, levelaffixes);
   --item.conceive("Shvl", item.PICKAXETYPE, levelcount, levels, levelcolors, levelaffixes);
   --item.conceive("Swrd", item.SWORDTYPE, levelcount, levels, levelcolors, levelaffixes);
- end,
+ end
 }
 
-function WorkbenchView.define()
+function WorkbenchView:define()
  --view.addrecipe(self, item.form or wrought(item.PLACABLE, "Lantern"), {"ironIngot", 5})
  --view.addrecipe(self, item.form or wrought(item.PLACABLE, "Anvil"), {"ironIngot", 5})
  --view.addrecipe(item.form(item.PLACABLE, "Chest"), {"wood", 20}, id)

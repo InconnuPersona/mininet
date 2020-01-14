@@ -2,15 +2,20 @@
 
 #include <ctype.h>
 
-#include <SDL2/SDL_image.h>
+#ifndef __ANDROID__
+ #include <SDL2/SDL_image.h>
+#else
+ #include <SDL_image.h>
+#endif
+
+#ifndef __ANDROID__
+ #define RENDERERFLAGS SDL_RENDERER_SOFTWARE
+#else
+ #define RENDERERFLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+#endif
 
 const int dither[] = { 0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5 };
 const char* chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ      " "0123456789.,!?'\"-+=/\\%()<>:;     ";
-// "АБВГҐДЂЃЕЁЄЖЗЗЅИІЇЙЈКЛЉМНЊОПРССТ"
-// "ЋЌУЎФХЦЧЏШЩЪЫЬЭЮЯ               "
-// "アイウエオカキクケコガギグゲゴサシスセソザジズゼゾタチツテトダヂ"
-// "ヅデドナニヌネノハヒフヘホバビブベボパピプペポマミムメモヤ ユ"
-// " ヨラリルレロワヰ ヱヲンー";
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -258,7 +263,7 @@ void createview() {
  
  SDLNULLPRONE(window, "'SDL2' window creation failed");
  
- renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+ renderer = SDL_CreateRenderer(window, -1, RENDERERFLAGS);
  
  SDLNULLPRONE(renderer, "'SDL2' renderer creation failed");
  

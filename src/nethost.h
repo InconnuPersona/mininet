@@ -2,7 +2,11 @@
 
 #include "net.h"
 
-#include <SDL2/SDL_net.h>
+#ifndef __ANDROID__
+ #include <SDL2/SDL_net.h>
+#else
+ #include <SDL_net.h>
+#endif
 
 #if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
  #define SWAPHALF(Integer) Integer

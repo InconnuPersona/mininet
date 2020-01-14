@@ -1,8 +1,6 @@
 #include "main.h"
 #include "bind.h"
 
-#include <dirent.h>
-
 // ==================================================
 // externals
 
@@ -17,26 +15,30 @@ char* menu;
 // ==================================================
 // functions
 
-void loadmenu(const char* string) {
- char buffer[64];
+void loadmenu(const char* path, const char* string) {
+ char buffer[MAX_PATHLENGTH];
  char* c;
+ char* label;
  
  c = strchr(string, '.');
  
  if (c && !strncmp(c, ".lua", 4)) {
-  memset(buffer, 0, 64);
+  memset(buffer, 0, MAX_PATHLENGTH);
   
-  sprintf(buffer, "res/menu/%s", string);
-  
-  luaL_dofile(L_menu, buffer);
+  snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, string);
   
   *c = '\0';
   
-  lua_setglobal(L_menu, reprintstring(string));
+  label = reprintstring(string);
+  
+  if (strlen(label) > MAX_WORDLENGTH) {
+   LOGREPORT("menu label '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
+   exit(EXIT_FAILURE);
+  }
   
   *c = '.';
   
-  lua_settop(L_menu, 0);
+  uploadfile(buffer, label, L_menu);
  }
 }
 
@@ -51,20 +53,9 @@ void enablemenu() {
  uploadtable(lua_screen, "screen", L_menu);
  uploadtable(lua_sound, "sound", L_menu);
  
- {
-  struct dirent* dir;
-  DIR* d;
-  
-  d = opendir("res/menu");
-  
-  if (d) {
-   while ((dir = readdir(d))) {
-	loadmenu(dir->d_name);
-   }
-   
-   closedir(d);
-  }
- }
+ recursepath(getfilepath("res/menu"), loadmenu, 0);
+ 
+ return;
 }
 
 void disablemenu() {

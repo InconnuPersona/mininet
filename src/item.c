@@ -1,7 +1,7 @@
 #include "item.h"
 
+#define INVALIDITEM -1
 #define INVALIDPILE -1
-#define INVALIDUNIT -1
 
 extern int getpile(refer_t id);
 
@@ -41,6 +41,62 @@ void additem(refer_t item, int count, refer_t pile) {
  }
 }
 
+int getitem(refer_t item) {
+ int i;
+ 
+ for (i = 0; i < MAX_PILES; i++) {
+  if (items[i].id == item) {
+   return i;
+  }
+ }
+ 
+ return INVALIDITEM;
+}
+
+int newitemid() {
+ int id;
+ 
+ do {
+  id = randomid();
+  
+  if (getpile(id) != INVALIDPILE) {
+   continue;
+  }
+  
+  return id;
+ }
+ while (1);
+}
+
+void appenditem(const char* word, item_e type, int sprite, int color) {
+ int i;
+ 
+ if (!word) {
+  LOGREPORT("received unusable item word.");
+  return;
+ }
+ 
+ for (i = 0; i < MAX_ITEMS; i++) {
+  if (!items[i].id) {
+   break;
+  }
+ }
+ 
+ if (i == MAX_ITEMS) {
+  LOGREPORT("unable to find free slot for item '%s'.", word);
+  return;
+ }
+ 
+ items[i].color = color;
+ items[i].id = newitemid();
+ items[i].sprite = sprite;
+ items[i].word = reprintstring(word);
+ 
+ LOGDEBUG("appended item '%s' [%x] with sprite index %i and color [%x].", items[i].word, items[i].id, items[i].sprite, items[i].color);
+ 
+ return;
+}
+
 // binds the network view to the local view
 void bindsurface() {
  
@@ -71,7 +127,59 @@ int countitem(refer_t item, refer_t pile) {
 
 //int finditem(refer_t, inventory) {
 
-void formsurface(const char* word) {
+int getsurface(refer_t id) {
+ int i;
+ 
+ for (i = 0; i < MAX_PILES; i++) {
+  if (surfaces[i].id == id) {
+   return i;
+  }
+ }
+ 
+ return INVALIDITEM;
+}
+
+int newsurfaceid() {
+ int id;
+ 
+ do {
+  id = randomid();
+  
+  if (getsurface(id) != INVALIDPILE) {
+   continue;
+  }
+  
+  return id;
+ }
+ while (1);
+}
+
+void formsurface(const char* word, surface_e type) {
+ int i;
+ 
+ if (!word) {
+  LOGREPORT("received invalid surface word '%s'.", word);
+  return;
+ }
+ 
+ for (i = 0; i < MAX_SURFACES; i++) {
+  if (!surfaces[i].id) {
+   break;
+  }
+ }
+ 
+ if (i == MAX_SURFACES) {
+  LOGREPORT("unable to find free slot for surface '%s'.", word);
+  return;
+ }
+ 
+ surfaces[i].id = newsurfaceid();
+ surfaces[i].type = type;
+ surfaces[i].word = reprintstring(word);
+ 
+ LOGDEBUG("formed surface '%s' [%x].", word, surfaces[i].id);
+ 
+ return;
 }
 
 int getpile(refer_t id) {
@@ -164,4 +272,8 @@ int pullitem(refer_t item, int need, refer_t pile) {
  }*/
  
  return need < 1;
+}
+
+void viewsurface(const char* word) {
+ 
 }

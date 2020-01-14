@@ -1,16 +1,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL2/SDL.h>
+#ifndef __ANDROID__
+ #include <SDL2/SDL.h>
+#else
+ #include <SDL.h>
+#endif
 
 #define MAX_BINDS 4
 #define MAX_CKEYS 128
 #define MAX_VKEYS 64
+#define MAX_TOUCHES 8
 
 #define NOKEY 0
 
 // ==================================================
 // structures
+
+typedef struct {
+ SDL_FingerID finger;
+ char* alias;
+ float x, y;
+} touch_t;
 
 typedef struct {
  int code;
@@ -32,6 +43,7 @@ extern void menuchar(int);
 // declarations
 
 ckey_t keys[MAX_CKEYS] = { 0 };
+touch_t touches[MAX_TOUCHES] = { 0 };
 vkey_t binds[MAX_VKEYS] = { 0 };
 
 int key_listen = 0; // boolean
@@ -199,6 +211,13 @@ void pollevents() {
   switch (e.type) {
   case SDL_QUIT:
    exit(0);
+   break;
+   
+  case SDL_FINGERDOWN:
+  case SDL_FINGERUP:
+   break;
+   
+  case SDL_FINGERMOTION:
    break;
    
   case SDL_KEYDOWN:

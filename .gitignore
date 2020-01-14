@@ -51,11 +51,26 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Android
+/.idea/
+/app/.externalNativeBuild
+/app/jni/lua
+/app/jni/SDL2*
+#/app/jni/src/src
+#/app/src/assets/res
+/app/src/main/java/org/libsdl
+*gradle*
+!build.gradle
+!gradlew
+!gradlew.bat
+local.properties
+mininet.iml
+
 # Assets
 *.png
 *.wav
 
-# Extra files
+# Eclipse
 /.settings/
 .project
 .cproject

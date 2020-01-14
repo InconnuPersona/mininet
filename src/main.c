@@ -1,369 +1,356 @@
 #include "main.h"
 
-#include <math.h>
-#include <time.h>
+#include <errno.h>
+#include <dirent.h>
+#include <libgen.h>
+#include <stdarg.h>
+#include <sys/stat.h>
 
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_net.h>
+#ifndef __ANDROID__
+ #include <SDL2/SDL_image.h>
+ #include <SDL2/SDL_mixer.h>
+ #include <SDL2/SDL_net.h>
+#else
+ #include <jni.h>
+ #include <SDL_image.h>
+ #include <SDL_mixer.h>
+ #include <SDL_net.h>
+#endif
 
-#define MAX_CRCVALUES 256
+#ifdef __ANDROID__
+ #define DEFAULTPATH SDL_AndroidGetInternalStoragePath()
+#else
+ #define DEFAULTPATH "."
+#endif
 
-int crctable[MAX_CRCVALUES];
+#ifdef _WIN32
+ #define MAKEDIR(Path) mkdir(Path)
+#else
+ #define MAKEDIR(Path) mkdir(Path, 0)
+#endif
+
+#define MAX_FILES 8
+
+typedef struct {
+ SDL_RWops* handle;
+ refer_t id;
+ char* string;
+} file_t;
+
+file_t files[MAX_FILES] = { 0 };
+
+char pathholder[MAX_PATHLENGTH] = { 0 };
 
 // ==================================================
-// random number functions
+// file functions
 
-void seedrandom(double seed) {
- srand(seed);
-}
-
-void seedrandomtime() {
- seedrandom(time(NULL));
-}
-
-int randomid() {
- return rand() + 1;
-}
-
-int randominteger(int range) {
- //return rand() % (range + 1);
- return rand() % range;
-}
-
-float randomfloat() {
- return (float) rand() / RAND_MAX;
-}
-
-double randomdouble() {
- return (double) rand() / RAND_MAX;
-}
-
-double gaussian() {
- static int havenext = 0;
- static double next;
+void copyfile(const char* source, const char* target) {
+ refer_t id;
  
- double s, scalar, v1, v2;
- 
- if (havenext) {
-  havenext = 0;
-  return next;
+ if (!source || !target) {
+  LOGREPORT("received invalid file paths.");
+  return;
  }
- else {
-  do {
-   v1 = 2 * randomdouble() - 1;
-   v2 = 2 * randomdouble() - 1;
-   
-   s = v1 * v1 + v2 * v2;
+ 
+ id = readfile(source);
+ 
+ if (id == NOFILE) {
+  LOGREPORT("unable to read file '%s.'", source);
+  return;
+ }
+ 
+ writefile(target, (byte_t*) filetext(id), fileangth(id));
+ 
+ freefile(id);
+ 
+ return;
+}
+
+void freefile(refer_t file) {
+ int i;
+ 
+ for (i = 0; i < MAX_FILES; i++) {
+  if (files[i].id == file) {
+   break;
   }
-  while (s >= 1 || s == 0);
+ }
+ 
+ if (i == MAX_FILES) {
+  LOGREPORT("unable to find file slot [%i].", file);
+  return;
+ }
+ 
+ if (files[i].handle) {
+  SDL_RWclose(files[i].handle);
+ }
+ 
+ files[i].handle = NULL;
+ files[i].id = NOFILE;
+ 
+ if (files[i].string) {
+  free(files[i].string);
+ }
+ 
+ return;
+}
+
+int fileangth(refer_t file) {
+ int i;
+ 
+ for (i = 0; i < MAX_FILES; i++) {
+  if (files[i].id == file) {
+   break;
+  }
+ }
+ 
+ if (i == MAX_FILES) {
+  LOGREPORT("unable to find file slot [%i].", file);
+  return -1;
+ }
+ 
+ return SDL_RWsize(files[i].handle);;
+}
+
+int fileextant(const char* path) {
+ SDL_RWops* handle;
+ 
+ if (!path) {
+  LOGREPORT("received invalid file path.");
+  return 0;
+ }
+ 
+ handle = SDL_RWFromFile(path, "rb");
+ 
+ if (!handle) {
+  return 0;
+ }
+ 
+ SDL_RWclose(handle);
+ 
+ return 1;
+}
+
+const char* filetext(refer_t file) {
+ int i;
+ 
+ for (i = 0; i < MAX_FILES; i++) {
+  if (files[i].id == file) {
+   break;
+  }
+ }
+ 
+ if (i == MAX_FILES) {
+  LOGREPORT("unable to find file slot [%i].", file);
+  return NULL;
+ }
+ 
+ return files[i].string;
+}
+
+const char* getfilepath(const char* path) {
+ if (!path) {
+  LOGREPORT("received invalid file path.");
+  return NULL;
+ }
+ 
+ if (!strcmp(path, ".")) {
+  strncpy(pathholder, DEFAULTPATH, MAX_PATHLENGTH);
   
-  scalar = sqrt(-2 * log(s));
+  return pathholder;
+ }
+ 
+ snprintf(pathholder, MAX_PATHLENGTH, "%s/%s", DEFAULTPATH, path);
+
+ return pathholder;
+}
+
+int makepath(const char* given) {
+ struct stat info;
+ char* c;
+ char* s;
+ char path[MAX_PATHLENGTH];
+ 
+ if (!given) {
+  LOGREPORT("received invalid path.");
+  return 0;
+ }
+ 
+ strncpy(path, given, MAX_PATHLENGTH);
+ 
+ s = path;
+ 
+ while ((c = strtok(s, "/"))) {
+  if (c != s) {
+   *(c - 1) = '/';
+  }
   
-  next = v2 * scalar;
-  havenext = 1;
+  if (stat(path, &info) != EXIT_SUCCESS) {
+   if (MAKEDIR(path) != EXIT_SUCCESS) {
+	LOGREPORT("unable to create entry '%s", path);
+	return 0;
+   }
+  }
+  else if (!S_ISDIR(info.st_mode)) {
+   LOGREPORT("unable to make path '%s'", path);
+   return 0;
+  }
   
-  return v1 * scalar;
+  s = NULL;
  }
  
  return 0;
 }
 
-// ==================================================
-// checksum functions
-
-void initiatechecksum() {
- int i, j, r;
+refer_t newfileid() {
+ int i, id;
  
- for (i = 0; i < MAX_CRCVALUES; i++) {
-  r = i;
+ do {
+ newfileid_loop:
+  id = randomid();
   
-  for (j = 0; j < 8; j++) {
-   if (r & 1) {
-	r >>= 1;
-	r ^= 0xedb88320;
-   }
-   else {
-	r >>= 1;
+  for (i = 0; i < MAX_FILES; i++) {
+   if (id == files[i].id) {
+    goto newfileid_loop;
    }
   }
   
-  crctable[i] = r;
+  return id;
  }
+ while (1);
 }
 
-int checksum(byte_t* bytes, int length, int checksum) {
- int i;
+refer_t readfile(const char* path) {
+ long length;
+ int i, read;
  
- checksum = ~checksum;
- 
- for (i = 0; i < length; i++) {
-  checksum = (checksum >> 8) ^ crctable[(checksum & 0xff) ^ bytes[i]];
+ if (!path) {
+  LOGREPORT("received invalid file path.");
+  return NOFILE;
  }
  
- return ~checksum;
+ for (i = 0; i < MAX_FILES; i++) {
+  if (!files[i].id) {
+   break;
+  }
+ }
+ 
+ if (i == MAX_FILES) {
+  LOGREPORT("unable to find free slot for file '%s'.", path);
+  return NOFILE;
+ }
+ 
+ files[i].handle = SDL_RWFromFile(path, "rb");
+ files[i].id = newfileid();
+ 
+ if (!files[i].handle) {
+  LOGREPORT("unable to open file '%s'.", path);
+  
+  goto readfile_error;
+ }
+ 
+ length = fileangth(files[i].id);
+ 
+ if (length < 0) {
+  LOGREPORT("unable to tell file length of '%s'.", path);
+  
+  goto readfile_error;
+ }
+ 
+ files[i].string = malloc(length + 1);
+ 
+ if (!files[i].string) {
+  LOGREPORT("unable to allocate file '%s' contents (%li bytes).", path, length);
+  
+  goto readfile_error;
+ }
+ 
+ read = SDL_RWread(files[i].handle, files[i].string, sizeof(char), length);
+ 
+ if (read != length) {
+  LOGREPORT("unable to read file '%s'.", path);
+  
+  goto readfile_error;
+ }
+ 
+ files[i].string[length] = '\0';
+ 
+ LOGREPORT("read file '%s'.", path);
+ 
+ return files[i].id;
+ 
+readfile_error:
+ freefile(files[i].id);
+ 
+ return NOFILE;
 }
 
-// ==================================================
-// mathematical functions
-
-float inversesquareroot(float value) {
- float x, y;
- int i;
+// Entering a negative recurse level count will sort through all levels under
+// the file system in practicallity; since there would not be over two million
+// files the program needs to handle. choosing an overly large negative number
+// is unsafe though, and could shorten the limit tolerance.
+void recursepath(const char* path, recurse_f function, int level) {
+ struct dirent* entry;
+ DIR* d;
+ char buffer[MAX_PATHLENGTH];
  
- x = value * 0.5f;
- y = value;
+ d = opendir(path);
  
- i = *((int*) &value);
- i = 0x5f3759df - (i >> 1);
- 
- y = *((float*) &i);
- 
- // reiterate this statement to produce higher precision results;
- // four iterations will yield adequate precision for floating points.
- y *= 1.5f - x * y * y;
- 
- return y;
-}
-
-float zigzag(float value, float interval) {
- float a, b, c, fvalue, mvalue;
- 
- value *= 1.f / (interval * 2.f);
- 
- fvalue = floor(value);
- mvalue = fmod(fvalue, 2);
- 
- a = -1 + 2 * mvalue;
- b = -mvalue;
- c = (value - fvalue) * a + b + 0.5f;
- 
- return c;
-}
-
-float cutoff(float value, float interval) {
- float a, b, c, fvalue;
- 
- value *= (2.f / interval);
- 
- fvalue = floor(value);
- 
- a = fmod(fvalue, 2);
- b = 1 + -a;
- c = (value - fvalue) * b + a;
- 
- return c;
-}
-
-// ==================================================
-// timer functions
-
-void settimer(watch_t* watch, timer_e type, float start, float value) {
- watch->type = type;
- 
- if (start != CURRENTTIME) {
-  watch->start = watch->end = start;
+ if (d) {
+  while ((entry = readdir(d))) {
+   if (entry->d_type == DT_REG) {
+	function(path, entry->d_name);
+   }
+   else if (level != 0 && entry->d_type == DT_DIR) {
+	if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
+	 snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, entry->d_name);
+	 
+	 recursepath(buffer, function, level - 1);
+	}
+   }
+  }
+  
+  closedir(d);
  }
  else {
-  watch->start = watch->end = currenttime();
+  LOGREPORT("unable to open directory '%s'.", path);
+ }
+}
+
+void writefile(const char* path, const byte_t* bytes, long length) {
+ SDL_RWops* handle;
+ int written;
+ 
+ if (!path || !bytes || length < 0) {
+  LOGREPORT("received invalid arguments.");
+  return;
  }
  
- watch->value = value;
- watch->set = 1;
+ handle = SDL_RWFromFile(path, "wb");
+ 
+ if (!handle) {
+  LOGREPORT("unable to open file '%s'.", path);
+  
+  goto writefile_end;
+ }
+ 
+ written = SDL_RWwrite(handle, bytes, sizeof(byte_t), length);
+ 
+ if (written != length) {
+  LOGREPORT("unable to write to file '%s'.", path);
+  
+  goto writefile_end;
+ }
+ 
+ LOGREPORT("wrote to file '%s.", path);
+ 
+writefile_end:
+ SDL_RWclose(handle);
  
  return;
-}
-
-float readtimer(watch_t* watch) {
- float other, value;
- 
- if (!watch->set) {
-  LOGREPORT("received unset timer to read.");
-  return 0;
- }
- 
- switch (watch->type) {
- case TIMER_FALSELAPSE:
-  value = currenttime();
-  
-  other = value - (watch->end + watch->value);
-  
-  if (other >= 0) {
-   watch->end = value;
-  }
-  
-  return other;
-  
- case TIMER_SIMPLELAPSE:
-  value = currenttime();
-  
-  other = (value - watch->end) / watch->value;
-  
-  if (other >= 0) {
-   watch->end = value;
-  }
-  
-  return other;
-  
- case TIMER_SPACEDLAPSE:
-  value = currenttime();
-  
-  other = floor((value - watch->end) / watch->value);
-  
-  if (other > 0) {
-   watch->end += other * watch->value;
-  }
-  
-  return other;
-  
- default:
-  break;
- }
- 
- return 0;
-}
-
-float currenttime() {
- return SDL_GetTicks() / 1000.f;
-}
-
-void delaythread(float seconds) {
- fflush(stdout);
- 
- SDL_Delay(seconds * 1000.f);
 }
 
 // ==================================================
-// functions
-
-void boundbox(aabb_t* aabb, float x0, float y0, float x1, float y1) {
- if (!aabb) {
-  return;
- }
- 
- aabb->x0 = x0;
- aabb->y0 = y0;
- aabb->x1 = x1;
- aabb->y1 = y1;
-}
-
-void binddomain(aabb_t* aabb, float x0, float y0, float x1, float y1) {
- if (!aabb) {
-  return;
- }
- 
- BOUNDVALUE(aabb->x0, x0, x1);
- BOUNDVALUE(aabb->x1, x0, x1);
- BOUNDVALUE(aabb->y0, y0, y1);
- BOUNDVALUE(aabb->y1, y0, y1);
- 
- return;
-}
-
-int onbounds(int x, int y, aabb_t* aabb) {
- return (x == aabb->x0) || (x == aabb->x1) || (y == aabb->y0) || (y == aabb->y1);
-}
-
-void ensuredomain(aabb_t* aabb) {
- int medium;
- 
- if (!aabb) {
-  return;
- }
- 
- if (aabb->x1 < aabb->x0) {
-  medium = aabb->x1;
-  aabb->x1 = aabb->x0;
-  aabb->x0 = medium;
- }
- 
- if (aabb->y1 < aabb->y0) {
-  medium = aabb->y1;
-  aabb->y1 = aabb->y0;
-  aabb->y0 = medium;
- }
-}
-
-void loadlibraries() {
- int sdlflags = SDL_INIT_AUDIO | SDL_INIT_VIDEO;
- int sdlimageflags = IMG_INIT_PNG;
- int sdlmixerflags = 0; //MIX_INIT_MP3;
- 
- if (SDL_Init(sdlflags) != 0) {
-  LOGREPORT("could not load 'SDL2' library - %s.", SDL_GetError());
-  exit(EXIT_FAILURE);
- }
- 
- if (IMG_Init(sdlimageflags) != sdlimageflags) {
-  LOGREPORT("could not load 'SDL2' image library - %s.", IMG_GetError());
-  exit(EXIT_FAILURE);
- }
- 
- if (Mix_Init(sdlmixerflags) != sdlmixerflags) {
-  LOGREPORT("could not load 'SDL2' mixer library - %s.", Mix_GetError());
-  // exit(EXIT_FAILURE);
- }
- 
- if (SDLNet_Init() == -1) {
-  LOGREPORT("could not load 'SDL2' network library - %s.", SDLNet_GetError());
-  exit(EXIT_FAILURE);
- }
- 
- return;
-}
-
-void closelibraries() {
- SDLNet_Quit();
- Mix_Quit();
- IMG_Quit();
- SDL_Quit();
-}
-
-void printhostdata() {
- int endian = 0x01;
- 
- LOGREPORT("host;");
- 
- printf(" character width: '%i'\n integer width: '%i'\n", sizeof(char), sizeof(int));
- printf(" pointer width: '%i'\n endian: %s", sizeof(void*), (int) ((byte_t*) &endian)[0] ? "big" : "little");
- 
- printf("\n");
- 
- return;
-}
-
-void bindkeys() {
- alias(SDLK_UP, "up");
- alias(SDLK_w, "up");
- alias(SDLK_DOWN, "down");
- alias(SDLK_s, "down");
- alias(SDLK_LEFT, "left");
- alias(SDLK_a, "left");
- alias(SDLK_RIGHT, "right");
- alias(SDLK_d, "right");
- alias(SDLK_c, "attack");
- alias(SDLK_RETURN, "menu");
- alias(SDLK_x, "menu");
- alias(SDLK_ESCAPE, "menu");
-}
-
-char* reprintstring(const char* string) {
- char* copy;
- int length;
- 
- if (!string) {
-  return 0;
- }
- 
- length = strlen(string) + 1;
- 
- copy = (char*) malloc(length);
- 
- memcpy(copy, string, length);
- 
- return copy;
-}
-
+// game functions
 
 void renderfocusnagger(screen_t* screen, int ticks) {
  const char* msg = "Click to focus!";
@@ -398,4 +385,154 @@ void renderfocusnagger(screen_t* screen, int ticks) {
  else {
   renderfont(msg, xx, yy, getcolor(5, 555, 555, 555), screen);
  }
+}
+
+// ==================================================
+// library functions
+
+void bindkeys() {
+ alias(SDLK_UP, "up");
+ alias(SDLK_w, "up");
+ alias(SDLK_DOWN, "down");
+ alias(SDLK_s, "down");
+ alias(SDLK_LEFT, "left");
+ alias(SDLK_a, "left");
+ alias(SDLK_RIGHT, "right");
+ alias(SDLK_d, "right");
+ alias(SDLK_c, "attack");
+ alias(SDLK_RETURN, "menu");
+ alias(SDLK_x, "menu");
+ alias(SDLK_ESCAPE, "menu");
+}
+
+void closelibraries() {
+ SDLNet_Quit();
+ Mix_Quit();
+ IMG_Quit();
+ SDL_Quit();
+}
+
+float currenttime() {
+ return SDL_GetTicks() / 1000.f;
+}
+
+void delaythread(float seconds) {
+ fflush(stdout);
+ 
+ SDL_Delay(seconds * 1000.f);
+}
+
+void loadasset(const char* path, const char* file) {
+ DIR* dir;
+ char source[MAX_PATHLENGTH];
+ char target[MAX_PATHLENGTH];
+ 
+ snprintf(source, MAX_PATHLENGTH, "%s/%s", path, file);
+ snprintf(target, MAX_PATHLENGTH, "%s", getfilepath(source));
+ 
+ if (fileextant(target)) {
+  return;
+ }
+ 
+ dir = opendir(getfilepath(path));
+ 
+ if (dir) {
+  closedir(dir);
+ }
+ else {
+  makepath(getfilepath(path));
+ }
+ 
+// LOGDEBUG("copying file '%s' to '%s'.", source, target);
+
+ copyfile(source, target);
+ 
+ return;
+}
+
+void loadassets() {
+#ifndef __ANDROID__
+ LOGREPORT("loading assets into '%s'.", getfilepath("."));
+ 
+ recursepath("res", loadasset, -1);
+#endif
+ 
+ return;
+}
+
+void loadlibraries() {
+ int sdlflags = SDL_INIT_AUDIO | SDL_INIT_VIDEO;
+ int sdlimageflags = IMG_INIT_PNG;
+ int sdlmixerflags = 0; //MIX_INIT_MP3;
+ 
+ if (SDL_Init(sdlflags) != 0) {
+  LOGREPORT("could not load 'SDL2' library - %s.", SDL_GetError());
+  exit(EXIT_FAILURE);
+ }
+ 
+ if (IMG_Init(sdlimageflags) != sdlimageflags) {
+  LOGREPORT("could not load 'SDL2' image library - %s.", IMG_GetError());
+  exit(EXIT_FAILURE);
+ }
+ 
+ if (Mix_Init(sdlmixerflags) != sdlmixerflags) {
+  LOGREPORT("could not load 'SDL2' mixer library - %s.", Mix_GetError());
+  // exit(EXIT_FAILURE);
+ }
+ 
+ if (SDLNet_Init() == -1) {
+  LOGREPORT("could not load 'SDL2' network library - %s.", SDLNet_GetError());
+  exit(EXIT_FAILURE);
+ }
+ 
+ return;
+}
+
+void logreport(const char* function, const char* format, ...) {
+ va_list args;
+ char buffer[256];
+ 
+ if (!function || !function) {
+  return;
+ }
+ 
+ snprintf(buffer, sizeof(buffer), "%s: %s", function, format);
+ 
+ va_start(args, format);
+ 
+ SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, buffer, args);
+ 
+ va_end(args);
+ 
+ return;
+}
+
+void printhostdata() {
+ int endian = 0x01;
+ 
+ LOGREPORT("host;");
+ 
+ LOGREPORT(" character width: '%i'", sizeof(char));
+ LOGREPORT(" endian: %s", (int) ((byte_t*) &endian)[0] ? "big" : "little");
+ LOGREPORT(" integer width: '%i'", sizeof(int));
+ LOGREPORT(" pointer width: '%i'", sizeof(void*));
+ 
+ return;
+}
+
+char* reprintstring(const char* string) {
+ char* copy;
+ int length;
+ 
+ if (!string) {
+  return 0;
+ }
+ 
+ length = strlen(string) + 1;
+ 
+ copy = (char*) malloc(length);
+ 
+ memcpy(copy, string, length);
+ 
+ return copy;
 }

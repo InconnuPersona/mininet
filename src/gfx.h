@@ -2,7 +2,12 @@
 
 #include "base.h"
 
-#define GAMETITLE "Mininet"
+#ifdef __ANDROID__
+ #define GAMETITLE "org.mininet.sdl"
+#else
+ #define GAMETITLE "Mininet"
+#endif
+
 #define RENDERWIDTH 160
 #define RENDERHEIGHT 120
 #define SCALE 3

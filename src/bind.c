@@ -390,11 +390,6 @@ int passmethod(const char* method, const char* table, const char* subtable, lua_
  }
 
  if (passformat) {
-  if (!passed) {
-   LOGREPORT("received invalid arguments.");
-   return 0;
-  }
-  
   while (*passformat) {
    switch (*passformat) {
    case 'b':
@@ -463,12 +458,23 @@ int rollmethod(const char* method, const char* table, lua_State* L, const char* 
  return passmethod(method, table, NULL, L, format, args, NULL);
 }
 
-void uploadfile(const char* file, const char* label, lua_State* L) {
- luaL_dofile(L, file);
+void uploadfile(const char* path, const char* label, lua_State* L) {
+ refer_t file;
+ 
+ file = readfile(path);
+ 
+ if (file == NOFILE) {
+  LOGREPORT("unable to upload lua file '%s'.", path);
+  return;
+ }
+ 
+ luaL_dostring(L, filetext(file));
  
  lua_setglobal(L, label);
  
  lua_settop(L, 0);
+ 
+ freefile(file);
 }
 
 void uploadsubtable(luatable_t table, const char* label, const char* parent, lua_State* L) {

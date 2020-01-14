@@ -1,7 +1,31 @@
-#include "item.h"
+#include "main.h"
 #include "bind.h"
 
-void appenditem(const char* word, item_e type, ...) {
+extern void appenditem(const char* word, item_e type, int sprite, int color);
+
+int hassurfacemethod(const char* method, refer_t surface) {
+// int i;
+// 
+// if (!method || !unit) {
+//  LOGREPORT("received invalid arguments.");
+//  return 0;
+// }
+// 
+// word = getunitword(unit->word);
+// 
+// if (!word || !word->name) {
+//  LOGREPORT("unit '%x' is invalidword bound.", unit->id);
+//  return 0;
+// }
+// 
+ return 0;//hasluamethod(method, word->name, L_game);
+}
+
+void rendersurface(refer_t menu, refer_t pliant) {
+// if (hassurfacemethod())
+}
+
+void ticksurface(refer_t menu, refer_t pliant) {
  
 }
 
@@ -23,8 +47,10 @@ NEWLUAFUNCTION(conceive) {
   switch (type) {
   case ITEM_RESOURCE:
    if (lua_gettop(L) >= 4) {
-	sprite = luaL_checkstring(L, 3);
-	color = luaL_checkstring(L, 4);
+	sprite = luaL_checknumber(L, 3);
+	color = luaL_checknumber(L, 4);
+	
+	appenditem(word, type, sprite, color);
    }
    else {
 	LUAARGUE("item.conceive");

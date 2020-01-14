@@ -4,6 +4,7 @@
 
 #define GAMERATE (NETWORKRATE * 1)
 #define GAMEVERSION 0x0000002
+#define MAX_PATHLENGTH 128
 #define MAX_WORDLENGTH 32
 #define TICKRATE 30
 
@@ -37,6 +38,8 @@ void tickgame();
 
 void bindkeys();
 void renderfocusnagger(screen_t* screen, int ticks);
+
+void loadassets();
 
 void loadsounds();
 void playsound(const char* sound);

@@ -1,16 +1,12 @@
-Inventory = {}
+Inventory = {
+ type = item.STORAGEVIEW,
+}
 
-Inventory.type = item.STORAGEVIEW
-
-function Inventory.define()
+function Inventory:render()
  
 end
 
-function Inventory.render()
- 
-end
-
-function Inventory.tick()
+function Inventory:tick()
  
 end
 

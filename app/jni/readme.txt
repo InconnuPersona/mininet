@@ -1,0 +1,1 @@
+The source folder and lua, SDL2, SDL2_image, SDL2_mixer, SDL2_net projects must be copied or linked here.

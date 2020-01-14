@@ -144,24 +144,30 @@ void handlegameclient(refer_t client) {
  commands = handleinput();
  
  if (client != INVALIDCLIENT) {
-  bindgamelevel(session.clients[client].level);
-  
-  player = getunit(session.clients[client].entity);
-  
-  if (!player) {
-   return;
+  if (session.clients[client].inmenu) {
+   commands = 0;
+   
+   ticksurface(session.clients[client].inmenu, session.clients[client].entity);
   }
-  
-  player->pliant.commands = commands;
+  else {
+   bindgamelevel(session.clients[client].level);
+   
+   player = getunit(session.clients[client].entity);
+   
+   if (!player) {
+	return;
+   }
+   
+   player->pliant.commands = commands;
+  }
  }
  
  if (session.type == GAME_CLIENT) {
-  //if (client not in menu) {
-  // send client movements and actions
+  if (!session.clients[client].inmenu) {
    if (commands != oldcommand) {
     pushcommands(commands);
    }
-  //}
+  }
  }
  
  bindlevel(NULL);

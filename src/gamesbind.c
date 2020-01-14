@@ -1,8 +1,5 @@
-#include "host.h"
 #include "main.h"
 #include "bind.h"
-
-#include <dirent.h>
 
 // ==================================================
 // declarations
@@ -14,7 +11,7 @@ lua_State* L_game;
 
 extern void assigntile(int index, const char* name);
 extern refer_t designunit(const char* word, int extra);
-extern void formsurface(const char* word);
+extern void formsurface(const char* word, surface_e type);
 //extern void appenditem();
 
 // ==================================================
@@ -120,17 +117,17 @@ ENDLUATABLE;
 // ==================================================
 // functions
 
-void loaditem(const char* string) {
- char buffer[64];
+void loaditem(const char* path, const char* string) {
+ char buffer[MAX_PATHLENGTH];
  char* c;
  char* label;
  
  c = strchr(string, '.');
  
  if (c && !strncmp(c, ".lua", 4)) {
-  memset(buffer, 0, 64);
+  memset(buffer, 0, MAX_PATHLENGTH);
   
-  sprintf(buffer, "res/item/%s", string);
+  snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, string);
   
   *c = '\0';
   
@@ -150,45 +147,34 @@ void loaditem(const char* string) {
 	callmethod("append", label, L_game, NULL);
    }
    
-   if (hasluamethod("define", label, L_game)) {
-	LOGREPORT("loading %s.define.", label);
-	
-	formsurface(label);
+   if (getinternal("type", label, L_game) != VIEW_NONE) {
+	formsurface(label, getinternal("type", label, L_game));
    }
   }
  }
 }
 
 void loaditems() {
- DIR* d;
- struct dirent* dir;
+ recursepath(getfilepath("res/item"), loaditem, 0);
  
- d = opendir("res/item");
- 
- if (d) {
-  while ((dir = readdir(d))) {
-   loaditem(dir->d_name);
-  }
-  
-  closedir(d);
- }
+ return;
 }
 
-void loadtile(const char* string) {
- char buffer[64];
+void loadtile(const char* path, const char* file) {
+ char buffer[MAX_PATHLENGTH];
  char* c;
  char* label;
  
- c = strchr(string, '.');
+ c = strchr(file, '.');
  
  if (c && !strncmp(c, ".lua", 4)) {
-  memset(buffer, 0, 64);
+  memset(buffer, 0, MAX_PATHLENGTH);
   
-  sprintf(buffer, "res/tile/%s", string);
+  snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, file);
   
   *c = '\0';
   
-  label = reprintstring(string);
+  label = reprintstring(file);
   
   if (strlen(label) > MAX_WORDLENGTH) {
    LOGREPORT("tile word '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
@@ -210,33 +196,24 @@ void loadtile(const char* string) {
 }
 
 void loadtiles() {
- DIR* d;
- struct dirent* dir;
- 
  assigntile(NOTILE, "void");
  
- d = opendir("res/tile");
+ recursepath(getfilepath("res/tile"), loadtile, 0);
  
- if (d) {
-  while ((dir = readdir(d))) {
-   loadtile(dir->d_name);
-  }
-  
-  closedir(d);
- }
+ return;
 }
 
-void loadunit(const char* string) {
- char buffer[64];
+void loadunit(const char* path, const char* string) {
+ char buffer[MAX_PATHLENGTH];
  char* c;
  char* label;
  
  c = strchr(string, '.');
  
  if (c && !strncmp(c, ".lua", 4)) {
-  memset(buffer, 0, 64);
+  memset(buffer, 0, MAX_PATHLENGTH);
   
-  sprintf(buffer, "res/unit/%s", string);
+  snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, string);
   
   *c = '\0';
   
@@ -262,18 +239,9 @@ void loadunit(const char* string) {
 }
 
 void loadunits() {
- DIR* d;
- struct dirent* dir;
+ recursepath(getfilepath("res/unit"), loadunit, 0);
  
- d = opendir("res/unit");
- 
- if (d) {
-  while ((dir = readdir(d))) {
-   loadunit(dir->d_name);
-  }
-  
-  closedir(d);
- }
+ return;
 }
 
 void enablegame() {

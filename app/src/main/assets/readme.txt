@@ -1,0 +1,1 @@
+The resources folder must be copied or linked here.

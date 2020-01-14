@@ -40,8 +40,8 @@ typedef struct {
 } detail_t;
 
 typedef struct {
+ int id;
  char* word;
- char* name;
  item_e type;
  int source; // wood, rock, etc.
  int sprite;
@@ -65,7 +65,7 @@ typedef struct {
 } recipe_t;
 
 typedef struct {
- refer_t id;
+ int id;
  char* word;
  surface_e type;
  recipe_t recipes[MAX_RECIPES];
@@ -80,3 +80,5 @@ int hasitem(refer_t item, int count, refer_t pile);
 int pullitem(refer_t item, int count, refer_t pile);
 
 void renderhotbaritem(refer_t item, int x, int y, screen_t* screen);
+void rendersurface(refer_t menu, refer_t pliant);
+void ticksurface(refer_t menu, refer_t pliant);

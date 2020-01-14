@@ -2,13 +2,19 @@
 
 #undef main
 
+#ifdef __ANDROID__
+ #define main SDL_main
+#endif
+
 screen_t lightscreen, screen;
-int debug = 0;
+int debug = 1;
 int renders = 0;
 int ticks = 0;
 
 void preinit() {
  loadlibraries();
+ 
+ loadassets();
  
  createview();
  
@@ -24,8 +30,8 @@ void init() {
  
  INDEBUG(printhostdata());
  
- createscreen(&screen, RENDERWIDTH, RENDERHEIGHT, "res/icons.png");
- createscreen(&lightscreen, RENDERWIDTH, RENDERHEIGHT, "res/icons.png");
+ createscreen(&screen, RENDERWIDTH, RENDERHEIGHT, getfilepath("res/icons.png"));
+ createscreen(&lightscreen, RENDERWIDTH, RENDERHEIGHT, getfilepath("res/icons.png"));
  
  bindkeys();
  

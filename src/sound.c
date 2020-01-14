@@ -2,7 +2,11 @@
 
 #include <dirent.h>
 
-#include <SDL2/SDL_mixer.h>
+#ifndef __ANDROID__
+ #include <SDL2/SDL_mixer.h>
+#else
+ #include <SDL_mixer.h>
+#endif
 
 #define AUDIORATE 22050
 

@@ -13,6 +13,8 @@
 #define SHORTMASK 0xffff
 #define SHORTWIDTH (sizeof(short) * BYTEWIDTH)
 
+#define NOFILE 0
+
 #define BOUNDVALUE(Value, Minimum, Maximum) \
  if (Value < Minimum) { \
   Value = Minimum; \
@@ -34,8 +36,15 @@
 
 #define INTEGEREXTENT(Type) (unsigned int) (SIGNED(Type) ? SIGNEDEXTENT(Type) : UNSIGNEDEXTENT(Type))
 
-#define LOGREPORT(...) \
- { printf("%s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n"); }
+#ifndef __ANDROID__
+ #define LOGREPORT(...) \
+  { printf("%s: ", __FUNCTION__); printf(__VA_ARGS__); printf("\n"); }
+#else
+ #define LOGREPORT(...) \
+  { \
+   logreport(__FUNCTION__, __VA_ARGS__); \
+  }
+#endif
 
 #define LOGDEBUG(...) INDEBUG(LOGREPORT(__VA_ARGS__))
 
@@ -80,6 +89,8 @@ typedef struct {
  float value;
 } watch_t;
 
+typedef void (*recurse_f)(const char* path, const char* file);
+
 typedef unsigned char byte_t;
 typedef unsigned int uint_t;
 
@@ -88,9 +99,22 @@ typedef int refer_t;
 
 extern int debug;
 
+void logreport(const char* function, const char* format, ...);
+
 float inversesquareroot(float value);
 float cutoff(float value, float interval);
 float zigzag(float value, float interval);
+
+void copyfile(const char* source, const char* target);
+int fileangth(refer_t file);
+int fileextant(const char* path);
+const char* filetext(refer_t file);
+void freefile(refer_t file);
+const char* getfilepath(const char* path);
+int makepath(const char* path);
+refer_t readfile(const char* path);
+void recursepath(const char* path, recurse_f function, int level);
+void writefile(const char* path, const byte_t* bytes, long length);
 
 float currenttime();
 void delaythread(float seconds);
