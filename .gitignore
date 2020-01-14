@@ -56,8 +56,6 @@ dkms.conf
 /app/.externalNativeBuild
 /app/jni/lua
 /app/jni/SDL2*
-/app/jni/src/src
-/app/src/assets/res
 /app/src/main/java/org/libsdl
 *gradle*
 !build.gradle
