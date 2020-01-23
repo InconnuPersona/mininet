@@ -274,7 +274,7 @@ refer_t readfile(const char* path) {
  
  files[i].string[length] = '\0';
  
- LOGREPORT("read file '%s'.", path);
+// LOGDEBUG("read file '%s'.", path);
  
  return files[i].id;
  
@@ -341,7 +341,7 @@ void writefile(const char* path, const byte_t* bytes, long length) {
   goto writefile_end;
  }
  
- LOGREPORT("wrote to file '%s.", path);
+// LOGDEBUG("wrote to file '%s.", path);
  
 writefile_end:
  SDL_RWclose(handle);
@@ -399,6 +399,8 @@ void bindkeys() {
  alias(SDLK_a, "left");
  alias(SDLK_RIGHT, "right");
  alias(SDLK_d, "right");
+ alias(SDLK_LCTRL, "attack");
+ alias(SDLK_RCTRL, "attack");
  alias(SDLK_c, "attack");
  alias(SDLK_RETURN, "menu");
  alias(SDLK_x, "menu");
@@ -452,7 +454,7 @@ void loadasset(const char* path, const char* file) {
 
 void loadassets() {
 #ifndef __ANDROID__
- LOGREPORT("loading assets into '%s'.", getfilepath("."));
+ LOGDEBUG("loading assets into '%s' folder.", getfilepath("."));
  
  recursepath("res", loadasset, -1);
 #endif

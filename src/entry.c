@@ -7,7 +7,7 @@
 #endif
 
 screen_t lightscreen, screen;
-int debug = 1;
+int debug = 0;
 int renders = 0;
 int ticks = 0;
 

@@ -1,0 +1,1 @@
+The source folder 'src' must be copied or linked here.

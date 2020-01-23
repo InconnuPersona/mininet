@@ -62,6 +62,10 @@ void disablemenu() {
  lua_close(L_menu);
 }
 
+int iskeyed(char character) {
+ return ((character >= ' ' && character <= '~') || character == '\b' || character == '\r' || character == '\033');
+}
+
 int ismenu(const char* other) {
  return !strcmp(menu, other);
 }
@@ -71,13 +75,13 @@ void setmenu(const char* newmenu) {
  
  menu = (char*) newmenu;
  
- if (menu) {
+ if (menu && hasluamethod("reset", menu, L_menu)) {
   callmethod("reset", menu, L_menu, NULL);
  }
 }
 
 void menuchar(int character) {
- if (menu && ((character >= ' ' && character <= '~') || character == '\b' || character == '\r' || character == '\033')) {
+ if (menu && iskeyed(character) && hasluamethod("text", menu, L_menu)) {
   callmethod("text", menu, L_menu, "n", character);
  }
 }
@@ -91,7 +95,7 @@ void tickmenu() {
 void rendermenu(screen_t* screen) {
  le_screen = screen;
  
- if (menu) {
+ if (menu && hasluamethod("render", menu, L_menu)) {
   callmethod("render", menu, L_menu, NULL);
  }
  

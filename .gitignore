@@ -54,6 +54,7 @@ dkms.conf
 # Android
 /.idea/
 /app/.externalNativeBuild
+/app/build
 /app/jni/lua
 /app/jni/SDL2*
 /app/src/main/java/org/libsdl
