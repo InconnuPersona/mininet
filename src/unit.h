@@ -16,7 +16,7 @@
  int x, y;
 
 #define CLASS_DROP \
- CLASS_UNIT; \
+ CLASS_UNIT \
  refer_t item; \
  float xa, ya, za; \
  float xx, yy, zz; \
@@ -24,19 +24,19 @@
  int xk, yk;
 
 #define CLASS_MOB \
- CLASS_UNIT; \
+ CLASS_UNIT \
  refer_t pile; \
  int health, dir, xk, yk; \
  int hurted, ticked, swum, walked;
 
 #define CLASS_FIEND \
- CLASS_MOB; \
+ CLASS_MOB \
  int level, xa, ya;
 
 // The command contains all movement and action command data while the medium of such acts is
 // identified under the object; the target is the acted character, whether an item or mob.
 #define CLASS_PLIANT \
- CLASS_MOB; \
+ CLASS_MOB \
  refer_t bond; \
  int commands; \
  refer_t object; \
@@ -93,23 +93,23 @@ typedef enum {
 } unit_e;
 
 typedef struct {
- CLASS_DROP;
+ CLASS_DROP
 } drop_t;
 
 typedef struct {
- CLASS_FIEND;
+ CLASS_FIEND
 } fiend_t;
 
 typedef struct {
- CLASS_MOB;
+ CLASS_MOB
 } mob_t;
 
 typedef struct {
- CLASS_PLIANT;
+ CLASS_PLIANT
 } pliant_t;
 
 typedef struct {
- CLASS_UNIT;
+ CLASS_UNIT
 } unit_t;
 
 typedef union {

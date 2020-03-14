@@ -73,9 +73,9 @@ typedef struct {
 } message_t;
 
 typedef struct {
- PACKETHEADER;
+ PACKETHEADER
  
- MESSAGESHEADER;
+ MESSAGESHEADER
  
  message_t messages[MAX_MESSAGES];
 } packet_t;

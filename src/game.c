@@ -188,7 +188,7 @@ void renderGUI(refer_t player, screen_t* screen) {
    }
   }
  }
-
+ 
  if (pliant->item != NOITEM) {
 //  renderhotbaritem(player->item, 10 * 8, screen->h - 16, screen);
  }
@@ -261,6 +261,10 @@ void rendergame(screen_t* screen) {
  renderlevel(level, xs, ys, screen);
  
  renderGUI(player->id, screen);
+ 
+// if (session.clients[i].inmenu) {
+  
+// }
  
  bindlevel(NULL);
  

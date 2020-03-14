@@ -78,11 +78,11 @@ typedef struct {
 } queue_t;
 
 typedef struct {
- CLASS_CLIENT;
+ CLASS_CLIENT
 } client_t;
 
 typedef struct {
- CLASS_CLIENT;
+ CLASS_CLIENT
  
  host_e type;
  
@@ -95,11 +95,11 @@ typedef struct {
 } host_t;
 
 typedef struct {
- MESSAGESHEADER;
+ MESSAGESHEADER
 } messagesheader_t;
 
 typedef struct {
- PACKETHEADER;
+ PACKETHEADER
 } packetheader_t;
 
 extern client_t clients[];

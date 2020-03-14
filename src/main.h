@@ -16,7 +16,7 @@ typedef enum {
 } gametype_e;
 
 extern void clearkeys();
-extern void pollevents();
+extern void routeevents();
 extern void tickkeys();
 extern void setlisten(int state);
 extern int getaliasclicked(const char* name);

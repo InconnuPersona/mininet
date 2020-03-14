@@ -76,3 +76,8 @@ mininet.iml
 /Debug/
 /Release/
 *.stackdump
+
+# Visual Studio
+.vs
+*.sln
+*.vc*

@@ -205,15 +205,15 @@ void postmessages(packet_t* packet, IPaddress address) {
   header->bufferlength = bufferlength;
   header->messagecount = index + 1;
   
-  data.pointer += sizeof(messagesheader_t);
+  (int*) data.pointer += sizeof(messagesheader_t);
   
   for (i = 0; i <= index; i++) {
-   message = data.pointer + i * MESSAGEWIDTH;
+   message = (int*) data.pointer + i * MESSAGEWIDTH;
    
    message->length = packet->messages[sent + i].length;
   }
   
-  data.pointer += messagebufferlength;
+  (int*) data.pointer += messagebufferlength;
   
   for (i = 0; i <= index; i++) {
    message = (message_t*) (MESSAGESOFFSET + i * MESSAGEWIDTH);
@@ -222,7 +222,7 @@ void postmessages(packet_t* packet, IPaddress address) {
    
    message->data.integer = data.bytes - (MESSAGESOFFSET + packet->messagecount * MESSAGEWIDTH);
    
-   data.pointer += packet->messages[sent + i].length;
+   (int*) data.pointer += packet->messages[sent + i].length;
   }
   
   LOGDEBUG("sent %i message(s) with %i bytes.", index, bufferlength);
@@ -374,7 +374,7 @@ int pullbytes(byte_t* bytes, int count, message_t* message) {
  
  message->length -= count;
  
- memcpy(bytes, message->data.pointer + message->length, count);
+ memcpy(bytes, (int*) message->data.pointer + message->length, count);
  
  return 1;
 }
@@ -399,7 +399,7 @@ int pullvalue(int* value, int size, message_t* message) {
  
  message->length -= size;
  
- memcpy(value, message->data.pointer + message->length, size);
+ memcpy(value, (int*) message->data.pointer + message->length, size);
  
  return 1;
 }
@@ -422,7 +422,7 @@ int pushbytes(const void* bytes, int count, message_t* message) {
   return 0;
  }
  
- memcpy(message->data.pointer + message->length, bytes, count);
+ memcpy((int*) message->data.pointer + message->length, bytes, count);
  
  message->length += count;
  
@@ -442,7 +442,7 @@ int pushvalue(const int value, int size, message_t* message) {
   return 0;
  }
  
- memcpy(message->data.pointer + message->length, &value, size);
+ memcpy((int*) message->data.pointer + message->length, &value, size);
  
  message->length += size;
  
@@ -585,9 +585,9 @@ void unpackmessages(packet_t* packet) {
    exit(EXIT_FAILURE);
   }
   
-  packet->messages[i].data.pointer += (int) host.reserve;
+  (int*) packet->messages[i].data.pointer += (int) host.reserve;
   
-  pointer += MESSAGEWIDTH;
+  (int*) pointer += MESSAGEWIDTH;
  }
  
  memcpy(host.reserve, pointer, packet->bufferlength);

@@ -201,7 +201,7 @@ int getaliasdown(const char* bind) {
  return 0;
 }
 
-void pollevents() {
+void routeevents() {
  extern SDL_Window* window;
  extern int focus;
  

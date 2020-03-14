@@ -19,6 +19,8 @@ Although the crossplatform ability of the program is hindered by specific errors
 
 The repository offers only the code which you may use to compile the project. The original code was written in Eclipse C++ for Windows with both Cygwin and MinGW targets, therefore it is likely to remain stable on those platforms. An Android port may be compiled with the correct configuration, although the lua library must be setup properly for the library compilation. Removing localization of the '.' operator is one of the tasks that must be done to allow compilation with Android's lack of the locale material. If there are any mistakes or issues with the files for it, a further excerpt could be opened on the subject or correction.
 
+On Visual Studio, semicolons placed after macro declarations must be removed to compile without error; the compiler possesses no tolerance for the aesthetic characters. dirent.h must also be implemented or supplied in some form.
+
 ## Dependency:
 - [lua](https://www.lua.org/) 5.2 or later supporting bit32; the minimum version may change in the future.
 - [SDL2](https://www.libsdl.org/download-2.0.php)

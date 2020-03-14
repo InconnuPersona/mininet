@@ -59,20 +59,20 @@ function Player:render()
  xt = 0
  yt = 14
  
- flip1 = bit32.band(bit32.rshift(unit.mob.walked(self), 3), 1)
+ flip1 = (unit.mob.walked(self) >> 3) & 1
  flip2 = flip1
  
  if unit.mob.dir(self) == 1 then
   xt = xt + 2
  elseif unit.mob.dir(self) > 1 then
   flip1 = 0
-  flip2 = bit32.band(bit32.rshift(unit.mob.walked(self), 4), 1)
+  flip2 = (unit.mob.walked(self) >> 4) & 1
   
   if unit.mob.dir(self) == 2 then
    flip1 = 1
   end
   
-  xt = xt + 4 + bit32.band(bit32.rshift(unit.mob.walked(self), 3), 1) * 2
+  xt = xt + 4 + ((unit.mob.walked(self) >> 3) & 1) * 2
  end
  
  xo = unit.x(self) - 8
