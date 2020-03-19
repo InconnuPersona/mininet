@@ -43,12 +43,13 @@ typedef enum {
 typedef struct {
  int bind;
  int id;
+ int inmenu;
  int entity, level;
  
  char name[MAX_NAMELENGTH];
  
  int deadtime, livetime;
- int inmenu,  finished; // won game
+ int finished; // won game
 } gameclient_t;
 
 typedef struct {
@@ -82,6 +83,7 @@ refer_t getboundclient(int bind);
 int getgameclient(refer_t client);
 refer_t getgamepliant(refer_t client);
 refer_t getnamedclient(const char* name);
+refer_t getplayerclient(refer_t pliant);
 void kickgameclient(refer_t client);
 int putgameclient(const char* name, int bind);
 void spawngameclient(refer_t client, int level);

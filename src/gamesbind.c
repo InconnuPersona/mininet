@@ -12,7 +12,6 @@ lua_State* L_game;
 extern void assigntile(int index, const char* name);
 extern refer_t designunit(const char* word, int extra);
 extern void formsurface(const char* word, surface_e type);
-//extern void appenditem();
 
 // ==================================================
 // lua_game

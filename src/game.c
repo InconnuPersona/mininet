@@ -188,7 +188,7 @@ void renderGUI(refer_t player, screen_t* screen) {
    }
   }
  }
-
+ 
  if (pliant->item != NOITEM) {
 //  renderhotbaritem(player->item, 10 * 8, screen->h - 16, screen);
  }
@@ -261,6 +261,10 @@ void rendergame(screen_t* screen) {
  renderlevel(level, xs, ys, screen);
  
  renderGUI(player->id, screen);
+ 
+ if (session.clients[client].inmenu) {
+  rendersurface(session.clients[client].inmenu, player->id);
+ }
  
  bindlevel(NULL);
  
@@ -367,6 +371,28 @@ void tickgame() {
  updatehost();
  
  bindlevel(NULL);
+ 
+ return;
+}
+
+void viewsurface(const char* word, refer_t client) {
+ refer_t view;
+ 
+ if (!word || client == INVALIDCLIENT) {
+  return;
+ }
+ 
+ client = getgameclient(client);
+ 
+ if (client == INVALIDCLIENT) {
+  return;
+ }
+ 
+ view = getsurfacebyword(word);
+ 
+ LOGDEBUG("changed client view to '%s' [%x].", word, view);
+ 
+ session.clients[client].inmenu = view;
  
  return;
 }
