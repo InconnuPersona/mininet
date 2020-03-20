@@ -79,6 +79,23 @@ void rendersurface(refer_t view, refer_t pliant) {
  }
 }
 
+void opensurface(refer_t view, refer_t pliant) {
+ if (!view || !pliant) {
+  return;
+ }
+ 
+ view = getsurface(view);
+ 
+ if (view == INVALIDSURFACE || !surfaces[view].word) {
+  LOGREPORT("surface '%x' is invalidword bound.", view);
+  return;
+ }
+ 
+ if (hassurfacemethod("open", surfaces[view].id)) {
+  callmethod("open", surfaces[view].word, L_game, "n", pliant);
+ }
+}
+
 void ticksurface(refer_t view, refer_t pliant) {
  if (!view || !pliant) {
   LOGREPORT("received invalid arguments.");

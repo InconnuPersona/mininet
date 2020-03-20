@@ -266,7 +266,12 @@ NEWLUAFUNCTION(pliantview) {
    return 0;
   }
   
-  viewsurface(luaL_checkstring(L, 2), client);
+  if (lua_isstring(L, 2)) {
+   viewsurface(luaL_checkstring(L, 2), client);
+  }
+  else {
+   viewsurface(NOSURFACE, client);
+  }
  }
  
  return 0;

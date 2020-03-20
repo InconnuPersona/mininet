@@ -45,6 +45,18 @@ NEWLUAFUNCTION(conceive) {
  return 0;
 }
 
+
+
+NEWLUAFUNCTION(pilewidth) {
+ 
+ return 1;
+}
+
+NEWLUAFUNCTION(renderlist) {
+ 
+ return 0;
+}
+
 NEWLUAFUNCTION(addrecipe) {
  return 0;
 }
@@ -64,4 +76,6 @@ BEGINLUATABLE(item)
  LUANUMBER(CRAFTVIEW, VIEW_CRAFT),
  
  LUAFUNCTION(conceive),
+ LUAFUNCTION(pilewidth),
+ LUAFUNCTION(renderlist),
 ENDLUATABLE;

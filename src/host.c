@@ -144,12 +144,6 @@ void handlegameclient(refer_t client) {
  commands = handleinput();
  
  if (client != INVALIDCLIENT) {
-  if (session.clients[client].inmenu) {
-   commands = 0;
-   
-   ticksurface(session.clients[client].inmenu, session.clients[client].entity);
-  }
-  
   bindgamelevel(session.clients[client].level);
   
   player = getunit(session.clients[client].entity);
@@ -159,6 +153,12 @@ void handlegameclient(refer_t client) {
   }
   
   player->pliant.commands = commands;
+  
+  if (session.clients[client].inmenu) {
+   ticksurface(session.clients[client].inmenu, session.clients[client].entity);
+   
+   player->pliant.commands = commands = 0;
+  }
  }
  
  if (session.type == GAME_CLIENT) {

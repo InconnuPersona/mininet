@@ -2,6 +2,7 @@
 
 extern void handleclientsend(gamesend_t* sent, refer_t sender);
 extern void handlehostsend(gamesend_t* sent, refer_t sender);
+extern void opensurface(refer_t view, refer_t pliant);
 
 void assortlevels() {
  aabb_t aabb;
@@ -378,10 +379,6 @@ void tickgame() {
 void viewsurface(const char* word, refer_t client) {
  refer_t view;
  
- if (!word || client == INVALIDCLIENT) {
-  return;
- }
- 
  client = getgameclient(client);
  
  if (client == INVALIDCLIENT) {
@@ -393,6 +390,8 @@ void viewsurface(const char* word, refer_t client) {
  LOGDEBUG("changed client view to '%s' [%x].", word, view);
  
  session.clients[client].inmenu = view;
+ 
+ opensurface(view, session.clients[client].entity);
  
  return;
 }
