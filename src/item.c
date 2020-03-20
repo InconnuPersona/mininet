@@ -8,7 +8,6 @@ extern int getpile(refer_t id);
 // all items are offset by 1 to allow NOITEM to exist
 item_t items[MAX_ITEMS] = { 0 };
 pile_t piles[MAX_PILES] = { 0 };
-surface_t surfaces[MAX_SURFACES] = { 0 };
 
 void additem(refer_t item, int count, refer_t pile) {
  int i;
@@ -97,11 +96,6 @@ void appenditem(const char* word, item_e type, int sprite, int color) {
  return;
 }
 
-// binds the network view to the local view
-void bindsurface() {
- 
-}
-
 int countitem(refer_t item, refer_t pile) {
  int count, i;
  
@@ -126,61 +120,6 @@ int countitem(refer_t item, refer_t pile) {
 }
 
 //int finditem(refer_t, inventory) {
-
-int getsurface(refer_t id) {
- int i;
- 
- for (i = 0; i < MAX_PILES; i++) {
-  if (surfaces[i].id == id) {
-   return i;
-  }
- }
- 
- return INVALIDITEM;
-}
-
-int newsurfaceid() {
- int id;
- 
- do {
-  id = randomid();
-  
-  if (getsurface(id) != INVALIDPILE) {
-   continue;
-  }
-  
-  return id;
- }
- while (1);
-}
-
-void formsurface(const char* word, surface_e type) {
- int i;
- 
- if (!word) {
-  LOGREPORT("received invalid surface word '%s'.", word);
-  return;
- }
- 
- for (i = 0; i < MAX_SURFACES; i++) {
-  if (!surfaces[i].id) {
-   break;
-  }
- }
- 
- if (i == MAX_SURFACES) {
-  LOGREPORT("unable to find free slot for surface '%s'.", word);
-  return;
- }
- 
- surfaces[i].id = newsurfaceid();
- surfaces[i].type = type;
- surfaces[i].word = reprintstring(word);
- 
- LOGDEBUG("formed surface '%s' [%x].", word, surfaces[i].id);
- 
- return;
-}
 
 int getpile(refer_t id) {
  int i;
@@ -208,10 +147,6 @@ int hasitem(refer_t item, int need, refer_t pile) {
  }*/
  
  return count >= need;
-}
-
-void loadviews() {
- 
 }
 
 refer_t newpileid() {
@@ -274,6 +209,6 @@ int pullitem(refer_t item, int need, refer_t pile) {
  return need < 1;
 }
 
-void viewsurface(const char* word) {
+void renderhotbaritem(refer_t item, int x, int y, screen_t* screen) {
  
 }

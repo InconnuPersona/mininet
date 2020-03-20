@@ -3,32 +3,6 @@
 
 extern void appenditem(const char* word, item_e type, int sprite, int color);
 
-int hassurfacemethod(const char* method, refer_t surface) {
-// int i;
-// 
-// if (!method || !unit) {
-//  LOGREPORT("received invalid arguments.");
-//  return 0;
-// }
-// 
-// word = getunitword(unit->word);
-// 
-// if (!word || !word->name) {
-//  LOGREPORT("unit '%x' is invalidword bound.", unit->id);
-//  return 0;
-// }
-// 
- return 0;//hasluamethod(method, word->name, L_game);
-}
-
-void rendersurface(refer_t menu, refer_t pliant) {
-// if (hassurfacemethod())
-}
-
-void ticksurface(refer_t menu, refer_t pliant) {
- 
-}
-
 NEWLUAFUNCTION(conceive) {
  item_e type;
  char* word;
@@ -71,6 +45,18 @@ NEWLUAFUNCTION(conceive) {
  return 0;
 }
 
+
+
+NEWLUAFUNCTION(pilewidth) {
+ 
+ return 1;
+}
+
+NEWLUAFUNCTION(renderlist) {
+ 
+ return 0;
+}
+
 NEWLUAFUNCTION(addrecipe) {
  return 0;
 }
@@ -90,4 +76,6 @@ BEGINLUATABLE(item)
  LUANUMBER(CRAFTVIEW, VIEW_CRAFT),
  
  LUAFUNCTION(conceive),
+ LUAFUNCTION(pilewidth),
+ LUAFUNCTION(renderlist),
 ENDLUATABLE;

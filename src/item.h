@@ -14,6 +14,7 @@
 
 #define NOITEM 0
 #define NOPILE 0
+#define NOSURFACE 0
 
 typedef enum {
  ITEM_UNIQUE = 0, // nonstackable item
@@ -78,7 +79,8 @@ void additem(refer_t item, int count, refer_t pile);
 int countitem(refer_t item, refer_t pile);
 int hasitem(refer_t item, int count, refer_t pile);
 int pullitem(refer_t item, int count, refer_t pile);
-
 void renderhotbaritem(refer_t item, int x, int y, screen_t* screen);
+
+refer_t getsurfacebyword(const char* word);
 void rendersurface(refer_t menu, refer_t pliant);
 void ticksurface(refer_t menu, refer_t pliant);

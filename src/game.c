@@ -2,6 +2,7 @@
 
 extern void handleclientsend(gamesend_t* sent, refer_t sender);
 extern void handlehostsend(gamesend_t* sent, refer_t sender);
+extern void opensurface(refer_t view, refer_t pliant);
 
 void assortlevels() {
  aabb_t aabb;
@@ -262,9 +263,9 @@ void rendergame(screen_t* screen) {
  
  renderGUI(player->id, screen);
  
-// if (session.clients[i].inmenu) {
-  
-// }
+ if (session.clients[client].inmenu) {
+  rendersurface(session.clients[client].inmenu, player->id);
+ }
  
  bindlevel(NULL);
  
@@ -371,6 +372,26 @@ void tickgame() {
  updatehost();
  
  bindlevel(NULL);
+ 
+ return;
+}
+
+void viewsurface(const char* word, refer_t client) {
+ refer_t view;
+ 
+ client = getgameclient(client);
+ 
+ if (client == INVALIDCLIENT) {
+  return;
+ }
+ 
+ view = getsurfacebyword(word);
+ 
+ LOGDEBUG("changed client view to '%s' [%x].", word, view);
+ 
+ session.clients[client].inmenu = view;
+ 
+ opensurface(view, session.clients[client].entity);
  
  return;
 }

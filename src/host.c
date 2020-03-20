@@ -144,21 +144,20 @@ void handlegameclient(refer_t client) {
  commands = handleinput();
  
  if (client != INVALIDCLIENT) {
-  if (session.clients[client].inmenu) {
-   commands = 0;
-   
-   ticksurface(session.clients[client].inmenu, session.clients[client].entity);
+  bindgamelevel(session.clients[client].level);
+  
+  player = getunit(session.clients[client].entity);
+  
+  if (!player) {
+   return;
   }
-  else {
-   bindgamelevel(session.clients[client].level);
+  
+  player->pliant.commands = commands;
+  
+  if (session.clients[client].inmenu) {
+   ticksurface(session.clients[client].inmenu, session.clients[client].entity);
    
-   player = getunit(session.clients[client].entity);
-   
-   if (!player) {
-	return;
-   }
-   
-   player->pliant.commands = commands;
+   player->pliant.commands = commands = 0;
   }
  }
  
@@ -254,6 +253,22 @@ refer_t getnamedclient(const char* name) {
  
  for (i = 0; i < MAX_GAMECLIENTS; i++) {
   if (strcmp(session.clients[i].name, name) == 0) {
+   return session.clients[i].id;
+  }
+ }
+ 
+ return INVALIDCLIENT;
+}
+
+refer_t getplayerclient(refer_t pliant) {
+ int i;
+ 
+ if (!pliant) {
+  return INVALIDCLIENT;
+ }
+ 
+ for (i = 0; i < MAX_GAMECLIENTS; i++) {
+  if (session.clients[i].entity == pliant) {
    return session.clients[i].id;
   }
  }

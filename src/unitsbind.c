@@ -55,6 +55,8 @@
 //==================================================
 // externals
 
+extern void viewsurface(const char* word, refer_t client);
+
 extern lua_State* L_game;
 
 // ==================================================
@@ -254,6 +256,23 @@ lf_pliantcommand_exit:
 }
 
 NEWLUAFUNCTION(pliantview) {
+ refer_t client;
+ 
+ if (lua_gettop(L) > 1) {
+  client = getplayerclient(luaL_checknumber(L, 1));
+  
+  if (client == INVALIDCLIENT) {
+   LOGREPORT("received unplayed unit.");
+   return 0;
+  }
+  
+  if (lua_isstring(L, 2)) {
+   viewsurface(luaL_checkstring(L, 2), client);
+  }
+  else {
+   viewsurface(NOSURFACE, client);
+  }
+ }
  
  return 0;
 }
