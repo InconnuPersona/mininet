@@ -5,9 +5,6 @@
 #define MESSAGESOFFSET (transmission->data + HEADERLENGTH + sizeof(messagesheader_t))
 
 // ==================================================
-// structures
-
-// ==================================================
 // declarations
 
 UDPpacket* transmission = NULL;
@@ -35,33 +32,6 @@ void closehost() {
  
  memset(&clients, 0, sizeof(client_t) * (MAX_CLIENTS + 1));
  memset(&host, 0, sizeof(host_t));
- 
- return;
-}
-
-void copymessage(message_t* from, message_t* to) {
- memcpy(to, from, sizeof(message_t));
-}
-
-void directmessage(message_t* message, void* data, int length) {
- if (!message) {
-  LOGREPORT("received invalid message.");
-  return;
- }
- 
- if (!data) {
-  LOGREPORT("received invalid data pointer.");
-  return;
- }
- 
- if (length < 1 || length > SIGNEDEXTENT(short)) {
-  LOGREPORT("received invalid message length.");
-  return;
- }
- 
- message->length = 0;
- message->data.pointer = data;
- message->stored = length;
  
  return;
 }
@@ -225,7 +195,7 @@ void postmessages(packet_t* packet, IPaddress address) {
    data.pointer += packet->messages[sent + i].length;
   }
   
-  LOGDEBUG("sent %i message(s) with %i bytes.", index, bufferlength);
+  LOGDEBUG(2, "sent %i message(s) with %i bytes.", index, bufferlength);
   
   sendpacket(address);
   
@@ -354,101 +324,6 @@ void printpacketcontent() {
  return;
 }
 
-int pullbytes(byte_t* bytes, int count, message_t* message) {
- CHECKMESSAGE(message, return 0);
- 
- if (!bytes) {
-  LOGREPORT("received unusable data pointer.");
-  return 0;
- }
- 
- if (count < 0) {
-  LOGREPORT("received unusable data length.");
-  return 0;
- }
- 
- if (message->length - count < 0) {
-  LOGREPORT("encountered message stack underflow for %i bytes.", count);
-  return 0;
- }
- 
- message->length -= count;
- 
- memcpy(bytes, message->data.pointer + message->length, count);
- 
- return 1;
-}
-
-int pullvalue(int* value, int size, message_t* message) {
- CHECKMESSAGE(message, return 0);
- 
- if (!value) {
-  LOGREPORT("received unusable value pointer.");
-  return 0;
- }
- 
- if (size < 0 || size > sizeof(*value)) {
-  LOGREPORT("received unusable value size.");
-  return 0;
- }
- 
- if (message->length - size < 0) {
-  LOGREPORT("encountered message stack underflow for %i bytes.", size);
-  return 0;
- }
- 
- message->length -= size;
- 
- memcpy(value, message->data.pointer + message->length, size);
- 
- return 1;
-}
-
-int pushbytes(const void* bytes, int count, message_t* message) {
- CHECKMESSAGE(message, return 0);
- 
- if (!bytes) {
-  LOGREPORT("received unusable data pointer.");
-  return 0;
- }
- 
- if (count < 1) {
-  LOGREPORT("received unusable data length.");
-  return 0;
- }
- 
- if (message->length + count > message->stored) {
-  LOGREPORT("encountered message stack overflow for %i bytes.", count);
-  return 0;
- }
- 
- memcpy(message->data.pointer + message->length, bytes, count);
- 
- message->length += count;
- 
- return 1;
-}
-
-int pushvalue(const int value, int size, message_t* message) {
- CHECKMESSAGE(message, return 0);
- 
- if (size < 1 || size > sizeof(value)) {
-  LOGREPORT("received unusable value size.");
-  return 0;
- }
- 
- if (message->length + size > message->stored) {
-  LOGREPORT("encountered message stack overflow for %i bytes.", size);
-  return 0;
- }
- 
- memcpy(message->data.pointer + message->length, &value, size);
- 
- message->length += size;
- 
- return 1;
-}
-
 // This function receives transmissions and reroutes them into packets or handles them by
 // the network rules; the data recorded for packet messages is only valid for the
 // routepacket call made by this function and is unusable outside of its scope.
@@ -459,7 +334,7 @@ void receivepackets() {
  CHECKNETWORKHOST(return);
  
  while (SDLNet_UDP_Recv(host.socket, transmission) > 0) {
-  LOGDEBUG("received packet [%i].", packet.type);
+  LOGDEBUG(2, "received packet [%i].", packet.type);
   
   unpackheader(&packet);
   
@@ -507,7 +382,7 @@ void sendpacket(IPaddress address) {
   return;
  }
  
- LOGDEBUG("sent packet [%i].", ((int*) transmission->data)[0]);
+ LOGDEBUG(2, "sent packet [%i].", ((int*) transmission->data)[0]);
  
  return;
 }
@@ -528,7 +403,7 @@ void shakehands(IPaddress address, int type, int extra) {
  data[0] = type;
  data[1] = extra;
  
- LOGDEBUG("sent handshake [%i][%x].", type, extra);
+ LOGDEBUG(2, "sent handshake [%i][%x].", type, extra);
  
  sendpacket(address);
  
@@ -594,7 +469,7 @@ void unpackmessages(packet_t* packet) {
  
  markstretch(0, packet->bufferlength / SECTIONANGTH + 1);
  
- LOGDEBUG("unpacked message packet.");
+ LOGDEBUG(2, "unpacked message packet.");
  
  printpacketcontent();
  printhostreserve();

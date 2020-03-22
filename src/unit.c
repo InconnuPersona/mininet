@@ -174,7 +174,7 @@ void createunit(unit_t* unit, const char* word) {
  
  blankunit(unit->id);
  
- LOGDEBUG("created unit from word '%s' with id [%x] and word [%x].", word, unit->id, unit->word);
+ LOGDEBUG(1, "created unit from word '%s' with id [%x] and word [%x].", word, unit->id, unit->word);
  
  return;
 }
@@ -249,7 +249,7 @@ refer_t designunit(const char* word, int extra) {
   
   defineunit(&unitwords[slot]);
   
-  LOGDEBUG("defined unit '%s' (%s) with id [%x] in %i elements.", unitwords[slot].word, unitwords[slot].name, unitwords[slot].id, length + extra);
+  LOGDEBUG(1, "defined unit '%s' (%s) with id [%x] in %i elements.", unitwords[slot].word, unitwords[slot].name, unitwords[slot].id, length + extra);
  }
  else {
   LOGREPORT("unable to reserve an unitword index.");

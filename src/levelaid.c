@@ -111,7 +111,7 @@ void inserttileunit(refer_t unit, int x, int y, level_t* level) {
   }
  }
  
- LOGDEBUG("overflowed tile unit insert location.");
+ LOGDEBUG(1, "overflowed tile unit insert location.");
  
  return;
 }

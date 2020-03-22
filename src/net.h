@@ -94,12 +94,6 @@ void appendmessage(message_t* message, int reliable);
 
 void directmessage(message_t* message, void* data, int length);
 
-int pullbytes(byte_t* bytes, int count, message_t* message);
-int pullvalue(int* value, int size, message_t* message);
-
-int pushbytes(const void* bytes, int count, message_t* message);
-int pushvalue(const int value, int size, message_t* message);
-
 void handlequeues();
 void updatequeues();
 

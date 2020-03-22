@@ -107,14 +107,11 @@ extern host_t host;
 
 extern void routepacket(packet_t* packet);
 
-void cleartransmission();
 void copymessage(message_t* from, message_t* to);
 void emplacemessage(message_t* message);
 int fetchclient(refer_t id);
 void markstretch(int start, int length);
-void packpacket(packet_t* packet);
 void postmessages(packet_t* packet, IPaddress address);
-void printhostreserve();
 void receivehandshake(int type, int extra, packet_t* packet, IPaddress address);
 void receivepackets();
 void sendpacket(IPaddress address);

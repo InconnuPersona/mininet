@@ -45,12 +45,10 @@ NEWLUAFUNCTION(conceive) {
  return 0;
 }
 
-
-
-NEWLUAFUNCTION(pilewidth) {
- 
- return 1;
-}
+//NEWLUAFUNCTION(pilecount) {
+// 
+// return 1;
+//}
 
 NEWLUAFUNCTION(renderlist) {
  
@@ -60,6 +58,23 @@ NEWLUAFUNCTION(renderlist) {
 NEWLUAFUNCTION(addrecipe) {
  return 0;
 }
+
+//NEWLUAFUNCTION(has) {
+// return 0;
+//}
+//
+//NEWLUAFUNCTION(add) {
+// return 0;
+//}
+//
+//NEWLUAFUNCTION(count) {
+// return 0;
+//}
+//
+//NEWLUAFUNCTION(pull) {
+// 
+// return 1;
+//}
 
 BEGINLUATABLE(item)
  LUANUMBER(VIEWDOWN, CMD_MOVEDOWN),
@@ -76,6 +91,6 @@ BEGINLUATABLE(item)
  LUANUMBER(CRAFTVIEW, VIEW_CRAFT),
  
  LUAFUNCTION(conceive),
- LUAFUNCTION(pilewidth),
- LUAFUNCTION(renderlist),
+// LUAFUNCTION(pilecount),
+// LUAFUNCTION(renderlist),
 ENDLUATABLE;

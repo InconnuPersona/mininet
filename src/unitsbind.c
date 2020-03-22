@@ -132,9 +132,9 @@ LUAUNITELEMENT(mob, ticked, number)
 LUAUNITELEMENT(mob, swum, number)
 LUAUNITELEMENT(mob, walked, number)
 
-NEWLUAFUNCTION(mobadditem) {
+NEWLUAFUNCTION(mobgive) {
  mob_t* mob;
- int count;
+// int count;
  
  if (lua_gettop(L) >= 2) {
   mob = castmob(luaL_checknumber(L, 1));
@@ -149,13 +149,13 @@ NEWLUAFUNCTION(mobadditem) {
   }
   
   if (lua_gettop(L) >= 3) {
-   count = luaL_checknumber(L, 3);
+//   count = luaL_checknumber(L, 3);
   }
   else {
-   count = 1;
+//   count = 1;
   }
   
-  additem(luaL_checknumber(L, 2), count, mob->pile);
+//  additem(luaL_checknumber(L, 2), count, mob->pile);
  }
  else {
   LUAARGUE("mob.additem");
@@ -205,8 +205,6 @@ NEWLUAFUNCTION(mobmove) {
 
 LUAUNITVALUE(pliant, maxstamina)
 
-LUAUNITELEMENT(pliant, object, number)
-LUAUNITELEMENT(pliant, target, number)
 LUAUNITELEMENT(pliant, inhand, number)
 LUAUNITELEMENT(pliant, item, number)
 LUAUNITELEMENT(pliant, aim, number)
@@ -344,6 +342,7 @@ BEGINLUATABLE(unitfiend)
 ENDLUATABLE;
 
 BEGINLUATABLE(unitmob)
+// LUAUNITMETHOD(mob, give),
  LUAUNITMETHOD(mob, heal),
  LUAUNITMETHOD(mob, hurt),
  LUAUNITMETHOD(mob, move),
@@ -375,8 +374,6 @@ BEGINLUATABLE(unitpliant)
  LUAUNITMETHOD(pliant, view),
  
  LUAUNITMETHOD(pliant, command),
- LUAUNITMETHOD(pliant, object),
- LUAUNITMETHOD(pliant, target),
  LUAUNITMETHOD(pliant, inhand),
  LUAUNITMETHOD(pliant, item),
  LUAUNITMETHOD(pliant, aim),

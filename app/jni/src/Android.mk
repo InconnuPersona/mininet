@@ -33,12 +33,14 @@ LOCAL_SRC_FILES := \
 	src/menu.c \
 	src/net.c \
 	src/nethost.c \
+	src/netsend.c \
 	src/send.c \
 	src/sound.c \
 	src/tile.c \
 	src/unit.c \
 	src/unitsbind.c \
-	src/unituse.c
+	src/unituse.c \
+	src/view.c
 
 LOCAL_SHARED_LIBRARIES := lua SDL2 SDL2_image SDL2_mixer SDL2_net
 

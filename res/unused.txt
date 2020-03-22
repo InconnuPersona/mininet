@@ -19,4 +19,99 @@ class unit.beast
 // 
 // return i;
 //}
+
+
+int pullbytes(byte_t* bytes, int count, message_t* message) {
+ CHECKMESSAGE(message, return 0);
  
+ if (!bytes) {
+  LOGREPORT("received unusable data pointer.");
+  return 0;
+ }
+ 
+ if (count < 0) {
+  LOGREPORT("received unusable data length.");
+  return 0;
+ }
+ 
+ if (message->length - count < 0) {
+  LOGREPORT("encountered message stack underflow for %i bytes.", count);
+  return 0;
+ }
+ 
+ message->length -= count;
+ 
+ memcpy(bytes, message->data.pointer + message->length, count);
+ 
+ return 1;
+}
+
+int pullvalue(int* value, int size, message_t* message) {
+ CHECKMESSAGE(message, return 0);
+ 
+ if (!value) {
+  LOGREPORT("received unusable value pointer.");
+  return 0;
+ }
+ 
+ if (size < 0 || size > sizeof(*value)) {
+  LOGREPORT("received unusable value size.");
+  return 0;
+ }
+ 
+ if (message->length - size < 0) {
+  LOGREPORT("encountered message stack underflow for %i bytes.", size);
+  return 0;
+ }
+ 
+ message->length -= size;
+ 
+ memcpy(value, message->data.pointer + message->length, size);
+ 
+ return 1;
+}
+
+int pushbytes(const void* bytes, int count, message_t* message) {
+ CHECKMESSAGE(message, return 0);
+ 
+ if (!bytes) {
+  LOGREPORT("received unusable data pointer.");
+  return 0;
+ }
+ 
+ if (count < 1) {
+  LOGREPORT("received unusable data length.");
+  return 0;
+ }
+ 
+ if (message->length + count > message->stored) {
+  LOGREPORT("encountered message stack overflow for %i bytes.", count);
+  return 0;
+ }
+ 
+ memcpy(message->data.pointer + message->length, bytes, count);
+ 
+ message->length += count;
+ 
+ return 1;
+}
+
+int pushvalue(const int value, int size, message_t* message) {
+ CHECKMESSAGE(message, return 0);
+ 
+ if (size < 1 || size > sizeof(value)) {
+  LOGREPORT("received unusable value size.");
+  return 0;
+ }
+ 
+ if (message->length + size > message->stored) {
+  LOGREPORT("encountered message stack overflow for %i bytes.", size);
+  return 0;
+ }
+ 
+ memcpy(message->data.pointer + message->length, &value, size);
+ 
+ message->length += size;
+ 
+ return 1;
+}

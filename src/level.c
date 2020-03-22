@@ -103,7 +103,7 @@ refer_t dropitem(refer_t item, int x, int y) {
 }
 
 // The unit is not erased until it has been handled in the updatelevel function
-// a refrech will reseize its memory.
+// a refresh will reseize its memory.
 void efface(refer_t id) {
  unit_t* unit;
  
@@ -117,6 +117,10 @@ void efface(refer_t id) {
  }
  
  removetileunit(id, unit->x >> 4, unit->y >> 4, level);
+ 
+ // TODO: implement removing units and associated piles.
+ 
+ return;
 }
 
 void emptylevel(int w, int h, int depth) {
@@ -292,7 +296,7 @@ refer_t place(unit_u* unit) {
  
  inserttileunit(held->base.id, held->base.x >> 4, held->base.y >> 4, level);
  
- LOGDEBUG("placed unit [%x] at [%i, %i].", held->base.id, held->base.x, held->base.y);
+ LOGDEBUG(1, "placed unit [%x] at [%i, %i].", held->base.id, held->base.x, held->base.y);
  
  return held->base.id;
 }
@@ -334,6 +338,7 @@ void renderbackground(int xs, int ys, screen_t* screen) {
   }
  }
  
+ INDEBUG(1,
  for (y = yo; y <= h + yo; y++) {
   for (x = xo; x <= w + xo; x++) {
    if (x % CHUNKANGTH == 0 && y % CHUNKANGTH == 0) {
@@ -344,7 +349,7 @@ void renderbackground(int xs, int ys, screen_t* screen) {
 	renderfont(chars, x * 16, y * 16, getcolor(0, 555, 555, 555), screen);
    }
   }
- }
+ });
   
  offsetscreen(screen, 0, 0);
 }

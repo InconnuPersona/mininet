@@ -43,7 +43,7 @@ void readchunksend(gamesend_t* sent) {
  
  setchunk(chunk, &session.levels[chunk->level]);
  
- LOGDEBUG("set chunk [%i, %i] in level %i.", chunk->x, chunk->y, chunk->level);
+ LOGDEBUG(2, "set chunk [%i, %i] in level %i.", chunk->x, chunk->y, chunk->level);
  
  return;
 }
@@ -77,7 +77,7 @@ void readcommandsend(gamesend_t* sent) {
  
  player->pliant.commands = *commands;
  
- LOGDEBUG("set client [%x] commands to '%x'.", session.clients[client].id, *commands);
+ LOGDEBUG(2, "set client [%x] commands to '%x'.", session.clients[client].id, *commands);
  
  return;
 }
@@ -183,7 +183,7 @@ void pushchunk(int x, int y, int level, refer_t bind) {
  
  pushgamesend(MSG_POSTCHUNK, &chunk, sizeof(chunk_t), bind);
  
- LOGDEBUG("pushed chunk [%i, %i] in level %i.", x, y, level);
+ LOGDEBUG(2, "pushed chunk [%i, %i] in level %i.", x, y, level);
  
  return;
 }
@@ -212,7 +212,7 @@ void pushunit(int level, refer_t id, refer_t bind) {
  
  pushgamesend(MSG_POSTUNIT, &send, sizeof(unitsend_t), bind);
  
- LOGDEBUG("pushed unit [%x] in level %i.", id, level);
+ LOGDEBUG(2, "pushed unit [%x] in level %i.", id, level);
  
  bindlevel(NULL);
  
@@ -233,7 +233,7 @@ void pushcommands(int commands) {
  
  pushgamesend(MSG_COMMAND, &copy, sizeof(int), 0);
  
- LOGDEBUG("pushed commands [%x].", commands);
+ LOGDEBUG(2, "pushed commands [%x].", commands);
  
  return;
 }
@@ -266,7 +266,7 @@ void pushdeltachunks(refer_t client) {
  x = (pliant->x >> 4) / CHUNKANGTH;
  y = (pliant->y >> 4) / CHUNKANGTH;
  
- LOGDEBUG("pliant [%i, %i], chunk [%i, %i].", pliant->x, pliant->y, x, y);
+ LOGDEBUG(2, "pliant [%i, %i], chunk [%i, %i].", pliant->x, pliant->y, x, y);
  
  boundbox(&aabb, x - LOCALANGTH, y - LOCALANGTH, x + LOCALANGTH, y + LOCALANGTH);
  
@@ -384,7 +384,7 @@ void pushgamesend(int type, void* data, int length, refer_t bind) {
  
  memcpy(send.data, data, length);
  
- INDEBUG(printgamesend(&send));
+ INDEBUG(1, printgamesend(&send));
  
  directmessage(&message, &send, GAMESENDHEADERWIDTH + length);
  
@@ -441,7 +441,7 @@ void pushunitwords(refer_t bind) {
    
    strncpy(word.word, unitwords[i].word, 32);
    
-   LOGDEBUG("redefining '%s' [%x].", word.word, word.id);
+   LOGDEBUG(2, "redefining '%s' [%x].", word.word, word.id);
    
    pushgamesend(MSG_POSTUNITWORD, &word, sizeof(unitwordsend_t), bind);
   }
@@ -460,7 +460,7 @@ void handleclientsend(gamesend_t* sent, refer_t sender) {
   return;
  }
  
- INDEBUG(printgamesend(sent));
+ INDEBUG(1, printgamesend(sent));
  
  told = (tellsend_t*) sent->data;
  
@@ -516,7 +516,7 @@ void handlehostsend(gamesend_t* sent, refer_t sender) {
  tellsend_t* told;
  int id;
  
- INDEBUG(printgamesend(sent));
+ INDEBUG(1, printgamesend(sent));
  
  told = (tellsend_t*) sent->data;
  

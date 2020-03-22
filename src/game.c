@@ -387,7 +387,7 @@ void viewsurface(const char* word, refer_t client) {
  
  view = getsurfacebyword(word);
  
- LOGDEBUG("changed client view to '%s' [%x].", word, view);
+ LOGDEBUG(1, "changed client view to '%s' [%x].", word, view);
  
  session.clients[client].inmenu = view;
  

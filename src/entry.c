@@ -7,7 +7,7 @@
 #endif
 
 screen_t lightscreen, screen;
-int debug = 0;
+int debug = 1;
 int renders = 0;
 int ticks = 0;
 
@@ -28,7 +28,7 @@ void preinit() {
 void init() {
  preinit();
  
- INDEBUG(printhostdata());
+ INDEBUG(2, printhostdata());
  
  createscreen(&screen, RENDERWIDTH, RENDERHEIGHT, getfilepath("res/icons.png"));
  createscreen(&lightscreen, RENDERWIDTH, RENDERHEIGHT, getfilepath("res/icons.png"));
@@ -62,7 +62,7 @@ void tick() {
   tickmenu();
  }
  
-// updatequeues();
+ updatequeues();
 }
 
 void render() {
@@ -97,7 +97,7 @@ void printgameframes() {
  current = currenttime();
  
  if (current - lasttime >= 1) {
-  LOGDEBUG("rendered %i frames and %i ticks in %f seconds.", renders - lastrender, ticks - lasttick, current - lasttime);
+  LOGREPORT("rendered %i frames and %i ticks in %f seconds.", renders - lastrender, ticks - lasttick, current - lasttime);
   
   lastrender = renders;
   lasttick = ticks;
@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
   
   pollevents();
   
-//  handlequeues();
+  handlequeues();
   
   while (unprocessed > 0) {
    tick();
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
    render();
   }
   
-  INDEBUG(printgameframes());
+  INDEBUG(2, printgameframes());
   
   delaythread(delay);
  }

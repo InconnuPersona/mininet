@@ -23,8 +23,8 @@
   Value = Maximum; \
  }
 
-#define INDEBUG(...) \
- if (debug) { \
+#define INDEBUG(Level, ...) \
+ if (debug >= Level) { \
   __VA_ARGS__; \
  };
 
@@ -46,7 +46,7 @@
   }
 #endif
 
-#define LOGDEBUG(...) INDEBUG(LOGREPORT(__VA_ARGS__))
+#define LOGDEBUG(Level, ...) INDEBUG(Level, LOGREPORT(__VA_ARGS__))
 
 #define MILLISECONDS(Time) (int) ((Time) * 1000)
 

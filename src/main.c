@@ -274,7 +274,7 @@ refer_t readfile(const char* path) {
  
  files[i].string[length] = '\0';
  
-// LOGDEBUG("read file '%s'.", path);
+ LOGDEBUG(3, "read file '%s'.", path);
  
  return files[i].id;
  
@@ -341,7 +341,7 @@ void writefile(const char* path, const byte_t* bytes, long length) {
   goto writefile_end;
  }
  
-// LOGDEBUG("wrote to file '%s.", path);
+ LOGDEBUG(3, "wrote to file '%s.", path);
  
 writefile_end:
  SDL_RWclose(handle);
@@ -445,7 +445,7 @@ void loadasset(const char* path, const char* file) {
   makepath(getfilepath(path));
  }
  
-// LOGDEBUG("copying file '%s' to '%s'.", source, target);
+ LOGDEBUG(3, "copying file '%s' to '%s'.", source, target);
 
  copyfile(source, target);
  
@@ -454,7 +454,7 @@ void loadasset(const char* path, const char* file) {
 
 void loadassets() {
 #ifndef __ANDROID__
- LOGDEBUG("loading assets into '%s' folder.", getfilepath("."));
+ LOGDEBUG(1, "loading assets into '%s' folder.", getfilepath("."));
  
  recursepath("res", loadasset, -1);
 #endif

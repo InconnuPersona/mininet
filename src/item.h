@@ -73,14 +73,15 @@ typedef struct {
  refer_t items[MAX_INVENTORY];
 } surface_t, view_t; // recipe interface and item access
 
+void freepile(refer_t pile);
 refer_t newpile();
-
-void additem(refer_t item, int count, refer_t pile);
-int countitem(refer_t item, refer_t pile);
-int hasitem(refer_t item, int count, refer_t pile);
-int pullitem(refer_t item, int count, refer_t pile);
-void renderhotbaritem(refer_t item, int x, int y, screen_t* screen);
 
 refer_t getsurfacebyword(const char* word);
 void rendersurface(refer_t menu, refer_t pliant);
 void ticksurface(refer_t menu, refer_t pliant);
+
+//void additem(refer_t item, int count, refer_t pile);
+//int countitem(refer_t item, refer_t pile);
+//int hasitem(refer_t item, int count, refer_t pile);
+//int pullitem(refer_t item, int count, refer_t pile);
+//void renderhotbaritem(refer_t item, int x, int y, screen_t* screen);
