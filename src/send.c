@@ -402,7 +402,7 @@ void pushjoin(const char* name) {
  tellsend_t send;
  
  if (!awaited()) {
-  LOGREPORT("attempted to push joinsend under invalid host state.");
+  LOGREPORT("attempted to push joinsend under premade connection.");
   return;
  }
  

@@ -256,7 +256,7 @@ refer_t initiate(const char* word, int x, int y) {
  
  inserttileunit(GETUNIT(unit, level).id, x >> 4, y >> 4, level);
  
- LOGREPORT("spawned unit '%s' with id '%x' at [%i, %i].", word, GETUNIT(unit, level).id, GETUNIT(unit, level).x, GETUNIT(unit, level).y);
+ LOGDEBUG(2, "spawned unit '%s' with id '%x' at [%i, %i].", word, GETUNIT(unit, level).id, GETUNIT(unit, level).x, GETUNIT(unit, level).y);
  
  return GETUNIT(unit, level).id;
 }
@@ -514,7 +514,7 @@ refer_t spawn(const char* word) {
  
  inserttileunit(GETUNIT(unit, level).id, GETUNIT(unit, level).x >> 4, GETUNIT(unit,level).y >> 4, level);
  
- LOGREPORT("spawned unit '%s' with id '%x' at [%i, %i].", word, GETUNIT(unit, level).id, GETUNIT(unit, level).x, GETUNIT(unit, level).y);
+ LOGDEBUG(2, "spawned unit '%s' with id '%x' at [%i, %i].", word, GETUNIT(unit, level).id, GETUNIT(unit, level).x, GETUNIT(unit, level).y);
  
  return GETUNIT(unit, level).id;
 }

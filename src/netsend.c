@@ -76,7 +76,7 @@ void directmessage(message_t* message, void* data, int length) {
  }
  
  if (!data) {
-  LOGREPORT("received invalid data pointer.");
+  LOGREPORT("received invalid message data pointer.");
   return;
  }
  
@@ -86,7 +86,7 @@ void directmessage(message_t* message, void* data, int length) {
  }
  
  message->length = 0;
- message->data.pointer = data;
+ message->data = data;
  message->stored = length;
  
  return;
@@ -101,12 +101,12 @@ void emplacemessage(message_t* message) {
   message->length = message->stored;
  }
  
- need = ceil((float) message->length / SECTIONANGTH);
+ need = ceil((float) message->length / CHUNKANGTH);
  
  k = -1;
  l = 0;
  
- for (i = 0; i < MAX_POOLSECTIONS; i++) {
+ for (i = 0; i < MAX_POOLLENGTH / CHUNKANGTH; i++) {
   byte = i / BYTEWIDTH;
   j = i - byte * BYTEWIDTH;
   
@@ -114,9 +114,8 @@ void emplacemessage(message_t* message) {
    if (k < 0) { 
 	k = i;
    }
-   else {
-	l++;
-   }
+   
+   l++;
   }
   else {
    k = -1;
@@ -126,9 +125,9 @@ void emplacemessage(message_t* message) {
   if (l >= need) {
    markstretch(k, l);
    
-   memcpy(&host.reserve[k * SECTIONANGTH], message->data.bytes, message->length);
+   memcpy(&host.reserve[k * CHUNKANGTH], message->data, message->length);
    
-   message->data.integer = k * SECTIONANGTH;
+   message->data = (void*) (k * CHUNKANGTH); // pointer index
    
    return;
   }
@@ -139,14 +138,14 @@ void emplacemessage(message_t* message) {
  return;
 }
 
-void marksection(int index) {
- int i, j;
- 
- i = index / SECTIONANGTH / BYTEWIDTH;
- j = index - (i * SECTIONANGTH * BYTEWIDTH);
- 
- host.used[i] |= 1 << j;
-}
+//void marksection(int index) {
+// int i, j;
+// 
+// i = index / SECTIONANGTH / BYTEWIDTH;
+// j = index - (i * SECTIONANGTH * BYTEWIDTH);
+// 
+// host.used[i] |= 1 << j;
+//}
 
 void markstretch(int start, int length) {
  int end, i, j, k, l;
@@ -154,7 +153,7 @@ void markstretch(int start, int length) {
  
  end = start + length;
  
- if (end >= MAX_POOLLENGTH / SECTIONANGTH) {
+ if (end >= MAX_POOLLENGTH / CHUNKANGTH) {
   LOGREPORT("marks exceed host reserve length.");
   return;
  }
@@ -175,7 +174,6 @@ void markstretch(int start, int length) {
   }
   
   for (l = j; l < k; l++) {
-   //mask |= 1 << (BYTEWIDTH - 1 - l);
    mask |= 1 << l;
   }
   

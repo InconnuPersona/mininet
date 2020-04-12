@@ -19,7 +19,7 @@ Dir_Root = .
 
 Dir_Debug = $(Dir_Root)/Debug
 Dir_Release = $(Dir_Root)/Release
-Dir_Source = $(Dir_Output)
+Dir_Source = $(Dir_Root)/src
 
 Directories = $(Dir_Debug) $(Dir_Release) $(Dir_Source)
 
@@ -43,6 +43,7 @@ Sources = \
 	menu \
 	net \
 	nethost \
+	netsend \
 	send \
 	sound \
 	tile \
@@ -50,16 +51,30 @@ Sources = \
 	unitsbind \
 	unituse \
 	view
+Debug_Objects = $(patsubst %, $(Dir_Debug)/%.o, $(Sources))
+Release_Objects = $(patsubst %, $(Dir_Release)/%.o, $(Sources))
 
-Objects = 
-Targets = Debug Release
+Target = mininet.exe
 
 # Output targets
 
-Debug: 
-	
+$(Dir_Debug)/$.o: $(Dir_Source)/%.c
+	$(CC) -O0 -g3 -Wall -I"$(Dir_Source)" -o $@ -c $<
 
-Release: 
+$(Dir_Debug)/$(Target): $(Debug_Objects)
+	$(CC) -o $@ $<
+
+$(Dir_Release)/$.o: $(Dir_Source)/%.c
+	$(CC) -O3 -Wall -I"$(Dir_Source)" -o $@ -c $<
+
+$(Dir_Release)/$(Target): $(Release_Objects)
+	$(CC) -o $@ $<
+
+Debug: $(Dir_Debug)/$(Target)
+	$(ECHO) 'Finished compilation.'
+
+Release: $(Dir_Release)/$(Target)
+	$(ECHO) 'Finished compilation.'
 
 # Build targets
 

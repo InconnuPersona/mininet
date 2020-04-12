@@ -89,7 +89,7 @@ void quit() {
  exit(EXIT_SUCCESS);
 }
 
-void printgameframes() {
+void printframes() {
  static int lastrender = 0, lasttick = 0;
  static float lasttime = 0;
  float current;
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
    render();
   }
   
-  INDEBUG(2, printgameframes());
+  INDEBUG(3, printframes());
   
   delaythread(delay);
  }

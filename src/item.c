@@ -91,7 +91,7 @@ void appenditem(const char* word, item_e type, int sprite, int color) {
  items[i].type = type;
  items[i].word = reprintstring(word);
  
- LOGDEBUG(1, "appended item '%s' [%x] with sprite index %i and color [%x].", items[i].word, items[i].id, items[i].sprite, items[i].color);
+ LOGDEBUG(2, "appended item '%s' [%x] with sprite index %i and color [%x].", items[i].word, items[i].id, items[i].sprite, items[i].color);
  
  return;
 }

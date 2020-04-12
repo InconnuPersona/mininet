@@ -227,47 +227,47 @@ void renderlevel(int level, int xs, int ys, screen_t* screen) {
 }
 
 void rendergame(screen_t* screen) {
- pliant_t* player;
- int client;
- int level;
- int xs, ys;
+// pliant_t* player;
+// int client;
+// int level;
+// int xs, ys;
  
  if (!session.open || awaited()) {
   renderdue(screen);
   return;
  }
  
- client = getgameclient(session.self);
- 
- if (client == INVALIDCLIENT) {
-  renderdue(screen);
-  return;
- }
- 
- level = session.clients[client].level;
- 
- bindlevel(&session.levels[level]);
- 
- if (!hasunit(session.clients[client].entity)) {
-  return;
- }
- 
- player = (pliant_t*) getunit(session.clients[client].entity);
- 
- xs = player->x;
- ys = player->y;
- 
- centerfocus(&xs, &ys, &session.levels[level], screen);
- 
- renderlevel(level, xs, ys, screen);
- 
- renderGUI(player->id, screen);
- 
- if (session.clients[client].inmenu) {
-  rendersurface(session.clients[client].inmenu, player->id);
- }
- 
- bindlevel(NULL);
+// client = getgameclient(session.self);
+// 
+// if (client == INVALIDCLIENT) {
+//  renderdue(screen);
+//  return;
+// }
+// 
+// level = session.clients[client].level;
+// 
+// bindlevel(&session.levels[level]);
+// 
+// if (!hasunit(session.clients[client].entity)) {
+//  return;
+// }
+// 
+// player = (pliant_t*) getunit(session.clients[client].entity);
+// 
+// xs = player->x;
+// ys = player->y;
+// 
+// centerfocus(&xs, &ys, &session.levels[level], screen);
+// 
+// renderlevel(level, xs, ys, screen);
+// 
+// renderGUI(player->id, screen);
+// 
+// if (session.clients[client].inmenu) {
+//  rendersurface(session.clients[client].inmenu, player->id);
+// }
+// 
+// bindlevel(NULL);
  
  return;
 }
@@ -282,7 +282,7 @@ void routepacket(packet_t* packet) {
  }
  
  for (i = 0; i < packet->messagecount; i++) {
-  memcpy(&sent, packet->messages[i].data.pointer, sizeof(gamesend_t));
+  memcpy(&sent, packet->messages[i].data, sizeof(gamesend_t));
   
   if (session.type == GAME_CLIENT) {
    handlehostsend(&sent, packet->sender);
@@ -305,14 +305,17 @@ void startsession(gametype_e type, char* name, char* address, int port) {
   return;
  }
  
+// message_t m;
+// short data[4] = { 0xdead, 0xb33f, 0xdeed, 0xba2e };
+ 
  switch (type) {
  case GAME_CLIENT:
   joinhost(address, port, 54321);
   
-  chainlevels(0);
-  
-  session.id = 0;
-  session.self = putgameclient(name, LOCALCLIENT);
+//  chainlevels(0);
+//  
+//  session.id = 0;
+//  session.self = putgameclient(name, LOCALCLIENT);
   
   break;
   
@@ -321,15 +324,21 @@ void startsession(gametype_e type, char* name, char* address, int port) {
   /* no break */
   
  case GAME_PRIVATE:
-  chainlevels(1);
-  
-  session.id = randomid();
-  
-  LOGREPORT("opened game session under id [%x].", session.id);
-  
-  session.self = putgameclient(name, LOCALCLIENT);
-  
-  spawngameclient(session.self, SPAWNLEVEL);
+//  chainlevels(1);
+//  
+//  session.id = randomid();
+//  
+//  LOGREPORT("opened game session under id [%x].", session.id);
+//  
+//  session.self = putgameclient(name, LOCALCLIENT);
+//  
+//  spawngameclient(session.self, SPAWNLEVEL);
+//  
+//  directmessage(&m, data, sizeof(data));
+//  
+//  for (int i = 0; i < 1024; i++) {
+//   appendclientmessage(&m, 0, BROADCAST);
+//  }
   
   break;
   
@@ -351,27 +360,27 @@ void startsession(gametype_e type, char* name, char* address, int port) {
 }
 
 void tickgame() {
- int ticks;
+// int ticks;
  
  if (!session.open) {
   return;
  }
  
- handlehost();
- 
- ticks = readtimer(&session.timer);
- 
- while (ticks > 0) {
-  assortlevels();
-  
-  session.ticks++;
-  
-  ticks -= 1;
- }
- 
- updatehost();
- 
- bindlevel(NULL);
+// handlehost();
+// 
+// ticks = readtimer(&session.timer);
+// 
+// while (ticks > 0) {
+//  assortlevels();
+//  
+//  session.ticks++;
+//  
+//  ticks -= 1;
+// }
+// 
+// updatehost();
+// 
+// bindlevel(NULL);
  
  return;
 }

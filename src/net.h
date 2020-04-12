@@ -51,23 +51,9 @@ typedef enum {
  NETMSG_MESSAGES, // messages can not be sent unless the host is usable
 } netmessage_e;
 
-typedef union {
- int integer;
- float floatingpoint;
- 
- byte_t* bytes;
- float* floats;
- int* integers;
- char* string;
- short* shorts;
- void* pointer;
- void** pointers;
-} abstract_u;
-
 typedef struct {
  int length; // zero length mandates that all stored data be sent
- 
- abstract_u data;
+ void* data;
  
  int stored;
 } message_t;
@@ -80,14 +66,15 @@ typedef struct {
  message_t messages[MAX_MESSAGES];
 } packet_t;
 
+void closehost();
 void joinhost(const char* address, int port, int local);
 void openhost(int port);
-void closehost();
 
-int countclients();
-void dropclient(refer_t client, int reason);
-int hasclient(refer_t client);
-int clientstate(refer_t client);
+//int countclients();
+//void dropclient(refer_t client, int reason);
+//int hasclient(refer_t client);
+//int hoststate();
+//int clientstate(refer_t client);
 
 void appendclientmessage(message_t* message, int reliable, refer_t client);
 void appendmessage(message_t* message, int reliable);
@@ -96,5 +83,3 @@ void directmessage(message_t* message, void* data, int length);
 
 void handlequeues();
 void updatequeues();
-
-int hoststate();

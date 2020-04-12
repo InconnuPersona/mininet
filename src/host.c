@@ -135,43 +135,42 @@ void handlegameclient(refer_t client) {
  
  if (awaited()) {
   if (session.ticks % 5 == 0) {
-   pushjoin(session.clients[client].name);
+//   pushjoin(session.clients[client].name);
   }
-  
-  return;
  }
- 
- commands = handleinput();
- 
- if (client != INVALIDCLIENT) {
-  bindgamelevel(session.clients[client].level);
+ else {
+  commands = handleinput();
   
-  player = getunit(session.clients[client].entity);
-  
-  if (!player) {
-   return;
-  }
-  
-  player->pliant.commands = commands;
-  
-  if (session.clients[client].inmenu) {
-   ticksurface(session.clients[client].inmenu, session.clients[client].entity);
+  if (client != INVALIDCLIENT) {
+   bindgamelevel(session.clients[client].level);
    
-   player->pliant.commands = commands = 0;
-  }
- }
- 
- if (session.type == GAME_CLIENT) {
-  if (!session.clients[client].inmenu) {
-   if (commands != oldcommand) {
-    pushcommands(commands);
+   player = getunit(session.clients[client].entity);
+   
+   if (!player) {
+	return;
+   }
+   
+   player->pliant.commands = commands;
+   
+   if (session.clients[client].inmenu) {
+	ticksurface(session.clients[client].inmenu, session.clients[client].entity);
+	
+	player->pliant.commands = commands = 0;
    }
   }
+  
+  if (session.type == GAME_CLIENT) {
+   if (!session.clients[client].inmenu) {
+	if (commands != oldcommand) {
+	 pushcommands(commands);
+	}
+   }
+  }
+  
+  bindlevel(NULL);
+  
+  oldcommand = commands;
  }
- 
- bindlevel(NULL);
- 
- oldcommand = commands;
  
  return;
 }

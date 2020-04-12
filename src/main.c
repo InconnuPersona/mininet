@@ -454,7 +454,7 @@ void loadasset(const char* path, const char* file) {
 
 void loadassets() {
 #ifndef __ANDROID__
- LOGDEBUG(1, "loading assets into '%s' folder.", getfilepath("."));
+ LOGDEBUG(1, "loading gamehost assets into '%s' folder.", getfilepath("."));
  
  recursepath("res", loadasset, -1);
 #endif

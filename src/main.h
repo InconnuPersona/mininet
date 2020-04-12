@@ -3,7 +3,7 @@
 #include "host.h"
 
 #define GAMERATE (NETWORKRATE * 1)
-#define GAMEVERSION 0x0000002
+#define GAMEVERSION 0x0000003
 #define MAX_PATHLENGTH 128
 #define MAX_WORDLENGTH 32
 #define TICKRATE 30

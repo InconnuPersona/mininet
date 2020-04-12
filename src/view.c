@@ -158,7 +158,7 @@ void formsurface(const char* word, surface_e type) {
  surfaces[i].type = type;
  surfaces[i].word = reprintstring(word);
  
- LOGDEBUG(1, "formed surface '%s' under id [%x].", word, surfaces[i].id);
+ LOGDEBUG(2, "formed surface '%s' under id [%x].", word, surfaces[i].id);
  
  return;
 }
