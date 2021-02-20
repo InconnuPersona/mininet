@@ -93,6 +93,7 @@ typedef void (*recurse_f)(const char* path, const char* file);
 
 typedef unsigned char byte_t;
 typedef unsigned int uint_t;
+typedef long long long_t;
 
 typedef int color_t;
 typedef int refer_t;

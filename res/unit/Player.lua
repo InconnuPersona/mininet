@@ -151,5 +151,3 @@ function Player:tick()
   attacktime(self, attacktime(self) - 1)
  end
 end
-
-return Player

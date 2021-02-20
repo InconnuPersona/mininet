@@ -100,7 +100,7 @@ void playsound(const char* sound) {
  
  for (i = 0; i < MAX_SOUNDS; i++) {
   if (sounds[i].name && !strcmp(sounds[i].name, sound)) {
-   Mix_PlayChannel(-1, sounds[i].chunk, 0);
+   //Mix_PlayChannel(-1, sounds[i].chunk, 0);
    return;
   }
  }

@@ -46,5 +46,3 @@ function Inventory:tick()
  end
  
 end
-
-return Inventory

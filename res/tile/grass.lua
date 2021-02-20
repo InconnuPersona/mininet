@@ -62,5 +62,3 @@ grass = {
  --interact = function(x, y, unit, item)
  --end,
 }
-
-return grass

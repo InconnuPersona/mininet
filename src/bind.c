@@ -470,7 +470,9 @@ void uploadfile(const char* path, const char* label, lua_State* L) {
  
  luaL_dostring(L, filetext(file));
  
- lua_setglobal(L, label);
+ if (label) {
+  lua_setglobal(L, label);
+ }
  
  lua_settop(L, 0);
  

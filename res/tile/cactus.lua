@@ -18,5 +18,3 @@ cactus = {
   screen.sprite(x * 16 + 8, y * 16 + 8, 9 + 3 * 32, color, 0)
  end,
 }
-
-return cactus

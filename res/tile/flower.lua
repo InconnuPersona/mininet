@@ -23,5 +23,3 @@ flower = {
   end
  end,
 }
-
-return flower

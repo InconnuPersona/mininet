@@ -33,5 +33,3 @@ function interact()
  
  return false
 end
-
-return dirt

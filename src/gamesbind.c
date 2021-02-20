@@ -182,7 +182,7 @@ void loadtile(const char* path, const char* file) {
   
   *c = '.';
   
-  uploadfile(buffer, label, L_game);
+  uploadfile(buffer, NULL, L_game);
   
   {
    assigntile(getinternal("id", label, L_game), label);
@@ -225,7 +225,7 @@ void loadunit(const char* path, const char* string) {
   
   *c = '.';
   
-  uploadfile(buffer, label, L_game);
+  uploadfile(buffer, NULL, L_game);
   
   {
    designunit((char*) getinternal("word", label, L_game), getinternal("extra", label, L_game));
