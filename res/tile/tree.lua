@@ -56,5 +56,3 @@ tree = {
   end
  end,
 }
-
-return tree

@@ -49,5 +49,3 @@ sand = {
   end
  end
 }
-
-return sand

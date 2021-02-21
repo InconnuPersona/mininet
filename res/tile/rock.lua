@@ -68,5 +68,3 @@ rock = {
   end
  end,
 }
-
-return rock
