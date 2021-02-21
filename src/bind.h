@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base.h"
+
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
@@ -47,7 +49,7 @@ extern luatable_t lua_game, lua_input, lua_item, lua_level, lua_menu, lua_screen
 
 int callmethod(const char* method, const char* table, lua_State* L, const char* parameters, ...);
 void dumpluastack(lua_State* L);
-long getinternal(const char* internal, const char* table, lua_State* L);
+long_t getinternal(const char* internal, const char* table, lua_State* L);
 int getinternaltype(const char* internal, const char* table, lua_State* L);
 int hasluamethod(const char* method, const char* table, lua_State* L);
 void linkmethodcall(const char* method, const char* table, int last, lua_State* L);

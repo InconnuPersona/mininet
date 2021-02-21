@@ -263,7 +263,8 @@ void generatetopmap(level_t* level) {
  
  generatefoliage(level);
  
- {
+ // TODO: fix stair generation
+ /*{
   count = 0;
   
  generatetopmap_stairloop:
@@ -287,7 +288,7 @@ void generatetopmap(level_t* level) {
     break;
    }
   }
- }
+ }*/
  
  unloadmap(&mnoise1);
  unloadmap(&mnoise2);
@@ -473,7 +474,7 @@ void generate(level_t* level) {
    generatetopmap(level);
    
    if (!validatetopmap(level)) {
-	continue;
+	//continue;
    }
    
    return;

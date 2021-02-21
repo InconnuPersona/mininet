@@ -1,10 +1,11 @@
 #include "main.h"
 
-#include <dirent.h>
-
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(_MSC_VER)
+ #include <dirent.h>
  #include <SDL2/SDL_mixer.h>
 #else
+ #include "dirent.h"
+ 
  #include <SDL_mixer.h>
 #endif
 

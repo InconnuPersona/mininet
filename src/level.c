@@ -338,7 +338,7 @@ void renderbackground(int xs, int ys, screen_t* screen) {
   }
  }
  
- INDEBUG(1,
+ INDEBUG(2,
  for (y = yo; y <= h + yo; y++) {
   for (x = xo; x <= w + xo; x++) {
    if (x % CHUNKANGTH == 0 && y % CHUNKANGTH == 0) {

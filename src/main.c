@@ -1,17 +1,22 @@
 #include "main.h"
 
 #include <errno.h>
-#include <dirent.h>
-#include <libgen.h>
 #include <stdarg.h>
 #include <sys/stat.h>
 
-#ifndef __ANDROID__
+#ifdef __ANDROID__
+ #include <jni.h>
+#endif
+
+#if !defined(__ANDROID__) && !defined(_MSC_VER)
+ #include <dirent.h>
+ #include <libgen.h>
  #include <SDL2/SDL_image.h>
  #include <SDL2/SDL_mixer.h>
  #include <SDL2/SDL_net.h>
 #else
- #include <jni.h>
+ #include "dirent.h"
+ 
  #include <SDL_image.h>
  #include <SDL_mixer.h>
  #include <SDL_net.h>

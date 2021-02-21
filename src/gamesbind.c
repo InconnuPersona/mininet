@@ -228,6 +228,9 @@ void loadunit(const char* path, const char* string) {
   uploadfile(buffer, NULL, L_game);
   
   {
+   char* word = (char*) getinternal("word", label, L_game);
+   int extra = getinternal("extra", label, L_game);
+   
    designunit((char*) getinternal("word", label, L_game), getinternal("extra", label, L_game));
    
    if (hasluamethod("define", label, L_game)) {

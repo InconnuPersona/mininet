@@ -2,7 +2,7 @@
 
 #include "net.h"
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(_MSC_VER)
  #include <SDL2/SDL_net.h>
 #else
  #include <SDL_net.h>
@@ -76,11 +76,11 @@ typedef struct {
 } queue_t;
 
 typedef struct {
- CLASS_CLIENT;
+ CLASS_CLIENT
 } client_t;
 
 typedef struct {
- CLASS_CLIENT;
+ CLASS_CLIENT
  
  host_e type;
 
@@ -100,7 +100,7 @@ typedef struct {
 //} messagesheader_t;
 
 typedef struct {
- PACKETHEADER;
+ PACKETHEADER
 } packetheader_t;
 
 extern client_t clients[];

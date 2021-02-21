@@ -63,5 +63,3 @@ end
 
 function WorkbenchView:tick(other)
 end
-
-return WorkbenchView

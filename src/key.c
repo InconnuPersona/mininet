@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(_MSC_VER)
  #include <SDL2/SDL.h>
 #else
  #include <SDL.h>

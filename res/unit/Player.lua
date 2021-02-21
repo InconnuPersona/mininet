@@ -42,17 +42,22 @@ function Player:die()
 end
 
 function Player:findspawn()
- while true do
-  x = game.random(level.width())
-  y = game.random(level.height())
+ unit.x(self, 64 * 16)
+ unit.y(self, 64 * 16)
+ 
+ return true
+ 
+ --while true do
+ -- x = game.random(level.width())
+ -- y = game.random(level.height())
   
-  if level.gettile(x, y) == tile.id("grass") then
-   unit.x(self, x * 16 + 8)
-   unit.y(self, y * 16 + 8)
-   
-   return true
-  end
- end
+ -- if level.gettile(x, y) == tile.id("grass") then
+ --  unit.x(self, x * 16 + 8)
+ --  unit.y(self, y * 16 + 8)
+ --  
+ --  return true
+ -- end
+ --end
 end
 
 function Player:render()

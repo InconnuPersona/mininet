@@ -2,7 +2,7 @@
 
 #include <ctype.h>
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined (_MSC_VER)
  #include <SDL2/SDL_image.h>
 #else
  #include <SDL_image.h>

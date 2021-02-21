@@ -312,10 +312,10 @@ void startsession(gametype_e type, char* name, char* address, int port) {
  case GAME_CLIENT:
   joinhost(address, port, 54321);
   
-//  chainlevels(0);
-//  
-//  session.id = 0;
-//  session.self = putgameclient(name, LOCALCLIENT);
+  chainlevels(0);
+  
+  session.id = 0;
+  session.self = putgameclient(name, LOCALCLIENT);
   
   break;
   
@@ -360,27 +360,27 @@ void startsession(gametype_e type, char* name, char* address, int port) {
 }
 
 void tickgame() {
-// int ticks;
+ int ticks;
  
  if (!session.open) {
   return;
  }
  
-// handlehost();
-// 
-// ticks = readtimer(&session.timer);
-// 
-// while (ticks > 0) {
-//  assortlevels();
-//  
-//  session.ticks++;
-//  
-//  ticks -= 1;
-// }
-// 
-// updatehost();
-// 
-// bindlevel(NULL);
+ handlehost();
+ 
+ ticks = readtimer(&session.timer);
+ 
+ while (ticks > 0) {
+  assortlevels();
+  
+  session.ticks++;
+  
+  ticks -= 1;
+ }
+ 
+ updatehost();
+ 
+ bindlevel(NULL);
  
  return;
 }

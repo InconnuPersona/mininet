@@ -7,5 +7,3 @@ Resources = {
   --item.bestow("acorn", item.PLANTABLE, "treeSapling", { "grass" })
  end
 }
-
-return Resources
