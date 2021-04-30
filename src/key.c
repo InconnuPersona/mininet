@@ -223,7 +223,7 @@ void pollevents() {
   case SDL_KEYDOWN:
   case SDL_KEYUP:
    if (key_listen && e.key.state) {
-	menuchar(e.key.keysym.sym);
+	//menuchar(e.key.keysym.sym);
    }
    
    setckey(e.key.keysym.sym, e.key.state);

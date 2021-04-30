@@ -3,7 +3,7 @@
 // ==================================================
 // variables
 
-level_t* source;
+/*level_t* source;
 
 // ==================================================
 // level functions
@@ -314,4 +314,4 @@ int spritesort(const void* v1, const void* v2) {
  }
  
  return 0;
-}
+}*/

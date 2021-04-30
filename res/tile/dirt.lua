@@ -1,5 +1,8 @@
 dirt = {}
 
+
+
+
 dirt.id = 6
 
 function dirt.render()

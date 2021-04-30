@@ -36,7 +36,7 @@ void init() {
  bindkeys();
  
  enablemenu();
- enablegame();
+ //enablegame();
  
  loadsounds();
 // loadviews();
@@ -55,7 +55,7 @@ void tick() {
  }
  
  if (session.open) {
-  tickgame();
+  //tickgame();
  }
  
  if (hasfocus()) {

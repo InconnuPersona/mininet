@@ -1,6 +1,6 @@
 #include "main.h"
 
-extern void handleclientsend(gamesend_t* sent, refer_t sender);
+/*extern void handleclientsend(gamesend_t* sent, refer_t sender);
 extern void handlehostsend(gamesend_t* sent, refer_t sender);
 extern void opensurface(refer_t view, refer_t pliant);
 
@@ -321,7 +321,7 @@ void startsession(gametype_e type, char* name, char* address, int port) {
   
  case GAME_HOST:
   openhost(port);
-  /* no break */
+  /* no break *//*
   
  case GAME_PRIVATE:
   chainlevels(1);
@@ -403,4 +403,4 @@ void viewsurface(const char* word, refer_t client) {
  opensurface(view, session.clients[client].entity);
  
  return;
-}
+}*/

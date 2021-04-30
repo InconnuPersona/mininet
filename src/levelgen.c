@@ -1,6 +1,6 @@
 #include "main.h"
 
-#include <math.h>
+/*#include <math.h>
 
 // ==================================================
 // structures
@@ -288,7 +288,7 @@ void generatetopmap(level_t* level) {
     break;
    }
   }
- }*/
+ }*//*
  
  unloadmap(&mnoise1);
  unloadmap(&mnoise2);
@@ -315,7 +315,7 @@ void generateunderground(level_t* level) {
  for (i = 0; i < level->w * level->h; i++) {
   level->tiles[i].id = tileid("dirt");
  }
- /*
+ 
  map_t mnoise1, mnoise2, mnoise3;
  map_t nnoise1, nnoise2, nnoise3;
  map_t wnoise1, wnoise2, wnoise3;
@@ -400,7 +400,7 @@ void generateunderground(level_t* level) {
 	
    }
   }
- }*/
+ }*//*
 }
 
 int validatetopmap(level_t* level) {
@@ -499,4 +499,4 @@ void generate(level_t* level) {
   }
  }
  while (1);
-}
+}*/

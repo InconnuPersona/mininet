@@ -3,7 +3,7 @@
 // ==================================================
 // variables
 
-level_t* level;
+/*level_t* level;
 refer_t samples[MAX_SAMPLES];
 
 // ==================================================
@@ -628,4 +628,4 @@ void tickunits(aabb_t aabb) {
    efface(unit->id);
   }
  }
-}
+}*/

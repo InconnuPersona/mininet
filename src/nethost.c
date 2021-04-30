@@ -110,7 +110,7 @@ int fetchclient(refer_t id) {
 
 void handlequeues() {
  if (host.type != HOST_UNMADE && host.socket) {
-  receivepackets();
+  //receivepackets();
  }
  
  memset(host.used, 0, MAX_POOLWIDTH);

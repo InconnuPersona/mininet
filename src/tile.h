@@ -6,7 +6,7 @@
 #define MAX_DEIGNS 2
 #define NOTILE 0
 
-typedef enum {
+/*typedef enum {
  TILE_NOFLAG = 0x00,
  TILE_TOGRASS = 0x01,
  TILE_TOLAVA = 0x02,
@@ -38,16 +38,30 @@ typedef struct {
  char* word;
  deign_t deign;
  tileflag_e flags;
-} tileword_t;
+} tileword_t;*/
+
+typedef struct {
+ refer_t id;
+ char* word;
+} tile_t;
+
+typedef struct {
+ 
+ byte_t* dirties;
+ 
+ byte_t* tiles;
+} chunk_t;
+
+
 
 refer_t tileid(const char* word);
 const char* tilename(refer_t id);
 int flagtile(refer_t id, int flags);
 int hasflags(int flags, refer_t id);
 
-int actontile(int x, int y, refer_t unit, refer_t item);
-int gettileglow(int x, int y);
-void stepontile(int x, int y, refer_t unit);
-void striketile(int x, int y, refer_t unit, int damage);
-int surpassable(int x, int y, refer_t unit);
-void touchtile(int x, int y, refer_t unit);
+//int actontile(int x, int y, refer_t unit, refer_t item);
+//int gettileglow(int x, int y);
+//void stepontile(int x, int y, refer_t unit);
+//void striketile(int x, int y, refer_t unit, int damage);
+//int surpassable(int x, int y, refer_t unit);
+//void touchtile(int x, int y, refer_t unit);

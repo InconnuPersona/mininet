@@ -4,16 +4,16 @@
 #define NEWTILEMETHOD(Name) NEWLUAFUNCTION(tile##Name)
 #define LUATILEMETHOD(Name) LUAMETHOD(Name, tile##Name)
 
-#define CHECKTILEWORD(Word, ...) \
+/*#define CHECKTILEWORD(Word, ...) \
  if (Word < 0 || Word >= MAX_TILEWORDS || !tilewords[Word].word) { \
   LOGREPORT("received unbound tile identifier '%i'.", Word); \
   __VA_ARGS__; \
- }
+ }*/
 
 // ==================================================
 // declarations
 
-tileword_t tilewords[MAX_TILEWORDS] = { 0 };
+//tileword_t tilewords[MAX_TILEWORDS] = { 0 };
 
 // ==================================================
 // externals
@@ -24,7 +24,7 @@ extern screen_t* le_screen;
 // ==================================================
 // functions
 
-int hastilemethod(const char* method, refer_t tile) {
+/*int hastilemethod(const char* method, refer_t tile) {
  if (!method || tile == NOTILE) {
   LOGDEBUG(1, "received invalid arguments.");
   return 0;
@@ -178,9 +178,15 @@ void ticktile(int x, int y) {
  }
  
  calltilemethod("tick", x, y, NULL);
+}*/
+
+NEWTILEMETHOD(__call) {
+ 
+ 
+ return 0;
 }
 
-NEWTILEMETHOD(deign) {
+/*NEWTILEMETHOD(deign) {
  return 1;
 }
 
@@ -287,10 +293,10 @@ NEWTILEMETHOD(strike) {
 
 NEWTILEMETHOD(touch) {
  return 0;
-}
+}*/
 
 BEGINLUATABLE(tile)
- LUANUMBER(ALIAS, -1),
+ /*LUANUMBER(ALIAS, -1),
  LUANUMBER(FALSED, -1),
  LUANUMBER(TOGRASS, TILE_TOGRASS),
  LUANUMBER(TOLAVA, TILE_TOLAVA),
@@ -307,5 +313,5 @@ BEGINLUATABLE(tile)
  LUATILEMETHOD(setflag),
  LUATILEMETHOD(step),
  LUATILEMETHOD(strike),
- LUATILEMETHOD(touch),
+ LUATILEMETHOD(touch),*/
 ENDLUATABLE;

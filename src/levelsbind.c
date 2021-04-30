@@ -1,7 +1,7 @@
 #include "level.h"
 #include "bind.h"
 
-#define LUALEVELINTERNAL(Name) \
+/*#define LUALEVELINTERNAL(Name) \
  NEWLUAFUNCTION(level##Name) { \
   lua_pushnumber(L, level->Name); \
   \
@@ -138,4 +138,4 @@ BEGINLUATABLE(level)
  LUAFUNCTION(settile),
  LUAFUNCTION(summon), // calls spawn, but forces the argument count to be at least four
  LUAFUNCTION(spawn),
-ENDLUATABLE;
+ENDLUATABLE;*/

@@ -17,7 +17,10 @@ typedef struct level_s {
  
  byte_t* dirties; // chunk bitmap
  
- tile_t* tiles;
+ chunk_t* chunks;
+ 
+ tile_t tiles[MAX_TILEWORDS];
+ 
  refer_t* tileunits;
  
  unit_u units[MAX_UNITS];
@@ -29,9 +32,12 @@ void emptylevel(int width, int height, int depth);
 void ticklevel();
 void tickunits(aabb_t aabb);
 
-void renderbackground(int xs, int ys, screen_t* screen);
+//void rendertiles();
+//void renderunits();
+
+/*void renderbackground(int xs, int ys, screen_t* screen);
 void renderlights(int xs, int ys, screen_t* screen);
-void rendersprites(int xs, int ys, screen_t* screen);
+void rendersprites(int xs, int ys, screen_t* screen);*/
 
 int getdata(int x, int y);
 int gettile(int x, int y);

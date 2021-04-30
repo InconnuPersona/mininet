@@ -3,7 +3,7 @@
 
 //
 
-unit_t* castunit(refer_t id) {
+/*unit_t* castunit(refer_t id) {
  unit_t* unit = (unit_t*) getunit(id);
  
  if (!unit || !unit->extant) {
@@ -498,3 +498,4 @@ void strike(refer_t other, refer_t mob) {
 
 // ==================================================
 // pliant functions
+*/

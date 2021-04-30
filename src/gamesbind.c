@@ -55,7 +55,7 @@ NEWLUAFUNCTION(randomboolean) {
 NEWLUAFUNCTION(render) {
  extern screen_t* le_screen;
  
- rendergame(le_screen);
+ //rendergame(le_screen);
  
  return 0;
 }
@@ -84,7 +84,7 @@ NEWLUAFUNCTION(start) {
  addr = (char*) luaL_checkstring(L, 3);
  port = (char*) luaL_checkstring(L, 4);
  
- startsession(type, name, addr, atoi(port));
+ //startsession(type, name, addr, atoi(port));
  
  return 0;
 }
@@ -116,10 +116,9 @@ ENDLUATABLE;
 // ==================================================
 // functions
 
-void loaditem(const char* path, const char* string) {
+void loadscript(const char* path, const char* string) {
  char buffer[MAX_PATHLENGTH];
  char* c;
- char* label;
  
  c = strchr(string, '.');
  
@@ -128,122 +127,8 @@ void loaditem(const char* path, const char* string) {
   
   snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, string);
   
-  *c = '\0';
-  
-  label = reprintstring(string);
-  
-  if (strlen(label) > MAX_WORDLENGTH) {
-   LOGREPORT("surface word '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
-   exit(EXIT_FAILURE);
-  }
-  
-  *c = '.';
-  
-  uploadfile(buffer, label, L_game);
-  
-  {
-   if (hasluamethod("append", label, L_game)) {
-	callmethod("append", label, L_game, NULL);
-   }
-   
-   if (getinternal("type", label, L_game) != VIEW_NONE) {
-	formsurface(label, getinternal("type", label, L_game));
-   }
-  }
- }
-}
-
-void loaditems() {
- recursepath(getfilepath("res/item"), loaditem, 0);
- 
- return;
-}
-
-void loadtile(const char* path, const char* file) {
- char buffer[MAX_PATHLENGTH];
- char* c;
- char* label;
- 
- c = strchr(file, '.');
- 
- if (c && !strncmp(c, ".lua", 4)) {
-  memset(buffer, 0, MAX_PATHLENGTH);
-  
-  snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, file);
-  
-  *c = '\0';
-  
-  label = reprintstring(file);
-  
-  if (strlen(label) > MAX_WORDLENGTH) {
-   LOGREPORT("tile word '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
-   exit(EXIT_FAILURE);
-  }
-  
-  *c = '.';
-  
   uploadfile(buffer, NULL, L_game);
-  
-  {
-   assigntile(getinternal("id", label, L_game), label);
-
-   if (hasluamethod("define", label, L_game)) {
-    callmethod("define", label, L_game, NULL);
-   }
-  }
  }
-}
-
-void loadtiles() {
- assigntile(NOTILE, "void");
- 
- recursepath(getfilepath("res/tile"), loadtile, 0);
- 
- return;
-}
-
-void loadunit(const char* path, const char* string) {
- char buffer[MAX_PATHLENGTH];
- char* c;
- char* label;
- 
- c = strchr(string, '.');
- 
- if (c && !strncmp(c, ".lua", 4)) {
-  memset(buffer, 0, MAX_PATHLENGTH);
-  
-  snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, string);
-  
-  *c = '\0';
-  
-  label = reprintstring(string);
-  
-  if (strlen(label) > MAX_WORDLENGTH) {
-   LOGREPORT("unit word '%s' exceeds %i character limit.", label, MAX_WORDLENGTH);
-   exit(EXIT_FAILURE);
-  }
-  
-  *c = '.';
-  
-  uploadfile(buffer, NULL, L_game);
-  
-  {
-   char* word = (char*) getinternal("word", label, L_game);
-   int extra = getinternal("extra", label, L_game);
-   
-   designunit((char*) getinternal("word", label, L_game), getinternal("extra", label, L_game));
-   
-   if (hasluamethod("define", label, L_game)) {
-    callmethod("define", label, L_game, NULL);
-   }
-  }
- }
-}
-
-void loadunits() {
- recursepath(getfilepath("res/unit"), loadunit, 0);
- 
- return;
 }
 
 void enablegame() {
@@ -254,25 +139,28 @@ void enablegame() {
  luaL_openlibs(L_game);
  
  uploadtable(lua_game, "game", L_game);
- uploadtable(lua_item, "item", L_game);
- uploadtable(lua_level, "level", L_game);
+// uploadtable(lua_item, "item", L_game);
+ //uploadtable(lua_level, "level", L_game);
  uploadtable(lua_menu, "menu", L_game);
- uploadtable(lua_screen, "screen", L_game);
- uploadtable(lua_tile, "tile", L_game);
- uploadtable(lua_unit, "unit", L_game);
+ //uploadtable(lua_screen, "screen", L_game);
+ //uploadtable(lua_tile, "tile", L_game);
+ //uploadtable(lua_unit, "unit", L_game);
  
  {
-  uploadsubtable(lua_unitdrop, "drop", "unit", L_game);
-  uploadsubtable(lua_unitfiend, "fiend", "unit", L_game);
-  uploadsubtable(lua_unitmob, "mob", "unit", L_game);
-  uploadsubtable(lua_unitmovable, "movable", "unit", L_game);
-  uploadsubtable(lua_unitpliant, "pliant", "unit", L_game);
-  uploadsubtable(lua_unittrace, "trace", "unit", L_game);
+  //uploadsubtable(lua_unitdrop, "drop", "unit", L_game);
+  //uploadsubtable(lua_unitfiend, "fiend", "unit", L_game);
+  //uploadsubtable(lua_unitmob, "mob", "unit", L_game);
+  //uploadsubtable(lua_unitmovable, "movable", "unit", L_game);
+  //uploadsubtable(lua_unitpliant, "pliant", "unit", L_game);
+  //uploadsubtable(lua_unittrace, "trace", "unit", L_game);
  }
  
- loaditems();
- loadtiles();
- loadunits();
+ recursepath(getfilepath("res/item"), loadscript, 0);
+ 
+ //assigntile(NOTILE, "void");
+ 
+ recursepath(getfilepath("res/tile"), loadscript, 0);
+ recursepath(getfilepath("res/unit"), loadscript, 0);
  
  return;
 }

@@ -2,7 +2,7 @@
 #include "bind.h"
 #include "unituse.h"
 
-#define LUAUNITELEMENT(Super, Name, Type) \
+/*#define LUAUNITELEMENT(Super, Name, Type) \
  NEWLUAFUNCTION(Super##Name) { \
   unit_u* unit; \
   int offset = offsetof(Super##_t, Name) / sizeof(int); \
@@ -122,11 +122,11 @@ int hasunitmethod(const char* method, unit_t* unit) {
 
 LUAUNITVALUE(mob, maxhealth)
 
-LUAUNITELEMENT(mob, pile, number)
-LUAUNITELEMENT(mob, health, number)
-LUAUNITELEMENT(mob, dir, number)
-LUAUNITELEMENT(mob, xk, number)
-LUAUNITELEMENT(mob, yk, number)
+//LUAUNITELEMENT(mob, pile, number)
+//LUAUNITELEMENT(mob, health, number)
+//LUAUNITELEMENT(mob, dir, number)
+//LUAUNITELEMENT(mob, xk, number)
+//LUAUNITELEMENT(mob, yk, number)
 LUAUNITELEMENT(mob, hurted, number)
 LUAUNITELEMENT(mob, ticked, number)
 LUAUNITELEMENT(mob, swum, number)
@@ -347,15 +347,15 @@ BEGINLUATABLE(unitmob)
  LUAUNITMETHOD(mob, hurt),
  LUAUNITMETHOD(mob, move),
  
- LUAUNITMETHOD(mob, dir),
- LUAUNITMETHOD(mob, health),
+ //LUAUNITMETHOD(mob, dir),
+ //LUAUNITMETHOD(mob, health),
  LUAUNITMETHOD(mob, hurted),
- LUAUNITMETHOD(mob, pile),
+ //LUAUNITMETHOD(mob, pile),
  LUAUNITMETHOD(mob, swum),
  LUAUNITMETHOD(mob, ticked),
  LUAUNITMETHOD(mob, walked),
- LUAUNITMETHOD(mob, xk),
- LUAUNITMETHOD(mob, yk),
+ //LUAUNITMETHOD(mob, xk),
+ //LUAUNITMETHOD(mob, yk),
 ENDLUATABLE;
 
 BEGINLUATABLE(unitmovable)
@@ -387,4 +387,4 @@ BEGINLUATABLE(unitpliant)
 ENDLUATABLE;
 
 BEGINLUATABLE(unittrace)
-ENDLUATABLE;
+ENDLUATABLE;*/

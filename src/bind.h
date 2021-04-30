@@ -2,9 +2,16 @@
 
 #include "base.h"
 
-#include <lauxlib.h>
-#include <lua.h>
-#include <lualib.h>
+#ifdef __linux__
+ #include <lua5.2/lauxlib.h>
+ #include <lua5.2/lua.h>
+ #include <lua5.2/lualib.h>
+#else
+ #include <lauxlib.h>
+ #include <lua.h>
+ #include <lualib.h>
+#endif
+
 #include <stdarg.h>
 
 #define NEWLUAFUNCTION(Name) int lf_##Name(lua_State* L)

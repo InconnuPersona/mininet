@@ -2,7 +2,7 @@
 
 game_t session = { 0 };
 
-int newgameclientid() {
+/*int newgameclientid() {
  int id;
  
  do {
@@ -302,4 +302,4 @@ void updatehost() {
  else if (session.type == GAME_HOST && (session.ticks % 3 == 0)) {
   tickclients();
  }
-}
+}*/

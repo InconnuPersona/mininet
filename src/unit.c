@@ -1,7 +1,7 @@
 #include "host.h"
 #include "level.h"
 
-#define INVALIDUNITWORD -1
+/*#define INVALIDUNITWORD -1
 
 // ==================================================
 // declarations

@@ -1,7 +1,7 @@
 #include "main.h"
 #include "levelaid.h"
 
-void printgamesend(gamesend_t* send);
+/*void printgamesend(gamesend_t* send);
 
 extern unitword_t unitwords[];
 
@@ -593,4 +593,4 @@ void handlehostsend(gamesend_t* sent, refer_t sender) {
   LOGREPORT("received unhandled host gamesend type [%i].", sent->type);
   break;
  }
-}
+}*/

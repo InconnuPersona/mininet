@@ -6,7 +6,7 @@
 // ==================================================
 // declarations
 
-void unpackheader(packet_t* packet);
+/*void unpackheader(packet_t* packet);
 void unpackmessages(packet_t* packet);
 
 UDPpacket* transmission = NULL;
@@ -358,4 +358,4 @@ void unpackmessages(packet_t* packet) {
 // printmessages(packet);
  
  return;
-}
+}*/

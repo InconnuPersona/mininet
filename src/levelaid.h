@@ -3,7 +3,7 @@
 #include "level.h"
 #include "unituse.h"
 
-#define CHUNKANGTH 4
+/*#define CHUNKANGTH 4
 #define INVALIDUNIT -1
 #define MAX_TILEUNITS 8
 
@@ -50,4 +50,4 @@ int seekunit(refer_t id, level_t* level);
 void setchunk(chunk_t* chunk, level_t* level);
 void sortandrender(refer_t* units, int count, level_t* level, screen_t* screen);
 void spawnfiends(int count, level_t* level);
-int spritesort(const void* v1, const void* v2);
+int spritesort(const void* v1, const void* v2);*/
