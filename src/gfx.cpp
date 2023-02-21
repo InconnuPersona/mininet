@@ -5,7 +5,7 @@
 #if !defined(__ANDROID__) && !defined (_MSC_VER)
  #include <SDL2/SDL_image.h>
 #else
- #include <SDL_image.h>
+ #include <SDL2/SDL_image.h>
 #endif
 
 #ifndef __ANDROID__
@@ -69,7 +69,7 @@ void loadspritesheet(spritesheet_t* sheet, const char* path) {
  sheet->width = surface->w;
  sheet->height = surface->h;
  
- sheet->pixels = malloc(sizeof(int) * sheet->width * sheet->height);
+ sheet->pixels = new int[sheet->width * sheet->height];
  
  colors = (int*) surface->pixels;
  
@@ -85,10 +85,12 @@ void createscreen(screen_t* screen, int width, int height, const char* icons) {
  screen->w = width;
  screen->h = height;
  
- screen->pixels = malloc(sizeof(color_t) * width * height);
+ screen->pixels = new color_t[width * height];
  
  loadspritesheet(&screen->sheet, icons);
  
+ clearscreen(screen, 0);
+
  return;
 }
 
@@ -271,7 +273,7 @@ void createview() {
  
  SDLNULLPRONE(texture, "'SDL2' texture creation failed");
  
- pixels = malloc(sizeof(SDL_Color) * RENDERWIDTH * RENDERHEIGHT);
+ pixels = new SDL_Color[RENDERWIDTH * RENDERHEIGHT];
  
  NULLPRONE(pixels, "failed allocating memory for pixels");
 }

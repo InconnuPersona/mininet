@@ -6,7 +6,7 @@
 #else
  #include "dirent.h"
  
- #include <SDL_mixer.h>
+ #include <SDL2/SDL_mixer.h>
 #endif
 
 #define AUDIORATE 22050
@@ -41,7 +41,7 @@ void loadsound(const char* string) {
   return;
  }
  
- c = strchr(string, '.');
+ c = (char*) strchr(string, '.');
  
  if (!c || strncmp(c, ".wav", 4) != 0) {
   return;

@@ -17,9 +17,11 @@
 #else
  #include "dirent.h"
  
- #include <SDL_image.h>
- #include <SDL_mixer.h>
- #include <SDL_net.h>
+ #include <direct.h>
+ 
+ //#include <SDL2/SDL_image.h>
+ #include <SDL2/SDL_mixer.h>
+ #include <SDL2/SDL_net.h>
 #endif
 
 #ifdef __ANDROID__
@@ -29,7 +31,7 @@
 #endif
 
 #ifdef _WIN32
- #define MAKEDIR(Path) mkdir(Path)
+ #define MAKEDIR(Path) _mkdir(Path)
 #else
  #define MAKEDIR(Path) mkdir(Path, 0)
 #endif
@@ -261,7 +263,7 @@ refer_t readfile(const char* path) {
   goto readfile_error;
  }
  
- files[i].string = malloc(length + 1);
+ files[i].string = new char[length + 1];
  
  if (!files[i].string) {
   LOGREPORT("unable to allocate file '%s' contents (%li bytes).", path, length);
@@ -415,7 +417,7 @@ void bindkeys() {
 void closelibraries() {
  SDLNet_Quit();
  Mix_Quit();
- IMG_Quit();
+ //IMG_Quit();
  SDL_Quit();
 }
 
@@ -469,7 +471,7 @@ void loadassets() {
 
 void loadlibraries() {
  int sdlflags = SDL_INIT_AUDIO | SDL_INIT_VIDEO;
- int sdlimageflags = IMG_INIT_PNG;
+ //int sdlimageflags = IMG_INIT_PNG;
  int sdlmixerflags = 0; //MIX_INIT_MP3;
  
  if (SDL_Init(sdlflags) != 0) {
@@ -477,10 +479,10 @@ void loadlibraries() {
   exit(EXIT_FAILURE);
  }
  
- if (IMG_Init(sdlimageflags) != sdlimageflags) {
-  LOGREPORT("could not load 'SDL2' image library - %s.", IMG_GetError());
-  exit(EXIT_FAILURE);
- }
+ //if (IMG_Init(sdlimageflags) != sdlimageflags) {
+ // LOGREPORT("could not load 'SDL2' image library - %s.", IMG_GetError());
+ // exit(EXIT_FAILURE);
+ //}
  
  if (Mix_Init(sdlmixerflags) != sdlmixerflags) {
   LOGREPORT("could not load 'SDL2' mixer library - %s.", Mix_GetError());

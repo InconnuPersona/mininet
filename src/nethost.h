@@ -5,7 +5,7 @@
 #if !defined(__ANDROID__) && !defined(_MSC_VER)
  #include <SDL2/SDL_net.h>
 #else
- #include <SDL_net.h>
+ #include <SDL2/SDL_net.h>
 #endif
 
 //#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)

@@ -18,7 +18,6 @@
 // ==================================================
 // externals
 
-extern lua_State* L_game;
 extern screen_t* le_screen;
 
 // ==================================================
@@ -178,7 +177,7 @@ void ticktile(int x, int y) {
  }
  
  calltilemethod("tick", x, y, NULL);
-}*/
+}
 
 NEWTILEMETHOD(__call) {
  
@@ -295,7 +294,7 @@ NEWTILEMETHOD(touch) {
  return 0;
 }*/
 
-BEGINLUATABLE(tile)
+//BEGINLUATABLE(tile)
  /*LUANUMBER(ALIAS, -1),
  LUANUMBER(FALSED, -1),
  LUANUMBER(TOGRASS, TILE_TOGRASS),
@@ -314,4 +313,4 @@ BEGINLUATABLE(tile)
  LUATILEMETHOD(step),
  LUATILEMETHOD(strike),
  LUATILEMETHOD(touch),*/
-ENDLUATABLE;
+//ENDLUATABLE;

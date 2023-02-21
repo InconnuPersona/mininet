@@ -18,85 +18,82 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bind.c">
+    <ClCompile Include="bind.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="entry.c">
+    <ClCompile Include="entry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="game.c">
+    <ClCompile Include="game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gfx.c">
+    <ClCompile Include="gfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="host.c">
+    <ClCompile Include="host.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="item.c">
+    <ClCompile Include="item.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="key.c">
+    <ClCompile Include="key.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="level.c">
+    <ClCompile Include="level.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="levelaid.c">
+    <ClCompile Include="levelaid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="levelgen.c">
+    <ClCompile Include="levelgen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.c">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="math.c">
+    <ClCompile Include="math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="menu.c">
+    <ClCompile Include="menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="net.c">
+    <ClCompile Include="net.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="netsend.c">
+    <ClCompile Include="netsend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="nethost.c">
+    <ClCompile Include="nethost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="netuse.c">
+    <ClCompile Include="netuse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="send.c">
+    <ClCompile Include="send.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sound.c">
+    <ClCompile Include="sound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tile.c">
+    <ClCompile Include="tile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="unit.c">
+    <ClCompile Include="unit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="unituse.c">
+    <ClCompile Include="unituse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view.c">
+    <ClCompile Include="view.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gamesbind.c">
+    <ClCompile Include="itemsbind.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="itemsbind.c">
+    <ClCompile Include="levelsbind.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="levelsbind.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="unitsbind.c">
+    <ClCompile Include="unitsbind.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -125,7 +122,7 @@
     <ClInclude Include="main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="menu.h">
+    <ClInclude Include="view.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="net.h">

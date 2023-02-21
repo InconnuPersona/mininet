@@ -1,5 +1,3 @@
-TitleMenu = {}
-
 local selected = 0
 
 function TitleMenu.reset()
@@ -63,5 +61,3 @@ function TitleMenu.render()
  
  screen.font("(Arrow keys,X and C)", 0, screen.height() - 8, screen.get(0, 111, 111, 111))
 end
-
-return TitleMenu

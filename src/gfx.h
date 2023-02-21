@@ -47,4 +47,4 @@ void createview();
 void closeview();
 void fillpalette();
 int hasfocus();
-void updatetexture();
+void updatetexture(screen_t* screen);

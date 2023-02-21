@@ -31,6 +31,7 @@ void closelibraries();
 void printhostdata();
 
 void enablegame();
+void enablelua();
 //void endsession() or closesession()
 void startsession(gametype_e type, char* name, char* address, int port);
 void rendergame(screen_t* screen);
@@ -40,9 +41,8 @@ void bindkeys();
 void renderfocusnagger(screen_t* screen, int ticks);
 
 void loadassets();
+void loadscripts();
 
 void loadsounds();
 void playsound(const char* sound);
 void unloadsounds();
-
-void loadviews();

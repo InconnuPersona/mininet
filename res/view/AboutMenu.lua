@@ -1,4 +1,3 @@
-AboutMenu = {}
 
 function AboutMenu.tick()
  if input.clicked("attack") or input.clicked("menu") then
@@ -18,5 +17,3 @@ function AboutMenu.render()
  screen.font("it is dedicated to", 0 * 8 + 4, 9 * 8, screen.get(0, 333, 333, 333))
  screen.font("my father. <3", 0 * 8 + 4, 10 * 8, screen.get(0, 333, 333, 333))
 end
-
-return AboutMenu

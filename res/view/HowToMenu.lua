@@ -1,4 +1,3 @@
-HowToMenu = {}
 
 function HowToMenu.tick()
  if input.clicked("attack") or input.clicked("menu") then
@@ -22,5 +21,3 @@ function HowToMenu.render()
  screen.font("Kill the air wizard", 0 * 8 + 4, 12 * 8, screen.get(0, 333, 333, 333))
  screen.font("to win the game!", 0 * 8 + 4, 13 * 8, screen.get(0, 333, 333, 333))
 end
-
-return HowToMenu

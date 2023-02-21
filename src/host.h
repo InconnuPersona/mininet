@@ -2,7 +2,7 @@
 
 #include "item.h"
 #include "level.h"
-#include "menu.h"
+#include "view.h"
 #include "net.h"
 
 #define GAMESMARKER 0x4d494e49 // mini in hexadecimal

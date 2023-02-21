@@ -4,19 +4,20 @@
 #define INVALIDSURFACE -1
 
 // ==================================================
+// externals
+
+extern screen_t* le_screen;
+
+// ==================================================
 // declarations
 
 surface_t surfaces[MAX_SURFACES] = { 0 };
-
-//==================================================
-// externals
-
-extern lua_State* L_game;
+sol::table view;
 
 // ==================================================
 // functions
 
-int getsurface(refer_t id) {
+/*int getsurface(refer_t id) {
  int i;
  
  for (i = 0; i < MAX_SURFACES; i++) {
@@ -91,6 +92,8 @@ void opensurface(refer_t view, refer_t pliant) {
   return;
  }
  
+ L_game.
+
  if (hassurfacemethod("open", surfaces[view].id)) {
   callmethod("open", surfaces[view].word, L_game, "n", pliant);
  }
@@ -161,5 +164,86 @@ void formsurface(const char* word, surface_e type) {
  LOGDEBUG(2, "formed surface '%s' under id [%x].", word, surfaces[i].id);
  
  return;
+}*/
+
+int isview(const char* other) {
+ if (view.valid()) {
+  auto name = view["_vname"];
+  
+  if (name.valid() && name.get_type() == sol::type::string) {
+   return name == other;
+  }
+ }
+
+ return false;
 }
 
+void loadview(const char* path, const char* string) {
+ char buffer[MAX_PATHLENGTH];
+ char* c;
+ 
+ c = (char*) strchr(string, '.');
+ 
+ if (c && !strncmp(c, ".lua", 4)) {
+  memset(buffer, 0, MAX_PATHLENGTH);
+  
+  snprintf(buffer, MAX_PATHLENGTH, "%s/%s", path, string);
+  
+  *c = '\0';
+
+  L[string] = L.create_table();
+
+  L.script_file(buffer);
+
+  L[string]["_vname"] = string;
+
+  // check if the view has define functions
+
+  *c = '.';
+ }
+}
+
+void loadviews() {
+ recursepath(getfilepath("res/view"), loadview, 0);
+}
+
+void setview(const char* newview) {
+ setlisten(0);
+ 
+ view = L[newview];
+
+ if (view.valid()) {
+  auto reset = view["reset"];
+
+  if (reset.valid()) {
+   reset();
+  }
+ }
+ else {
+  LOGREPORT("unusable view '%s' set.", newview);
+ }
+}
+
+void tickview() {
+ if (view.valid()) {
+  auto tick = view["tick"];
+
+  if ISLUATYPE(tick, function) {
+   tick();
+  }
+ }
+}
+
+void renderview(screen_t* screen) {
+ le_screen = screen;
+ 
+ if (view.valid()) {
+  auto render = view["render"];
+
+  if ISLUATYPE(render, function) {
+   render();
+  }
+ }
+
+ le_screen = 0;
+}

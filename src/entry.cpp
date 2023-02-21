@@ -35,13 +35,13 @@ void init() {
  
  bindkeys();
  
- enablemenu();
- //enablegame();
+ enablelua();
  
  loadsounds();
-// loadviews();
+ loadscripts();
+ loadviews();
  
- setmenu("TitleMenu");
+ setview("TitleMenu");
 }
 
 void tick() {
@@ -59,7 +59,7 @@ void tick() {
  }
  
  if (hasfocus()) {
-  tickmenu();
+  tickview();
  }
  
  updatequeues();
@@ -68,7 +68,7 @@ void tick() {
 void render() {
  renders++;
  
- rendermenu(&screen);
+ renderview(&screen);
  
  if (!hasfocus()) {
   renderfocusnagger(&screen, ticks);

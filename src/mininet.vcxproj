@@ -28,26 +28,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -104,13 +104,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)lib\lua\include;$(SolutionDir)lib\SDL2\include;$(SolutionDir)lib\SDL2_image\include;$(SolutionDir)lib\SDL2_mixer\include;$(SolutionDir)lib\SDL2_net\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\lua\lib\x64;$(SolutionDir)lib\SDL2\lib\x64;$(SolutionDir)lib\SDL2_image\lib\x64;$(SolutionDir)lib\SDL2_mixer\lib\x64;$(SolutionDir)lib\SDL2_net\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_net.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_net.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -146,33 +147,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bind.c" />
-    <ClCompile Include="entry.c" />
-    <ClCompile Include="game.c" />
-    <ClCompile Include="gamesbind.c" />
-    <ClCompile Include="gfx.c" />
-    <ClCompile Include="host.c" />
-    <ClCompile Include="item.c" />
-    <ClCompile Include="itemsbind.c" />
-    <ClCompile Include="key.c" />
-    <ClCompile Include="level.c" />
-    <ClCompile Include="levelaid.c" />
-    <ClCompile Include="levelgen.c" />
-    <ClCompile Include="levelsbind.c" />
-    <ClCompile Include="main.c" />
-    <ClCompile Include="math.c" />
-    <ClCompile Include="menu.c" />
-    <ClCompile Include="net.c" />
-    <ClCompile Include="nethost.c" />
-    <ClCompile Include="netsend.c" />
-    <ClCompile Include="netuse.c" />
-    <ClCompile Include="send.c" />
-    <ClCompile Include="sound.c" />
-    <ClCompile Include="tile.c" />
-    <ClCompile Include="unit.c" />
-    <ClCompile Include="unitsbind.c" />
-    <ClCompile Include="unituse.c" />
-    <ClCompile Include="view.c" />
+    <ClCompile Include="bind.cpp" />
+    <ClCompile Include="entry.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="gfx.cpp" />
+    <ClCompile Include="host.cpp" />
+    <ClCompile Include="item.cpp" />
+    <ClCompile Include="itemsbind.cpp" />
+    <ClCompile Include="key.cpp" />
+    <ClCompile Include="level.cpp" />
+    <ClCompile Include="levelaid.cpp" />
+    <ClCompile Include="levelgen.cpp" />
+    <ClCompile Include="levelsbind.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="math.cpp" />
+    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="net.cpp" />
+    <ClCompile Include="nethost.cpp" />
+    <ClCompile Include="netsend.cpp" />
+    <ClCompile Include="netuse.cpp" />
+    <ClCompile Include="send.cpp" />
+    <ClCompile Include="sound.cpp" />
+    <ClCompile Include="tile.cpp" />
+    <ClCompile Include="unit.cpp" />
+    <ClCompile Include="unitsbind.cpp" />
+    <ClCompile Include="unituse.cpp" />
+    <ClCompile Include="view.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h" />
@@ -184,13 +184,18 @@
     <ClInclude Include="level.h" />
     <ClInclude Include="levelaid.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="menu.h" />
+    <ClInclude Include="view.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="nethost.h" />
     <ClInclude Include="tile.h" />
     <ClInclude Include="unit.h" />
     <ClInclude Include="units.h" />
     <ClInclude Include="unituse.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\lua\lua.vcxproj">
+      <Project>{b292c40f-66b8-4413-82a5-a7f683529e92}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

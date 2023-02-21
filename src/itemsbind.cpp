@@ -1,7 +1,7 @@
 #include "main.h"
 #include "bind.h"
 
-extern void appenditem(const char* word, item_e type, int sprite, int color);
+/*extern void appenditem(const char* word, item_e type, int sprite, int color);
 
 NEWLUAFUNCTION(conceive) {
  item_e type;
@@ -94,3 +94,4 @@ BEGINLUATABLE(item)
 // LUAFUNCTION(pilecount),
 // LUAFUNCTION(renderlist),
 ENDLUATABLE;
+*/

@@ -1,4 +1,8 @@
 
+
+level.depth = 0
+
+
 function generatetopmap(self)
  level.bind(self)
  
