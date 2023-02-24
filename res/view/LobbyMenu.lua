@@ -1,5 +1,3 @@
-LobbyMenu = {}
-
 local selected = 0
 
 local addr = ""
@@ -60,6 +58,7 @@ function LobbyMenu.tick()
    selected = selected + 1
   elseif selected == 4 then
    sound.play("test")
+   --level.create()
    game.start(game.HOST, name, addr, port)
    menu.change("GameMenu")
   elseif selected == 5 then
@@ -77,7 +76,9 @@ function LobbyMenu.tick()
 end
 
 function LobbyMenu.render()
- options = { "Name: ", "IP: ", "Port: ", "Host game", "Join game", "Private game", "Back" }
+ local options = { "Name: ", "IP: ", "Port: ", "Host game", "Join game", "Private game", "Back" }
+ 
+ local sw, sh = screen.size()
  
  screen.clear(0)
  
@@ -98,8 +99,6 @@ function LobbyMenu.render()
    color = screen.get(0, 555, 555, 555);
   end
   
-  screen.font(message, (screen.width() - string.len(message) * 8) / 2, (2 + i) * 8, color)
+  screen.font(message, (sw - string.len(message) * 8) / 2, (2 + i) * 8, color)
  end
 end
-
-return LobbyMenu

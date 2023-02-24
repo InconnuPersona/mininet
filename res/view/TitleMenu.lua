@@ -28,21 +28,24 @@ function TitleMenu.tick()
    menu.change("AboutMenu")
   end
  end
+ 
 end
 
 function TitleMenu.render()
- options = { "Start game", "How to play", "About" }
+ local options = { "Start game", "How to play", "About" }
  
- w = 13
- h = 2
- color = screen.get(0, 010, 131, 551)
- xo = (screen.width() - w * 8) / 2
- yo = 24
+ local sw, sh = screen.size()
+ 
+ local w = 13
+ local h = 2
+ local color = screen.get(0, 010, 131, 551)
+ local xo = (sw - w * 8) / 2
+ local yo = 24
  
  screen.clear(0)
  
- for y = 0, h - 1, 1 do
-  for x = 0, w - 1, 1 do
+ for y = 0, h - 1 do
+  for x = 0, w - 1 do
    screen.sprite(xo + x * 8, yo + y * 8, x + (y + 6) * 32, color, 0)
   end
  end
@@ -56,8 +59,8 @@ function TitleMenu.render()
    color = screen.get(0, 555, 555, 555);
   end
   
-  screen.font(message, (screen.width() - string.len(message) * 8) / 2, (7 + i) * 8, color)
+  screen.font(message, (sw - string.len(message) * 8) / 2, (7 + i) * 8, color)
  end
  
- screen.font("(Arrow keys,X and C)", 0, screen.height() - 8, screen.get(0, 111, 111, 111))
+ screen.font("(Arrow keys,X and C)", 0, sh - 8, screen.get(0, 111, 111, 111))
 end

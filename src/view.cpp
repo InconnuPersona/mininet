@@ -166,6 +166,17 @@ void formsurface(const char* word, surface_e type) {
  return;
 }*/
 
+/*
+int iskeyed(char character) {
+ return ((character >= ' ' && character <= '~') || character == '\b' || character == '\r' || character == '\033');
+}
+
+void menuchar(int character) {
+ if (menu && iskeyed(character) && hasluamethod("text", menu, L_menu)) {
+  callmethod("text", menu, L_menu, "n", character);
+ }
+}*/
+
 int isview(const char* other) {
  if (view.valid()) {
   auto name = view["_vname"];
@@ -239,7 +250,7 @@ void renderview(screen_t* screen) {
  
  if (view.valid()) {
   auto render = view["render"];
-
+  
   if ISLUATYPE(render, function) {
    render();
   }

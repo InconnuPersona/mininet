@@ -9,188 +9,6 @@
 screen_t* le_screen = 0;
 
 // ==================================================
-// lua_input
-
-/*NEWLUAFUNCTION(clicked) {
- char* name;
- 
- name = (char*) luaL_checkstring(L, 1);
- 
- lua_pushboolean(L, getaliasclicked(name));
- 
- return 1;
-}
-
-NEWLUAFUNCTION(down) {
- char* name;
- 
- name = (char*) luaL_checkstring(L, 1);
- 
- lua_pushboolean(L, getaliasdown(name));
- 
- return 1;
-}
-
-// ==================================================
-// lua_screen
-
-NEWLUAFUNCTION(clear) {
- int color;
- 
- color = luaL_checknumber(L, 1);
- 
- if (le_screen) {
-  clearscreen(le_screen, color);
- }
- 
- return 0;
-}
-
-NEWLUAFUNCTION(font) {
- char* msg;
- int x, y, col;
- 
- msg = (char*) luaL_checkstring(L, 1);
- x = luaL_checknumber(L, 2);
- y = luaL_checknumber(L, 3);
- col = luaL_checknumber(L, 4);
- 
- if (le_screen) {
-  renderfont(msg, x, y, col, le_screen);
- }
- 
- return 0;
-}
-
-NEWLUAFUNCTION(frame) {
- char* title;
- int x0, y0, x1, y1;
- 
- title = (char*) luaL_checkstring(L, 1);
- x0 = luaL_checknumber(L, 2);
- y0 = luaL_checknumber(L, 3);
- x1 = luaL_checknumber(L, 4);
- y1 = luaL_checknumber(L, 5);
- 
- if (le_screen) {
-  renderframe(title, x0, y0, x1, y1, le_screen);
- }
- 
- return 0;
-}
-
-NEWLUAFUNCTION(get) {
- int a, b, c, d;
- 
- a = luaL_checknumber(L, 1);
- b = luaL_checknumber(L, 2);
- c = luaL_checknumber(L, 3);
- d = luaL_checknumber(L, 4);
- 
- lua_pushnumber(L, getcolor(a, b, c, d));
- 
- return 1;
-}
-
-NEWLUAFUNCTION(height) {
- if (le_screen) {
-  lua_pushnumber(L, le_screen->h);
- }
- else {
-  lua_pushnumber(L, 0);
- }
- 
- return 1;
-}
-
-NEWLUAFUNCTION(light) {
- int x, y, r;
- 
- x = luaL_checknumber(L, 1);
- y = luaL_checknumber(L, 2);
- r = luaL_checknumber(L, 3);
- 
- if (le_screen) {
-  renderlight(x, y, r, le_screen);
- }
- 
- return 0;
-}
-
-NEWLUAFUNCTION(sprite) {
- int x, y, spr, col, flg;
- 
- x = luaL_checknumber(L, 1);
- y = luaL_checknumber(L, 2);
- spr = luaL_checknumber(L, 3);
- col = luaL_checknumber(L, 4);
- flg = luaL_checknumber(L, 5);
- 
- if (le_screen) {
-  rendersprite(x, y, spr, col, flg, le_screen);
- }
- 
- return 0;
-}
-
-NEWLUAFUNCTION(width) {
- if (le_screen) {
-  lua_pushnumber(L, le_screen->w);
- }
- else {
-  lua_pushnumber(L, 0);
- }
- 
- return 1;
-}
-
-// ==================================================
-// lua_sound
-
-NEWLUAFUNCTION(play) {
- char* sound;
- 
- sound = (char*) luaL_checkstring(L, 1);
- 
- if (sound) {
-  playsound(sound);
- }
- 
- return 0;
-}
-
-// ==================================================
-// lua table declarations
-
-BEGINLUATABLE(input)
- LUANUMBER(BACKSPACE, '\b'),
- LUANUMBER(ENTER, '\r'),
- LUANUMBER(ESCAPE, '\033'),
- 
- LUAFUNCTION(clicked),
- LUAFUNCTION(down),
-ENDLUATABLE;
-
-BEGINLUATABLE(screen)
- LUANUMBER(MIRROR_X, MIRROR_X),
- LUANUMBER(MIRROR_Y, MIRROR_Y),
- 
- LUAFUNCTION(clear),
- LUAFUNCTION(font),
- LUAFUNCTION(frame),
- LUAFUNCTION(get),
- LUAFUNCTION(height),
- LUAFUNCTION(light),
- LUAFUNCTION(sprite),
- LUAFUNCTION(width),
-ENDLUATABLE;
-
-BEGINLUATABLE(sound)
- LUAFUNCTION(play),
-ENDLUATABLE;
-*/
-
-// ==================================================
 // declarations
 
 sol::state L;
@@ -221,9 +39,7 @@ void loadscript(const char* path, const char* string) {
 }
 
 void enablelua() {
- //extern luatable_t lua_unitdrop, lua_unitfiend, lua_unitmob, lua_unitmovable, lua_unitpliant, lua_unittrace;
- 
- L.open_libraries(sol::lib::base);
+ L.open_libraries(sol::lib::base, sol::lib::string);
  
  L.create_named_table("game",
   "CLIENT", GAME_CLIENT,
@@ -263,14 +79,23 @@ void enablelua() {
   }
  );
  
- L.create_named_table("menu",
-  "change", 1,
-  "listen", 1
+ L.create_named_table("input",
+  "BACKSPACE", '\b',
+  "ENTER", '\r',
+  "ESCAPE", '\033',
+  
+  "clicked", [](const char* name) {
+   return (bool) getaliasclicked(name);
+  },
+  
+  "down", [](const char* name) {
+   return (bool) getaliasdown(name);
+  }
  );
  
  L.create_named_table("menu",
-  "change", [](std::string view) {
-   setview(view.c_str());
+  "change", [](const char* view) {
+   setview(view);
   },
   
   "listen", [](bool state) {
@@ -278,16 +103,66 @@ void enablelua() {
   }
  );
 
+ L.create_named_table("screen",
+  "MIRROR_X", MIRROR_X,
+  "MIRROR_Y", MIRROR_Y,
+  
+  "clear", [](int color) {
+   if (le_screen) {
+    clearscreen(le_screen, color);
+   }
+  },
+  
+  "font", [](const char* msg, float x, float y, int col) {
+   if (le_screen) {
+    renderfont(msg, (int) x, (int) y, col, le_screen);
+   }
+  },
+  
+  "frame", [](const char* title, int x0, int y0, int x1, int y1) {
+   if (le_screen) {
+    renderframe(title, x0, y0, x1, y1, le_screen);
+   }
+  },
+  
+  "get", [](int a, int b, int c, int d) {
+   return getcolor(a, b, c, d);
+  },
+  
+  "light", [](float x, float y, int r) {
+   if (le_screen) {
+    renderlight((int) x, (int) y, r, le_screen);
+   }
+  },
+  
+  "size", []() {
+   if (le_screen) {
+    return std::tuple(le_screen->w, le_screen->h);
+   }
+   else {
+    return std::tuple(0, 0);
+   }
+  },
+  
+  "sprite", [](float x, float y, int spr, int col, int flg) {
+   if (le_screen) {
+    rendersprite((int) x, (int) y, spr, col, flg, le_screen);
+   }
+  }
+ );
+ 
+ L.create_named_table("sound",
+  "play", [](const char* name) {
+   playsound(name);
+  }
+ );
+
  /*L.create_named_table("tile",
 
  );*/
 
- //uploadtable(lua_input, "input", L_menu);
  //uploadtable(lua_item, "item", L_game);
  //uploadtable(lua_level, "level", L_game);
- //uploadtable(lua_menu, "menu", L_game);
- //uploadtable(lua_screen, "screen", L_game);
- //uploadtable(lua_sound, "sound", L_menu);
  //uploadtable(lua_tile, "tile", L_game);
  //uploadtable(lua_unit, "unit", L_game);
  
