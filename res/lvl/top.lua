@@ -1,31 +1,39 @@
 
+top = {
+ dirtColor = 322,
+ grassColor = 141,
+ sandColor = 550,
+ 
+ density = 8
+}
 
-level.depth = 0
-
-
-function generatetopmap(self)
- level.bind(self)
+function top.generate(w, h)
+ local grass = tile.id('grass')
  
- w = level.width()
- h = level.height()
+ for y = 0, h do
+  for x = 0, w do
+   level.setTile(x, y, grass, 0)
+  end
+  
+ end
  
- mnoise1 = level.noise(w, h, 16)
- mnoise2 = level.noise(w, h, 16)
- mnoise3 = level.noise(w, h, 16)
+--[[ local mnoise1 = level.noise(w, h, 16)
+ local mnoise2 = level.noise(w, h, 16)
+ local mnoise3 = level.noise(w, h, 16)
  
- noise1 = level.noise(w, h, 32)
- noise2 = level.noise(w, h, 32)
+ local noise1 = level.noise(w, h, 32)
+ local noise2 = level.noise(w, h, 32)
  
- for (y = 0; y < h; y++) {
-  for (x = 0; x < w; x++) {
-   i = x + y * w;
+ for y = 0, y < h do
+  for x = 0, x < w do
+   local i = x + y * w;
    
-   value = fabs(noise1.values[i] - noise2.values[i]) * 3.f - 2.f;
-   mvalue = fabs(mnoise1.values[i] - mnoise2.values[i]);
-   mvalue = fabs(mvalue - mnoise3.values[i]) * 3.f - 2.f;
+   local value = math.abs(noise1[i] - noise2[i]) * 3 - 2;
+   local mvalue = math.abs(mnoise1[i] - mnoise2[i]);
+   local mvalue = math.abs(mvalue - mnoise3[i]) * 3 - 2;
    
-   xd = x / (w - 1.f) * 2.f - 1.f;
-   yd = y / (h - 1.f) * 2.f - 1.f;
+   local xd = x / (w - 1) * 2 - 1;
+   local yd = y / (h - 1) * 2 - 1;
    
    if (xd < 0) {
 	xd = -xd;
@@ -35,30 +43,36 @@ function generatetopmap(self)
 	yd = -yd;
    }
    
-   distance = (xd >= yd) ? xd : yd;
+   local distance = yd
+   
+   if xd >= yd then
+    distance = xd
+   end
    
    distance = distance * distance * distance * distance;
    distance = distance * distance * distance * distance;
    
-   value = value + 1.f - distance * 20.f;
+   value = value + 1 - distance * 20;
    
-   if (value < -0.5f) {
-	level->tiles[i].id = tile.id("water");
+   if (value < -0.5) {
+	--level->tiles[i].id = tileid("water");
    }
-   else if (value > 0.5f && mvalue < -1.5f) {
-	level->tiles[i].id = tile.id("rock");
+   else if (value > 0.5 && mvalue < -1.5) {
+	--level->tiles[i].id = tileid("rock");
    }
    else {
-	level->tiles[i].id = tile.id("grass");
+	--level.settile(i, "grass");
    }
   }
  }
- 
- generatedeserts(self)
- 
- generatefoliage(self)
- 
- level.unload()
+ ]]--
 end
 
+function top.validate(w, h)
+ return true
+end
 
+function top.tick()
+end
+
+level.define(0, top)

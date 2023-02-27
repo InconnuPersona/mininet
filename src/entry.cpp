@@ -1,4 +1,4 @@
-#include "main.h"
+#include "host.h"
 
 #undef main
 
@@ -20,8 +20,6 @@ void preinit() {
  
  fillpalette();
  
- initiatechecksum();
- 
  seedrandomtime();
 }
 
@@ -36,10 +34,11 @@ void init() {
  bindkeys();
  
  enablelua();
+ enablelevel();
+ enableunits();
  
  loadsounds();
  loadscripts();
- loadviews();
  
  setview("TitleMenu");
 }
@@ -54,15 +53,13 @@ void tick() {
   tickkeys();
  }
  
- if (session.open) {
-  //tickgame();
- }
+ tickgame();
  
  if (hasfocus()) {
   tickview();
  }
  
- updatequeues();
+ //updatequeues();
 }
 
 void render() {
@@ -124,7 +121,7 @@ int main(int argc, char** argv) {
   
   pollevents();
   
-  handlequeues();
+  //handlequeues();
   
   while (unprocessed > 0) {
    tick();

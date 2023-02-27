@@ -1,5 +1,5 @@
+#include "host.h"
 #include "bind.h"
-#include "main.h"
 
 #include <stdarg.h>
 
@@ -16,9 +16,8 @@ sol::state L;
 // ==================================================
 // externals
 
-extern void assigntile(int index, const char* name);
-extern refer_t designunit(const char* word, int extra);
-extern void formsurface(const char* word, surface_e type);
+extern void loadunit(const char*, const char*);
+extern void loadview(const char*, const char*);
 
 // ==================================================
 // functions
@@ -56,13 +55,13 @@ void enablelua() {
   },
   
   "render", []() {
-   extern screen_t* le_screen;
-   
-   //rendergame(le_screen);
+   rendergame(le_screen);
   },
   
+  // Perhaps start sessions with a session table that holds its data, such as
+  // level size, player name, etc.
   "start", [](int type, const char* name, const char* addr, const char* port) {
-   //startsession(type, name, addr, atoi(port));
+   startgame((gametype_e) type, name, addr, atoi(port));
   },
   
   "seedrandom", [](int seed = -1) {
@@ -156,33 +155,22 @@ void enablelua() {
    playsound(name);
   }
  );
-
- /*L.create_named_table("tile",
-
- );*/
-
- //uploadtable(lua_item, "item", L_game);
- //uploadtable(lua_level, "level", L_game);
- //uploadtable(lua_tile, "tile", L_game);
- //uploadtable(lua_unit, "unit", L_game);
  
- {
-  //uploadsubtable(lua_unitdrop, "drop", "unit", L_game);
-  //uploadsubtable(lua_unitfiend, "fiend", "unit", L_game);
-  //uploadsubtable(lua_unitmob, "mob", "unit", L_game);
-  //uploadsubtable(lua_unitmovable, "movable", "unit", L_game);
-  //uploadsubtable(lua_unitpliant, "pliant", "unit", L_game);
-  //uploadsubtable(lua_unittrace, "trace", "unit", L_game);
- }
+ //uploadtable(lua_item, "item", L_game);
  
  return;
 }
 
 void loadscripts() {
- //recursepath(getfilepath("res/item"), loadscript, 0);
+ extern bool leveldef;
  
- //assigntile(NOTILE, "void");
- 
- //recursepath(getfilepath("res/tile"), loadscript, 0);
- //recursepath(getfilepath("res/unit"), loadscript, 0);
+ recursepath(getfilepath("res/tile"), loadscript, 0);
+
+ leveldef = true;
+ recursepath(getfilepath("res/lvl"), loadscript, 0);
+ leveldef = false;
+
+ recursepath(getfilepath("res/unit"), loadunit, 0);
+
+ recursepath(getfilepath("res/view"), loadview, 0);
 }

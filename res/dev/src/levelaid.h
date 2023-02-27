@@ -7,17 +7,6 @@
 #define INVALIDUNIT -1
 #define MAX_TILEUNITS 8
 
-#define CHECKLEVEL(Level, ...) \
- if (!Level) { \
-  LOGREPORT("received unusable or unbound level."); \
-  __VA_ARGS__; \
- }
-
-#define CHECKTILEBOUNDS(X, Y, Level, ...) \
- if (X < 0 || Y < 0 || X >= Level->w || Y >= Level->h) { \
-  __VA_ARGS__; \
- }
-
 #define GETTILEUNIT(I, X, Y, Level) \
  (Level->tileunits[I + (X + Y * Level->w) * MAX_TILEUNITS])
 

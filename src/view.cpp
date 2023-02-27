@@ -11,7 +11,7 @@ extern screen_t* le_screen;
 // ==================================================
 // declarations
 
-surface_t surfaces[MAX_SURFACES] = { 0 };
+//surface_t surfaces[MAX_SURFACES] = { 0 };
 sol::table view;
 
 // ==================================================
@@ -212,10 +212,6 @@ void loadview(const char* path, const char* string) {
 
   *c = '.';
  }
-}
-
-void loadviews() {
- recursepath(getfilepath("res/view"), loadview, 0);
 }
 
 void setview(const char* newview) {

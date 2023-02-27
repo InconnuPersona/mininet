@@ -76,9 +76,9 @@ typedef struct {
 void freepile(refer_t pile);
 refer_t newpile();
 
-refer_t getsurfacebyword(const char* word);
-void rendersurface(refer_t menu, refer_t pliant);
-void ticksurface(refer_t menu, refer_t pliant);
+//refer_t getsurfacebyword(const char* word);
+//void rendersurface(refer_t menu, refer_t pliant);
+//void ticksurface(refer_t menu, refer_t pliant);
 
 //void additem(refer_t item, int count, refer_t pile);
 //int countitem(refer_t item, refer_t pile);

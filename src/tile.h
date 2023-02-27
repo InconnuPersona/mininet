@@ -1,63 +1,32 @@
 #pragma once
 
-#include "base.h"
-
-#define MAX_TILEWORDS 128
-#define MAX_DEIGNS 2
+#define MAX_TILES 128
 #define NOTILE 0
 
-/*typedef enum {
+enum tileflag_e {
  TILE_NOFLAG = 0x00,
- TILE_TOGRASS = 0x01,
- TILE_TOLAVA = 0x02,
- TILE_TOSAND = 0x04,
- TILE_TOWATER = 0x08,
+ TILE_DEFINED = 0x01,
+ TILE_TOGRASS = 0x02,
+ TILE_TOLAVA = 0x04,
+ TILE_TOSAND = 0x08,
+ TILE_TOWATER = 0x10,
  
  TILE_TOLIQUID = TILE_TOLAVA | TILE_TOWATER,
-} tileflag_e;
+};
 
-typedef union {
- float floats[MAX_DEIGNS];
- int integers[MAX_DEIGNS];
- void* pointers[MAX_DEIGNS];
- refer_t referrals[MAX_DEIGNS];
- char* strings[MAX_DEIGNS];
-} deign_t;
-
-typedef struct {
+struct tile_s {
  byte_t id;
  byte_t data;
-} tile_t;
 
-typedef struct {
- refer_t word;
- int x, y;
-} vtile_t;
-
-typedef struct {
- char* word;
- deign_t deign;
- tileflag_e flags;
-} tileword_t;*/
-
-typedef struct {
- refer_t id;
- char* word;
-} tile_t;
-
-typedef struct {
- 
- byte_t* dirties;
- 
- byte_t* tiles;
-} chunk_t;
-
+ tile_s() {
+  id = data = 0;
+ }
+};
 
 
 refer_t tileid(const char* word);
 const char* tilename(refer_t id);
 int flagtile(refer_t id, int flags);
-int hasflags(int flags, refer_t id);
 
 //int actontile(int x, int y, refer_t unit, refer_t item);
 //int gettileglow(int x, int y);
@@ -65,3 +34,96 @@ int hasflags(int flags, refer_t id);
 //void striketile(int x, int y, refer_t unit, int damage);
 //int surpassable(int x, int y, refer_t unit);
 //void touchtile(int x, int y, refer_t unit);
+
+// ==================================================
+// declarations
+
+struct tileword_s {
+ int flags;
+
+ char* name;
+ sol::table data;
+};
+
+tileword_s tiles[MAX_TILES] = { 0 };
+
+// ==================================================
+// externals
+
+extern screen_t* le_screen;
+
+// ==================================================
+// functions
+
+
+void assigntile(int index, const char* name, sol::object data) {
+ int i;
+ 
+ if (index < 0 || index >= MAX_TILES) {
+  LOGDEBUG(1, "received invalid tile index %i for '%s'", index, name);
+  return;
+ }
+ 
+ if (tiles[index].flags) {
+  LOGREPORT("duplicate tile IDs for index %i; assigned '%s', attempted '%s'.", index, tiles[index].name, name);
+  exit(EXIT_FAILURE);
+ }
+ 
+ for (i = 0; i < MAX_TILES; i++) {
+  if (tiles[i].name && !strcmp(tiles[i].name, name)) {
+   LOGREPORT("duplicate tile words for tag '%s'.", name);
+   exit(EXIT_FAILURE);
+  }
+ }
+ 
+ tiles[index].name = (char*) name;
+ tiles[index].flags = TILE_DEFINED;
+
+ if ISLUATYPE(data, table) {
+  tiles[index].data = data;
+
+  auto flags = ((sol::table) data)["flags"];
+
+  if ISLUATYPE(flags, number) {
+   tiles[index].flags |= (int) flags;
+  }
+ }
+ 
+ LOGREPORT("defined tile '%s' at [%i]", name, index);
+
+ return;
+}
+
+bool hasflags(int flags, refer_t tile) {
+ if (tile < 0 || tile >= MAX_TILES) {
+  return 0;
+ }
+
+ return tiles[tile].flags & flags;
+}
+
+refer_t tileid(const char* string) {
+ int i;
+ 
+ if (!string || !(*string)) {
+  return NOTILE;
+ }
+ 
+ for (i = 0; i < MAX_TILES; i++) {
+  if (tiles[i].name && !strcmp(tiles[i].name, string)) {
+   return i;
+  }
+ }
+ 
+ return NOTILE;
+}
+
+const char* tilename(refer_t word) {
+ 
+ if (word < 0 || word >= MAX_TILES) {
+  LOGREPORT("attempted to check unbound tile %i.", word);
+  return "";
+ }
+
+ return tiles[word].name;
+}

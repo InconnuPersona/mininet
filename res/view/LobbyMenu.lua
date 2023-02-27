@@ -58,7 +58,6 @@ function LobbyMenu.tick()
    selected = selected + 1
   elseif selected == 4 then
    sound.play("test")
-   --level.create()
    game.start(game.HOST, name, addr, port)
    menu.change("GameMenu")
   elseif selected == 5 then

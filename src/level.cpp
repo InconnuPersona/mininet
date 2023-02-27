@@ -1,10 +1,21 @@
-#include "levelaid.h"
+#include "leveldef.h"
+
+#define CHECKLEVEL(Level, ...) \
+ if (!Level) { \
+  LOGREPORT("received unusable or unbound level."); \
+  __VA_ARGS__; \
+ }
+
+#define CHECKTILEBOUNDS(X, Y, Level, ...) \
+ if (X < 0 || Y < 0 || X >= Level->w || Y >= Level->h) { \
+  __VA_ARGS__; \
+ }
 
 // ==================================================
 // variables
 
-/*level_t* level;
-refer_t samples[MAX_SAMPLES];
+level_s* level;
+/*refer_t samples[MAX_SAMPLES];
 
 // ==================================================
 // private functions
@@ -21,11 +32,11 @@ void encircle(int x, int y, int tile) {
  settile(x - 1, y + 1, tile, 0);
  settile(x + 1, y - 1, tile, 0);
  settile(x + 1, y + 1, tile, 0);
-}
+}*/
 
 // Matches stairs with the parent level of the provided level and inserts proper radius
 // about the tile.
-void matchstairs(level_t* parent) {
+void matchstairs(level_s* parent) {
  int x, y;
  
  if (!parent) {
@@ -33,7 +44,7 @@ void matchstairs(level_t* parent) {
   return;
  }
  
- for (x = 0; x < level->w; x++) {
+ /*for (x = 0; x < level->w; x++) {
   for (y = 0; y < level->h; y++) {
    if (parent->tiles[x + y * parent->w].id == tileid("stairsDown")) {
 	settile(x, y, tileid("stairsUp"), 0);
@@ -46,37 +57,76 @@ void matchstairs(level_t* parent) {
 	}
    }
   }
- }
+ }*/
 }
 
 // ==================================================
 // level functions
 
-void bindlevel(level_t* bind) {
- level = bind;
+void bindlevel(int depth) {
+ level_s* l;
+ 
+ l = getlevel(depth);
+ 
+ if (l) {
+  level = l;
+
+  L["level"]["data"] = l->data;
+ }
 }
 
-void createlevel(int w, int h, int depth, level_t* parent) {
- CHECKLEVEL(level, exit(EXIT_FAILURE));
+void createlevels(int w, int h, int seed) {
+ level_s* l;
+ level_s* p;
  
  if (w < 1 || h < 1) {
   LOGREPORT("received invalid level bounds.");
   return;
  }
  
- emptylevel(w, h, depth);
+ l = levels;
+ p = NULL;
  
- generate(level);
- 
- if (parent) {
-  matchstairs(parent);
- }
- 
- if (depth == 1) {
-  initiate("fiend.AirWizard", w * TILESCALE, h * TILESCALE);
+ while (l) {
+  level = l;
+  
+  level->seed = seed;
+
+ retry:
+  emptylevel(w, h);
+  
+  auto generate = l->data["generate"];
+  auto validate = l->data["validate"];
+  
+  if ISLUATYPE(generate, function) {
+   generate(w, h);
+  }
+  
+  if ISLUATYPE(validate, function) {
+   auto state = validate(w, h);
+   
+   if (!ISLUATYPE(state, boolean)) {
+    LOGREPORT("validate did not return a boolean");
+	exit(EXIT_FAILURE);
+   }
+   
+   if (!state) {
+    goto retry;
+   }
+  }
+  
+  if (p) {
+   //matchstairs(p);
+  }
+  
+  level = NULL;
+  
+  p = l;
+  l = l->next;
  }
 }
 
+/*
 // Returns an unique unit id to the level bound; two levels may have units with the same id,
 // but one level may not have two units alike. In this case, one unit's id must be changed prior
 // to entry and ownerships must be investigated in the next tick to remove lingering mastered
@@ -121,9 +171,9 @@ void efface(refer_t id) {
  // TODO: implement removing units and associated piles.
  
  return;
-}
+}*/
 
-void emptylevel(int w, int h, int depth) {
+void emptylevel(int w, int h) {
  CHECKLEVEL(level, exit(EXIT_FAILURE));
  
  if (w < 1 || h < 1) {
@@ -131,50 +181,41 @@ void emptylevel(int w, int h, int depth) {
   return;
  }
  
- level->dirtcolor = 322;
- level->grasscolor = 141;
- level->sandcolor = 550;
- 
- level->depth = depth;
  level->w = w;
  level->h = h;
  
- level->density = 8;
- 
- if (depth < 0) {
+ /*if (depth < 0) {
   level->dirtcolor = 222;
   level->density = 4;
  }
  else if (depth > 0) {
   level->dirtcolor = 444;
   level->density = 4;
- }
+ }*/
  
- level->dirties = calloc(w * h / (CHUNKANGTH * CHUNKANGTH) / BYTEWIDTH, sizeof(byte_t));
- level->tiles = malloc(sizeof(tile_t) * w * h);
- level->tileunits = calloc(w * h, sizeof(refer_t) * MAX_TILEUNITS);
+ //level->dirties = calloc(w * h / (CHUNKANGTH * CHUNKANGTH) / BYTEWIDTH, sizeof(byte_t));
+ level->tiles = new tile_s[w * h];
+ level->tileunits = new refer_t[w * h * MAX_TILEUNITS];
  
- if (!level->dirties || !level->tiles || !level->tileunits) {
+ if (/*!level->dirties ||*/ !level->tiles || !level->tileunits) {
   LOGREPORT("unable to allocate memory for level chunk data.");
   exit(EXIT_FAILURE);
  }
 }
 
 int getdata(int x, int y) {
- CHECKLEVEL(level, exit(EXIT_FAILURE));
  CHECKTILEBOUNDS(x, y, level, return 0);
  
  return level->tiles[x + y * level->w].data & BYTEMASK;
 }
 
 int gettile(int x, int y) {
- CHECKLEVEL(level, exit(EXIT_FAILURE));
  CHECKTILEBOUNDS(x, y, level, return NOTILE);
  
  return level->tiles[x + y * level->w].id;
 }
 
-unit_u* getunit(refer_t id) {
+/*unit_u* getunit(refer_t id) {
  int unit;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
@@ -309,10 +350,10 @@ refer_t relay(refer_t id, level_t* other) {
  // TODO: implement relay unit function.
  
  return 0;
-}
+}*/
 
 void renderbackground(int xs, int ys, screen_t* screen) {
- int x, y, xo, yo, w, h;
+ int tile, x, y, xo, yo, w, h;
  
  if (!screen) {
   LOGREPORT("received invalid screen.");
@@ -334,7 +375,17 @@ void renderbackground(int xs, int ys, screen_t* screen) {
  
  for (y = yo; y <= h + yo; y++) {
   for (x = xo; x <= w + xo; x++) {
-   rendertile(x, y, screen);
+   tile = level->tiles[y * w + x].id;
+   
+   //LOGREPORT("tile: %i %i %i", tile, x, y);
+
+   if (tiles[tile].data.valid()) {
+    auto render = tiles[tile].data["render"];
+    
+    if ISLUATYPE(render, function) {
+     render(x, y);
+    }
+   }
   }
  }
  
@@ -350,11 +401,11 @@ void renderbackground(int xs, int ys, screen_t* screen) {
    }
   }
  });
-  
+ 
  offsetscreen(screen, 0, 0);
 }
 
-void renderlights(int xs, int ys, screen_t* screen) {
+/*void renderlights(int xs, int ys, screen_t* screen) {
  int i, lr, x, y, xo, yo, w, h, r;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
@@ -390,7 +441,7 @@ void renderlights(int xs, int ys, screen_t* screen) {
  offsetscreen(screen, 0, 0);
 }
 
-void rendersprites(int xs, int ys, screen_t* screen) {
+/*void rendersprites(int xs, int ys, screen_t* screen) {
  int i, j, x, y, xo, yo, w, h;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
@@ -422,12 +473,41 @@ void rendersprites(int xs, int ys, screen_t* screen) {
  }
  
  offsetscreen(screen, 0, 0);
+}*/
+
+void renderlevel(int depth, int xs, int ys, screen_t* screen) {
+ extern screen_t lightscreen;
+ int color;
+ int x, y;
+ 
+ if (depth > 3) {
+  color = getcolor(20, 20, 121, 121);
+  
+  for (y = 0; y < 14; y++) {
+   for (x = 0; x < 24; x++) {
+	rendersprite(x * 8 - ((xs / 4) & 7), y * 8 - ((ys / 4) & 7), 0, color, 0, screen);
+   }
+  }
+ }
+ 
+ renderbackground(xs, ys, screen);
+ //rendersprites(xs, ys, screen);
+ 
+ if (depth > 3) {
+  clearscreen(&lightscreen, 0);
+  
+  //renderlights(xs, ys, &lightscreen);
+  
+  overlayscreens(screen, &lightscreen, xs, ys);
+ }
+ 
+ return;
 }
 
 // The function returns all entity ids within the tile coordinates of the
 // bounding box; the ids are stacked and end at any NOUNIT reference met
 // from the reference index onwards.
-refer_t* seekunits(const char* word, aabb_t aabb) {
+/*refer_t* seekunits(const char* word, aabb_t aabb) {
  unit_t* unit;
  unitword_t* unitword;
  int i, j, tileunit, x, y;
@@ -469,25 +549,23 @@ refer_t* seekunits(const char* word, aabb_t aabb) {
  samples[j] = NOUNIT;
  
  return samples;
-}
+}*/
 
 void setdata(int x, int y, int data) {
- CHECKLEVEL(level, exit(EXIT_FAILURE));
  CHECKTILEBOUNDS(x, y, level, return);
  
  level->tiles[x + y * level->w].data = data;
  
- dirtychunk(x / CHUNKANGTH, y / CHUNKANGTH, level);
+ //dirtychunk(x / CHUNKANGTH, y / CHUNKANGTH, level);
 }
 
 void settile(int x, int y, int tile, int data) {
- CHECKLEVEL(level, exit(EXIT_FAILURE));
  CHECKTILEBOUNDS(x, y, level, return);
  
  level->tiles[x + y * level->w].id = tile;
  level->tiles[x + y * level->w].data = data;
  
- dirtychunk(x / CHUNKANGTH, y / CHUNKANGTH, level);
+ //dirtychunk(x / CHUNKANGTH, y / CHUNKANGTH, level);
 }
 
 // Spawns from the specified unit word and places it in the world according to its spawn;
@@ -495,7 +573,7 @@ void settile(int x, int y, int tile, int data) {
 refer_t spawn(const char* word) {
  int unit;
  
- CHECKLEVEL(level, exit(EXIT_FAILURE));
+ /*CHECKLEVEL(level, exit(EXIT_FAILURE));
  
  unit = begetunit(word, level);
  
@@ -516,11 +594,12 @@ refer_t spawn(const char* word) {
  
  LOGDEBUG(2, "spawned unit '%s' with id '%x' at [%i, %i].", word, GETUNIT(unit, level).id, GETUNIT(unit, level).x, GETUNIT(unit, level).y);
  
- return GETUNIT(unit, level).id;
+ return GETUNIT(unit, level).id;*/
+ return 0;
 }
 
 // FIXME: fix code
-void boundunit(refer_t id, int angth, aabb_t* aabb) {
+/*void boundunit(refer_t id, int angth, aabb_t* aabb) {
  unit_t* unit;
  int x, y;
  
@@ -548,13 +627,15 @@ void boundunit(refer_t id, int angth, aabb_t* aabb) {
  ensuredomain(aabb);
  
  return;
-}
+}*/
 
 void ticklevel() {
- unit_t* unit;
+ //unit_t* unit;
  int i, xt, yt, xto, yto;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
+ 
+ // TODO: generate list of random numbers to tick
  
  // TODO: spawn level fiends
  //spawnfiends(1, level);
@@ -567,7 +648,7 @@ void ticklevel() {
   //ticktile(xt, yt);
  }
  
- for (i = 0; i < MAX_UNITS; i++) {
+ /*for (i = 0; i < MAX_UNITS; i++) {
   unit = &GETUNIT(i, level);
   
   if (unit->id) {
@@ -575,26 +656,26 @@ void ticklevel() {
    yto = unit->y >> 4;
    
    if (unit->extant) {
-	tickunit(unit->id);
+	//tickunit(unit->id);
 	
 	xt = unit->x >> 4;
 	yt = unit->y >> 4;
 	
 	if (xto != xt || yto != yt) {
-	 removetileunit(unit->id, xto, yto, level);
-	 inserttileunit(unit->id, xt, yt, level);
+	 //removetileunit(unit->id, xto, yto, level);
+	 //inserttileunit(unit->id, xt, yt, level);
 	}
    }
    else {
-	efface(unit->id);
+	//efface(unit->id);
    }
    
-   dirtychunk(xto, yto, level);
+   //dirtychunk(xto, yto, level);
   }
- }
+ }*/
 }
 
-void tickunits(aabb_t aabb) {
+/*void tickunits(aabb_t aabb) {
  refer_t* units;
  unit_t* unit;
  int i, xt, yt, xto, yto;

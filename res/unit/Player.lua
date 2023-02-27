@@ -1,49 +1,22 @@
-Player = {
- word = "pliant.Player",
- extra = 0,
- 
- --pliant = unit.pliant,
- 
- illumination = function(unit)
-  radius = 2
-  
-  return radius
- end,
-}
+setmetatable(Player, pliant)
 
---function Player.bioluminance()
--- radius = 2
--- item = unit:pliant.item()
--- 
--- if item != nil and item:item.class == item.FURNITURE then
---  rr = item:item.luminance()
---  
---  if rr > radius then
---   radius = rr
---  end
--- end
--- 
--- return radius
+
+--function Player:spawn()
+ --item.give(self, "powGlove")
+ --item.give(self, "workbench")
 --end
 
-function Player:blank()
- --unit.mob.additem(self, "powglove") -- adds one item
- --unit.mob.additem(self, "workbench")
-end
+--function Player:buoyant()
+-- return true
+--end
 
-function Player:buoyant()
- return true
-end
+--function Player:die()
+-- sound.play("death")
+--end
 
-function Player:die()
- --unit.mob.die(self)
- 
- sound.play("death")
-end
-
-function Player:findspawn()
- unit.x(self, 64 * 16)
- unit.y(self, 64 * 16)
+function Player:findSpawn(id)
+ self.x = 64 * 16
+ self:y = 64 * 16
  
  return true
  
@@ -60,7 +33,11 @@ function Player:findspawn()
  --end
 end
 
-function Player:render()
+--function Player:light()
+-- return 2
+--end
+
+--[[function Player:render()
  xt = 0
  yt = 14
  
@@ -155,4 +132,4 @@ function Player:tick()
  if attacktime(self) > 0 then
   attacktime(self, attacktime(self) - 1)
  end
-end
+end]]--

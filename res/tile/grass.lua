@@ -1,19 +1,16 @@
-grass = {
- id = 1,
- 
- define = function()
-  tile.setflag(grass.id, tile.TOGRASS)
- end,
+
+tile.define(1, "grass", {
+ flags = tile.TOGRASS,
  
  render = function(x, y)
-  grasscolor = level.grasscolor()
-  color = screen.get(grasscolor, grasscolor, grasscolor + 111, grasscolor + 111)
-  transition = screen.get(grasscolor - 111, grasscolor, grasscolor + 111, grasscolor)
+  local gcol = level.data.grassColor
+  local color = screen.get(gcol, gcol, gcol + 111, gcol + 111)
+  local transition = screen.get(gcol - 111, gcol, gcol + 111, gcol)
   
-  u = not tile.flagged(level.gettile(x, y - 1), tile.TOGRASS)
-  d = not tile.flagged(level.gettile(x, y + 1), tile.TOGRASS)
-  l = not tile.flagged(level.gettile(x - 1, y), tile.TOGRASS)
-  r = not tile.flagged(level.gettile(x + 1, y), tile.TOGRASS)
+  u = not tile.hasFlag(level.getTile(x, y - 1), tile.TOGRASS)
+  d = not tile.hasFlag(level.getTile(x, y + 1), tile.TOGRASS)
+  l = not tile.hasFlag(level.getTile(x - 1, y), tile.TOGRASS)
+  r = not tile.hasFlag(level.getTile(x + 1, y), tile.TOGRASS)
   
   if not u and not l then
    screen.sprite(x * 16 + 0, y * 16 + 0, 0, color, 0)
@@ -38,7 +35,7 @@ grass = {
   else
    screen.sprite(x * 16 + 8, y * 16 + 8, (r and 13 or 12) + (d and 2 or 1) * 32, transition, 0)
   end
- end,
+ end
  
  --tick = function(x, y)
   --if game.random(40) ~= 0 then
@@ -60,5 +57,5 @@ grass = {
  --end,
  --
  --interact = function(x, y, unit, item)
- --end,
-}
+ --end
+})

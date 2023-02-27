@@ -152,25 +152,12 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="gfx.cpp" />
     <ClCompile Include="host.cpp" />
-    <ClCompile Include="item.cpp" />
-    <ClCompile Include="itemsbind.cpp" />
     <ClCompile Include="key.cpp" />
     <ClCompile Include="level.cpp" />
-    <ClCompile Include="levelaid.cpp" />
-    <ClCompile Include="levelgen.cpp" />
-    <ClCompile Include="levelsbind.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math.cpp" />
-    <ClCompile Include="net.cpp" />
-    <ClCompile Include="nethost.cpp" />
-    <ClCompile Include="netsend.cpp" />
-    <ClCompile Include="netuse.cpp" />
-    <ClCompile Include="send.cpp" />
     <ClCompile Include="sound.cpp" />
-    <ClCompile Include="tile.cpp" />
     <ClCompile Include="unit.cpp" />
-    <ClCompile Include="unitsbind.cpp" />
-    <ClCompile Include="unituse.cpp" />
     <ClCompile Include="view.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -179,17 +166,12 @@
     <ClInclude Include="dirent.h" />
     <ClInclude Include="gfx.h" />
     <ClInclude Include="host.h" />
-    <ClInclude Include="item.h" />
     <ClInclude Include="level.h" />
-    <ClInclude Include="levelaid.h" />
+    <ClInclude Include="leveldef.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="view.h" />
     <ClInclude Include="net.h" />
-    <ClInclude Include="nethost.h" />
+    <ClInclude Include="view.h" />
     <ClInclude Include="tile.h" />
-    <ClInclude Include="unit.h" />
-    <ClInclude Include="units.h" />
-    <ClInclude Include="unituse.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\lua\lua.vcxproj">

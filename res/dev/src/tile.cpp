@@ -1,88 +1,7 @@
-#include "levelaid.h"
+#include "level.h"
 #include "bind.h"
 
-#define NEWTILEMETHOD(Name) NEWLUAFUNCTION(tile##Name)
-#define LUATILEMETHOD(Name) LUAMETHOD(Name, tile##Name)
-
-/*#define CHECKTILEWORD(Word, ...) \
- if (Word < 0 || Word >= MAX_TILEWORDS || !tilewords[Word].word) { \
-  LOGREPORT("received unbound tile identifier '%i'.", Word); \
-  __VA_ARGS__; \
- }*/
-
-// ==================================================
-// declarations
-
-//tileword_t tilewords[MAX_TILEWORDS] = { 0 };
-
-// ==================================================
-// externals
-
-extern screen_t* le_screen;
-
-// ==================================================
-// functions
-
-/*int hastilemethod(const char* method, refer_t tile) {
- if (!method || tile == NOTILE) {
-  LOGDEBUG(1, "received invalid arguments.");
-  return 0;
- }
- 
- return hasluamethod(method, tilename(tile), L_game);
-}
-
-int calltilemethod(const char* method, int x, int y, const char* format, ...) {
- va_list args;
- int tile, value;
- 
- if (!method) {
-  LOGREPORT("received invalid method.");
-  return 0;
- }
- 
- tile = gettile(x, y);
- 
- if (tile == NOTILE || !hastilemethod(method, tile)) {
-  return 0;
- }
- 
- va_start(args, format);
- 
- value = passmethod(method, tilename(tile), NULL, L_game, format, args, "nn", x, y);
- 
- va_end(args);
- 
- return value;
-}
-
-void assigntile(int index, const char* name) {
- int i;
- 
- if (index < 0) {
-  LOGDEBUG(1, "received false tile '%s'", name);
-  return;
- }
- 
- if (tilewords[index].word) {
-  LOGREPORT("duplicate tile IDs for index %i; assigned '%s', attempted '%s'.", index, tilewords[index].word, name);
-  exit(EXIT_FAILURE);
- }
- 
- for (i = 0; i < MAX_TILEWORDS; i++) {
-  if (tilewords[i].word && !strcmp(tilewords[i].word, name)) {
-   LOGREPORT("duplicate tile words for tag '%s'.", name);
-   exit(EXIT_FAILURE);
-  }
- }
- 
- tilewords[index].word = (char*) name;
- tilewords[index].flags = 0;
- 
- return;
-}
-
-int actontile(int x, int y, refer_t unit, refer_t item) {
+/*int actontile(int x, int y, refer_t unit, refer_t item) {
  //CHECKTILE(x, y);
  
  //calltilemethod("interact", gettile(x, y), x, y, "n", unit);
@@ -126,31 +45,9 @@ void stepontile(int x, int y, refer_t unit) {
 
 void striketile(int x, int y, refer_t unit, int damage) {
 // calltilemethod("hurt" or "struck");
-}
+}*/
 
-refer_t tileid(const char* string) {
- int i;
- 
- if (!string || !(*string)) {
-  return NOTILE;
- }
- 
- for (i = 0; i < MAX_TILEWORDS; i++) {
-  if (tilewords[i].word && !strcmp(tilewords[i].word, string)) {
-   return i;
-  }
- }
- 
- return NOTILE;
-}
-
-const char* tilename(refer_t word) {
- CHECKTILEWORD(word, return NULL);
- 
- return tilewords[word].word;
-}
-
-void touchtile(int x, int y, refer_t unit) {
+/*void touchtile(int x, int y, refer_t unit) {
 }
 
 
