@@ -36,12 +36,12 @@ int gettile(int x, int y);
 void setdata(int x, int y, int value);
 void settile(int x, int y, int tile, int value);
 
-/*unit_u* getunit(refer_t id);
-int hasunit(refer_t id);
-refer_t* seekunits(const char* word, aabb_t aabb);
+//unit_u* getunit(refer_t id);
+bool hasunit(refer_t id);
+//refer_t* seekunits(const char* word, aabb_t aabb);
 
 refer_t createunitid();
-refer_t dropitem(refer_t item, int x, int y);
+/*refer_t dropitem(refer_t item, int x, int y);
 void efface(refer_t unit);
 refer_t initiate(const char* word, int x, int y);
 refer_t place(unit_u* unit);

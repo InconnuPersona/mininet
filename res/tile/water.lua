@@ -1,30 +1,27 @@
-water = {
- id = 3,
+tile.define(3, "water", {
+ --flags = tile.TOSAND and tile.TOWATER
+ -- flags = tile.flags(tile.TOSAND, tile.TOWATER)
  
- define = function()
-  tile.setflag(water.id, tile.TOSAND, tile.TOWATER)
- end,
- 
- blocks = function(x, y, entity)
-  return not unit.buoyant(entity)
- end,
+ --blocks = function(x, y, entity)
+  --return not unit.buoyant(entity)
+ --end,
  
  render = function(x, y)
   game.seedrandom((game.ticks() + (x / 2 - y) * 4311) / 10 * 54687121 + x * 3271612 + y * 3412987161)
   
   color = screen.get(005, 005, 115, 115)
-  tcolor1 = screen.get(3, 005, level.dirtcolor() - 111, level.dirtcolor())
-  tcolor2 = screen.get(3, 005, level.sandcolor() - 110, level.sandcolor())
+  tcolor1 = screen.get(3, 005, level.data.dirtColor - 111, level.data.dirtColor)
+  tcolor2 = screen.get(3, 005, level.data.sandColor - 110, level.data.sandColor)
   
-  u = not tile.flagged(level.gettile(x, y - 1), tile.TOWATER)
-  d = not tile.flagged(level.gettile(x, y + 1), tile.TOWATER)
-  l = not tile.flagged(level.gettile(x - 1, y), tile.TOWATER)
-  r = not tile.flagged(level.gettile(x + 1, y), tile.TOWATER)
+  u = not tile.hasFlag(level.getTile(x, y - 1), tile.TOWATER)
+  d = not tile.hasFlag(level.getTile(x, y + 1), tile.TOWATER)
+  l = not tile.hasFlag(level.getTile(x - 1, y), tile.TOWATER)
+  r = not tile.hasFlag(level.getTile(x + 1, y), tile.TOWATER)
   
-  su = u and tile.flagged(level.gettile(x, y - 1), tile.TOSAND)
-  sd = d and tile.flagged(level.gettile(x, y + 1), tile.TOSAND)
-  sl = l and tile.flagged(level.gettile(x - 1, y), tile.TOSAND)
-  sr = r and tile.flagged(level.gettile(x + 1, y), tile.TOSAND)
+  su = u and tile.hasFlag(level.getTile(x, y - 1), tile.TOSAND)
+  sd = d and tile.hasFlag(level.getTile(x, y + 1), tile.TOSAND)
+  sl = l and tile.hasFlag(level.getTile(x - 1, y), tile.TOSAND)
+  sr = r and tile.hasFlag(level.getTile(x + 1, y), tile.TOSAND)
   
   if not u and not l then
    screen.sprite(x * 16 + 0, y * 16 + 0, game.random(4), color, game.random(4));
@@ -60,8 +57,8 @@ water = {
    y = y + game.random(2) * 2 - 1
   end
   
-  if level.gettile(x, y) == tile.id("hole") then
-   level.settile(x, y, water.id)
+  if level.getTile(x, y) == tile.id("hole") then
+   level.setTile(x, y, water.id)
   end
  end,
-}
+})

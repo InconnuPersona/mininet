@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+//#include <string>
+
 #define BYTEMASK 0xff
 #define BYTEWIDTH 8
 #define CURRENTTIME -2

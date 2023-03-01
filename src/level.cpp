@@ -11,17 +11,19 @@
   __VA_ARGS__; \
  }
 
+#define elif else if
+
 // ==================================================
 // variables
 
-level_s* level;
-/*refer_t samples[MAX_SAMPLES];
+Level* level;
+refer_t samples[MAX_SAMPLES];
 
 // ==================================================
 // private functions
 
 // Encircles the specified location with the designated tile id.
-void encircle(int x, int y, int tile) {
+/*void encircle(int x, int y, int tile) {
  CHECKTILEBOUNDS(x, y, level, return);
  
  settile(x - 1, y, tile, 0);
@@ -36,7 +38,7 @@ void encircle(int x, int y, int tile) {
 
 // Matches stairs with the parent level of the provided level and inserts proper radius
 // about the tile.
-void matchstairs(level_s* parent) {
+void matchstairs(Level* parent) {
  int x, y;
  
  if (!parent) {
@@ -64,7 +66,7 @@ void matchstairs(level_s* parent) {
 // level functions
 
 void bindlevel(int depth) {
- level_s* l;
+ Level* l;
  
  l = getlevel(depth);
  
@@ -76,8 +78,8 @@ void bindlevel(int depth) {
 }
 
 void createlevels(int w, int h, int seed) {
- level_s* l;
- level_s* p;
+ Level* l;
+ Level* p;
  
  if (w < 1 || h < 1) {
   LOGREPORT("received invalid level bounds.");
@@ -126,7 +128,6 @@ void createlevels(int w, int h, int seed) {
  }
 }
 
-/*
 // Returns an unique unit id to the level bound; two levels may have units with the same id,
 // but one level may not have two units alike. In this case, one unit's id must be changed prior
 // to entry and ownerships must be investigated in the next tick to remove lingering mastered
@@ -144,7 +145,7 @@ refer_t createunitid() {
  return id;
 }
 
-refer_t dropitem(refer_t item, int x, int y) {
+/*refer_t dropitem(refer_t item, int x, int y) {
  CHECKLEVEL(level, exit(EXIT_FAILURE));
  
  // TODO: implement drop item function.
@@ -201,6 +202,8 @@ void emptylevel(int w, int h) {
   LOGREPORT("unable to allocate memory for level chunk data.");
   exit(EXIT_FAILURE);
  }
+
+ memset(level->tileunits, 0, sizeof(refer_t) * w * h * MAX_TILEUNITS);
 }
 
 int getdata(int x, int y) {
@@ -262,25 +265,25 @@ refer_t* getunits(aabb_t aabb) {
  samples[j] = NOUNIT;
  
  return samples;
-}
+}*/
 
-int hasunit(refer_t id) {
+bool hasunit(refer_t id) {
  int i;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
  
- for (i = 0; i < MAX_UNITS; i++) {
-  if (GETUNIT(i, level).id == id) {
-   return 1;
+ for (i = 0; i < units.size(); i++) {
+  if (units[i]->id == id) {
+   return true;
   }
  }
  
- return 0;
+ return false;
 }
 
 // Spawns an unit from the specified unit word and places it in the level at specified
 // coordinates. The chunk is automatically dirtied and the unit is appropriately initialized.
-refer_t initiate(const char* word, int x, int y) {
+/*refer_t initiate(const char* word, int x, int y) {
  int unit;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
@@ -439,9 +442,35 @@ void renderbackground(int xs, int ys, screen_t* screen) {
  }
  
  offsetscreen(screen, 0, 0);
+}*/
+
+// Sorts through the tile units and renders them on the screen according to position.
+void sortandrender(refer_t* units, int count, Level* level, screen_t* screen) {
+ int i;
+ 
+ CHECKLEVEL(level, return);
+ 
+ /*if (!units || !screen || count < 0) {
+  LOGREPORT("received invalid parameters.");
+  return;
+ }
+ 
+ qsort(units, count, sizeof(refer_t), [](const void* v1, const void* v2) {
+  int u1, u2;
+  
+  
+  return 1;
+ });*/
+ 
+ for (i = 0; i < count; i++) {
+  //renderunit(units[i], screen);
+ }
 }
 
-/*void rendersprites(int xs, int ys, screen_t* screen) {
+#define GETTILEUNIT(I, X, Y, Level) \
+ (Level->tileunits[I + (X + Y * Level->w) * MAX_TILEUNITS])
+
+void rendersprites(int xs, int ys, screen_t* screen) {
  int i, j, x, y, xo, yo, w, h;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
@@ -473,7 +502,7 @@ void renderbackground(int xs, int ys, screen_t* screen) {
  }
  
  offsetscreen(screen, 0, 0);
-}*/
+}
 
 void renderlevel(int depth, int xs, int ys, screen_t* screen) {
  extern screen_t lightscreen;
@@ -491,7 +520,7 @@ void renderlevel(int depth, int xs, int ys, screen_t* screen) {
  }
  
  renderbackground(xs, ys, screen);
- //rendersprites(xs, ys, screen);
+ rendersprites(xs, ys, screen);
  
  if (depth > 3) {
   clearscreen(&lightscreen, 0);
@@ -571,31 +600,52 @@ void settile(int x, int y, int tile, int data) {
 // Spawns from the specified unit word and places it in the world according to its spawn;
 // units not of the mob class are spawned randomly as they do not have the ability to spawn.
 refer_t spawn(const char* word) {
- int unit;
+ Unit* unit;
+ unitword_s* base;
+ int idx;
+
+ base = begetunit(word, &idx);
  
- /*CHECKLEVEL(level, exit(EXIT_FAILURE));
- 
- unit = begetunit(word, level);
- 
- if (unit == INVALIDUNIT) {
+ if (!base) {
   LOGREPORT("unable to beget unit '%s'.", word);
   return NOUNIT;
  }
- 
- if (isclass(SUPER_MOB, GETUNIT(unit, level).word)) {
-  findspawn(GETUNIT(unit, level).id);
+
+ if (base->type == "unit") {
+  unit = new Unit();
+ }
+ elif (base->type == "mob") {
+  unit = new Mob();
+ }
+ elif (base->type == "pliant") {
+  unit = new Pliant();
  }
  else {
-  GETUNIT(unit, level).x = randominteger(level->w) * TILESCALE;
-  GETUNIT(unit, level).y = randominteger(level->h) * TILESCALE;
+  LOGREPORT("invalid unit word encountered.");
+
+  exit(EXIT_FAILURE);
+ }
+
+ unit->base = idx;
+ unit->id = createunitid();
+
+ auto findSpawn = base->data["findSpawn"];
+
+ if ISLUATYPE(findSpawn, function) {
+  sol::tie(unit->x, unit->y) = findSpawn(unit);
+ }
+ else {
+  unit->x = randominteger(level->w) * TILESCALE;
+  unit->y = randominteger(level->h) * TILESCALE;
  }
  
- inserttileunit(GETUNIT(unit, level).id, GETUNIT(unit, level).x >> 4, GETUNIT(unit,level).y >> 4, level);
+ //inserttileunit(GETUNIT(unit, level).id, GETUNIT(unit, level).x >> 4, GETUNIT(unit,level).y >> 4, level);
  
- LOGDEBUG(2, "spawned unit '%s' with id '%x' at [%i, %i].", word, GETUNIT(unit, level).id, GETUNIT(unit, level).x, GETUNIT(unit, level).y);
+ LOGREPORT("spawned unit '%s' with id '%x' at [%i, %i].", word, unit->id, unit->x, unit->y);
  
- return GETUNIT(unit, level).id;*/
- return 0;
+ units.push_back(unit);
+
+ return unit->id;
 }
 
 // FIXME: fix code

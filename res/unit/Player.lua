@@ -1,9 +1,8 @@
-setmetatable(Player, pliant)
-
+Player.class = "pliant"
 
 --function Player:spawn()
- --item.give(self, "powGlove")
- --item.give(self, "workbench")
+ --item.give(self.inv, "powGlove")
+ --item.give(self.inv, "workbench")
 --end
 
 --function Player:buoyant()
@@ -14,11 +13,13 @@ setmetatable(Player, pliant)
 -- sound.play("death")
 --end
 
-function Player:findSpawn(id)
- self.x = 64 * 16
- self:y = 64 * 16
+function Player:findSpawn()
+ local x, y
  
- return true
+ x = 64 * 16
+ y = 64 * 16
+ 
+ return x, y
  
  --while true do
  -- x = game.random(level.width())

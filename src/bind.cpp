@@ -38,7 +38,7 @@ void loadscript(const char* path, const char* string) {
 }
 
 void enablelua() {
- L.open_libraries(sol::lib::base, sol::lib::string);
+ L.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string);
  
  L.create_named_table("game",
   "CLIENT", GAME_CLIENT,

@@ -1,23 +1,23 @@
-rock = {
- id = 2,
- 
+tile.define(2, "rock", {
  blocks = function(x, y)
   return true
  end,
  
  render = function(x, y)
   color = screen.get(444, 444, 333, 333)
-  transition = screen.get(111, 444, 555, level.dirtcolor())
+  transition = screen.get(111, 444, 555, level.data.dirtColor)
   
-  u = level.gettile(x, y - 1) ~= rock.id
-  d = level.gettile(x, y + 1) ~= rock.id
-  l = level.gettile(x - 1, y) ~= rock.id
-  r = level.gettile(x + 1, y) ~= rock.id
+  rock = tile.id('rock')
   
-  ul = level.gettile(x - 1, y - 1) ~= rock.id
-  dl = level.gettile(x - 1, y + 1) ~= rock.id
-  ur = level.gettile(x + 1, y - 1) ~= rock.id
-  dr = level.gettile(x + 1, y + 1) ~= rock.id
+  u = level.getTile(x, y - 1) ~= rock
+  d = level.getTile(x, y + 1) ~= rock
+  l = level.getTile(x - 1, y) ~= rock
+  r = level.getTile(x + 1, y) ~= rock
+  
+  ul = level.getTile(x - 1, y - 1) ~= rock
+  dl = level.getTile(x - 1, y + 1) ~= rock
+  ur = level.getTile(x + 1, y - 1) ~= rock
+  dr = level.getTile(x + 1, y + 1) ~= rock
   
   if not u and not l then
    if not ul then
@@ -61,10 +61,10 @@ rock = {
  end,
  
  tick = function(x, y)
-  damage = level.getdata(x, y)
+  damage = level.getData(x, y)
   
   if damage > 0 then
-   level.setdata(x, y, damage - 1)
+   level.setData(x, y, damage - 1)
   end
  end,
-}
+})

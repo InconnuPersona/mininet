@@ -1,12 +1,13 @@
-#include "level.h"
+#include "main.h"
 #include "bind.h"
 
 #include "tile.h"
+#include "unit.h"
 
 // ==================================================
 // definitions
 
-struct level_s {
+struct Level {
  int w, h;
  int depth;
  
@@ -27,29 +28,105 @@ struct level_s {
  
  refer_t* tileunits;
  
- //unit_u units[MAX_UNITS];
- 
- level_s* next;
+ Level* next;
 };
 
-struct noise_s {
+struct MapNoise {
  int w, h;
  float* values;
+
+ MapNoise(int w, int h, int stepSize) {
+  float a, b, c, d, e, f, g, H, modifier, scale;
+  int halfstep, x, y;
+  
+  if (w < 1 || h < 1) {
+   LOGREPORT("attempted invalid map creation.");
+   return;
+  }
+  
+  this->w = w;
+  this->h = h;
+  
+  values = new float[w * h];
+  
+  for (y = 0; y < w; y += stepSize) {
+   for (x = 0; x < h; x += stepSize) {
+    set(x, y, randomfloat() * 2.f - 1.f);
+   }
+  }
+ 
+ scale = 1.f / w;
+ modifier = 1.f;
+ 
+ do {
+  halfstep = stepSize / 2.f;
+  
+  for (y = 0; y < h; y += stepSize) {
+   for (x = 0; x < w; x += stepSize) {
+	a = sample(x, y);
+	b = sample(x + stepSize, y);
+	c = sample(x, y + stepSize);
+	d = sample(x + stepSize, y + stepSize);
+	
+	e = (a + b + c + d) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale;
+	
+	set(x + halfstep, y + halfstep, e);
+   }
+  }
+  
+  for (y = 0; y < h; y += stepSize) {
+   for (x = 0; x < w; x += stepSize) {
+	a = sample(x, y);
+	b = sample(x + stepSize, y);
+	c = sample(x, y + stepSize);
+	
+ 	d = sample(x + halfstep, y + halfstep);
+ 	e = sample(x + halfstep, y - halfstep);
+ 	f = sample(x - halfstep, y + halfstep);
+ 	
+ 	H = (a + b + d + e) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale * 0.5f;
+ 	g = (a + c + d + f) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale * 0.5f;
+ 	
+ 	set(x + halfstep, y, H);
+ 	set(x, y + halfstep, g);
+    }
+   }
+   
+   stepSize /= 2.f;
+   scale *= (modifier + 0.8f);
+   modifier *= 0.3f;
+  }
+  while (stepSize > 1.f);
+ }
+
+ float get(int i, sol::this_state L) {
+
+	 printf("mememememem\n");
+  return values[i];
+ }
+
+ float sample(int x, int y) {
+  return values[(x & (w - 1)) + (y & (h - 1)) * w];
+ }
+
+ void set(int x, int y, float value) {
+  values[(x & (w - 1)) + (y & (h - 1)) * w] = value;
+ }
 };
 
 bool leveldef = false;
-level_s* levels = NULL;
+Level* levels = NULL;
 
 // ==================================================
 // externals
 
-extern level_s* level;
+extern Level* level;
 
 // ==================================================
 // functions
 
-level_s* getlevel(int depth) {
- level_s* l;
+Level* getlevel(int depth) {
+ Level* l;
  
  l = levels;
  
@@ -69,14 +146,16 @@ level_s* getlevel(int depth) {
 //}
 
 void enablelevel() {
- /*L.new_usertype<noise_s>("stepnoise",
-  ""
- };*/
+ L.new_usertype<MapNoise>("stepnoise",
+  "new", sol::no_constructor,
+  
+  "at", &MapNoise::get
+ );
  
  L.create_named_table("level",
   "define", [](int depth, sol::table table) {
-   level_s* l;
-   level_s* p;
+   Level* l;
+   Level* p;
    
    if (!leveldef) {
     LOGREPORT("attempted to define level outside of level script.");
@@ -86,7 +165,7 @@ void enablelevel() {
    p = NULL;
    
    if (!levels) {
-    l = levels = new level_s();
+    l = levels = new Level();
 	
     goto level_define;
    }
@@ -108,7 +187,7 @@ void enablelevel() {
    }
    while (l);
    
-   l = new level_s();
+   l = new Level();
    
   level_define:
    l->data = table;
@@ -136,8 +215,8 @@ void enablelevel() {
 	}
   },
   
-  "noise", [](int w, int h, int stepsize) {
-   
+  "noise", [](int w, int h, int stepSize) {
+   return MapNoise(w, h, stepSize);
   },
   
   "seed", []() {
@@ -172,10 +251,10 @@ void enablelevel() {
  
  L.create_named_table("tile",
   "TOGRASS", TILE_TOGRASS,
-  "TOLAVA", TILE_TOGRASS,
-  "TOLIQUID", TILE_TOGRASS,
-  "TOSAND", TILE_TOGRASS,
-  "TOWATER", TILE_TOGRASS,
+  "TOLAVA", TILE_TOLAVA,
+  "TOLIQUID", TILE_TOLIQUID,
+  "TOSAND", TILE_TOSAND,
+  "TOWATER", TILE_TOWATER,
   
   "define", [](int index, const char* name, sol::table data) {
    assigntile(index, name, data);

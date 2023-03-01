@@ -47,7 +47,7 @@ void rendergame(screen_t* screen) {
 }
 
 // TODO: handle game client spawn effectively; return unit referral
-void spawngameclient(refer_t client, int level) {
+void spawngameclient(refer_t client, int depth) {
  client = getgameclient(client);
  
  if (client == INVALIDCLIENT) {
@@ -55,15 +55,15 @@ void spawngameclient(refer_t client, int level) {
   return;
  }
  
- if (level < 0 || level >= MAX_LEVELS) {
+ if (depth < 0 || depth >= MAX_LEVELS) {
   LOGREPORT("received out of bounds level index.");
   return;
  }
  
- bindlevel(level);
+ bindlevel(depth);
  
- session.clients[client].level = level;
- session.clients[client].entity = spawn("pliant.Player");
+ session.clients[client].level = depth;
+ session.clients[client].entity = spawn("Player");
  
  return;
 }

@@ -157,7 +157,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math.cpp" />
     <ClCompile Include="sound.cpp" />
-    <ClCompile Include="unit.cpp" />
     <ClCompile Include="view.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +169,7 @@
     <ClInclude Include="leveldef.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="net.h" />
+    <ClInclude Include="unit.h" />
     <ClInclude Include="view.h" />
     <ClInclude Include="tile.h" />
   </ItemGroup>
