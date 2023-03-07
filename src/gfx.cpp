@@ -26,6 +26,39 @@ SDL_Color* pixels;
 
 int focus = 0;
 
+void centerfocus(int* sx, int* sy, int lx, int ly, screen_t* screen) {
+ int xs, ys;
+ 
+ if (!screen || !sx || !sy) {
+  LOGREPORT("received invalid position or arguments.");
+  return;
+ }
+ 
+ xs = *sx - screen->w / 2;
+ ys = *sy - (screen->h - 8) / 2;
+ 
+ if (xs < BLOCKSCALE) {
+  xs = BLOCKSCALE;
+ }
+ 
+ if (ys < BLOCKSCALE) {
+  ys = BLOCKSCALE;
+ }
+ 
+ if (xs > lx * BLOCKSCALE - screen->w - BLOCKSCALE) {
+  xs = lx * BLOCKSCALE - screen->w - BLOCKSCALE;
+ }
+ 
+ if (ys > ly * BLOCKSCALE - screen->h - BLOCKSCALE) {
+  ys = ly * BLOCKSCALE - screen->h - BLOCKSCALE;
+ }
+ 
+ *sx = xs;
+ *sy = ys;
+ 
+ return;
+}
+
 int getcolor1(int d) {
  int r, g, b;
  

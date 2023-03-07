@@ -1,5 +1,4 @@
 #include "main.h"
-#include "bind.h"
 
 #include "tile.h"
 #include "unit.h"
@@ -37,7 +36,7 @@ struct MapNoise {
   int halfstep, x, y;
   
   if (w < 1 || h < 1) {
-   LOGREPORT("attempted invalid map creation.");
+   LOGREPORT("attempted invalid noise creation.");
    return;
   }
   
@@ -48,41 +47,41 @@ struct MapNoise {
     set(x, y, randomfloat() * 2.f - 1.f);
    }
   }
- 
- scale = 1.f / w;
- modifier = 1.f;
- 
- do {
-  halfstep = stepSize / 2.f;
   
-  for (y = 0; y < h; y += stepSize) {
-   for (x = 0; x < w; x += stepSize) {
-	a = sample(x, y);
-	b = sample(x + stepSize, y);
-	c = sample(x, y + stepSize);
-	d = sample(x + stepSize, y + stepSize);
-	
-	e = (a + b + c + d) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale;
-	
-	set(x + halfstep, y + halfstep, e);
+  scale = 1.f / w;
+  modifier = 1.f;
+  
+  do {
+   halfstep = stepSize / 2.f;
+  
+   for (y = 0; y < h; y += stepSize) {
+    for (x = 0; x < w; x += stepSize) {
+	 a = sample(x, y);
+	 b = sample(x + stepSize, y);
+	 c = sample(x, y + stepSize);
+	 d = sample(x + stepSize, y + stepSize);
+	 
+	 e = (a + b + c + d) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale;
+	 
+	 set(x + halfstep, y + halfstep, e);
+    }
    }
-  }
-  
-  for (y = 0; y < h; y += stepSize) {
-   for (x = 0; x < w; x += stepSize) {
-	a = sample(x, y);
-	b = sample(x + stepSize, y);
-	c = sample(x, y + stepSize);
-	
- 	d = sample(x + halfstep, y + halfstep);
- 	e = sample(x + halfstep, y - halfstep);
- 	f = sample(x - halfstep, y + halfstep);
- 	
- 	H = (a + b + d + e) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale * 0.5f;
- 	g = (a + c + d + f) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale * 0.5f;
- 	
- 	set(x + halfstep, y, H);
- 	set(x, y + halfstep, g);
+   
+   for (y = 0; y < h; y += stepSize) {
+    for (x = 0; x < w; x += stepSize) {
+	 a = sample(x, y);
+ 	 b = sample(x + stepSize, y);
+	 c = sample(x, y + stepSize);
+	 
+ 	 d = sample(x + halfstep, y + halfstep);
+ 	 e = sample(x + halfstep, y - halfstep);
+ 	 f = sample(x - halfstep, y + halfstep);
+ 	 
+ 	 H = (a + b + d + e) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale * 0.5f;
+ 	 g = (a + c + d + f) / 4.f + (randomfloat() * 2.f - 1.f) * stepSize * scale * 0.5f;
+ 	 
+ 	 set(x + halfstep, y, H);
+ 	 set(x, y + halfstep, g);
     }
    }
    
@@ -112,10 +111,34 @@ Level* levels = NULL;
 // ==================================================
 // externals
 
-extern Level* level;
+//extern Level* level;
 
 // ==================================================
 // functions
+void emptylevel(Level* level, int w, int h) {
+ level->w = w;
+ level->h = h;
+ 
+ /*if (depth < 0) {
+  level->dirtcolor = 222;
+  level->density = 4;
+ }
+ else if (depth > 0) {
+  level->dirtcolor = 444;
+  level->density = 4;
+ }*/
+ 
+ //level->dirties = calloc(w * h / (CHUNKANGTH * CHUNKANGTH) / BYTEWIDTH, sizeof(byte_t));
+ level->tiles = new tile_s[w * h];
+ level->tileunits = new Unit*[w * h * MAX_TILEUNITS];
+ 
+ if (/*!level->dirties ||*/ !level->tiles || !level->tileunits) {
+  LOGREPORT("unable to allocate memory for level chunk data.");
+  exit(EXIT_FAILURE);
+ }
+
+ memset(level->tileunits, 0, sizeof(refer_t) * w * h * MAX_TILEUNITS);
+}
 
 Level* getlevel(int depth) {
  Level* l;
@@ -194,17 +217,11 @@ void enablelevel() {
   },
   
   "depth", []() {
-   if VALIDLEVEL{
-    return level->depth;
-   }
-   
-   return 0;
+   return level.depth();
   },
   
   "getTile", [](int x, int y) {
-    if VALIDLEVEL {
-	 return gettile(x, y);
-	}
+	return level.getTile(x, y);
   },
   
   "noise", [](int w, int h, int stepSize) {
@@ -212,29 +229,23 @@ void enablelevel() {
   },
   
   "seed", []() {
-   if (level) {
-    return level->seed;
-   }
-   
-   return 0;
+   return level.seed();
   },
   
   "setData", [](int x, int y, int data) {
-   
+   level.setData(x, y, data);
   },
   
   "setTile", [](int x, int y, int id, int data) {
-   if VALIDLEVEL {
-    settile(x, y, id, data);
-   }
+   level.setTile(x, y, id, data);
   },
   
   "random", []() {
   },
   
   "size", []() {
-   if VALIDLEVEL {
-    return std::tuple(level->w, level->h);
+   if (level.valid()) {
+    return std::tuple(level.w(), level.h());
    }
    
    return std::tuple(0, 0);

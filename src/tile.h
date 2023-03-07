@@ -41,7 +41,7 @@ int flagtile(refer_t id, int flags);
 struct tileword_s {
  int flags;
 
- char* name;
+ std::string name;
  sol::table data;
 };
 
@@ -70,7 +70,7 @@ void assigntile(int index, const char* name, sol::object data) {
  }
  
  for (i = 0; i < MAX_TILES; i++) {
-  if (tiles[i].name && !strcmp(tiles[i].name, name)) {
+  if (tiles[i].name == name) {
    LOGREPORT("duplicate tile words for tag '%s'.", name);
    exit(EXIT_FAILURE);
   }
@@ -110,7 +110,7 @@ refer_t tileid(const char* string) {
  }
  
  for (i = 0; i < MAX_TILES; i++) {
-  if (tiles[i].name && !strcmp(tiles[i].name, string)) {
+  if (tiles[i].name == string) {
    return i;
   }
  }
@@ -125,5 +125,5 @@ const char* tilename(refer_t word) {
   return "";
  }
 
- return tiles[word].name;
+ return tiles[word].name.c_str();
 }

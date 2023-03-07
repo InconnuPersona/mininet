@@ -12,6 +12,7 @@
 #define RENDERHEIGHT 120
 #define SCALE 3
 #define TILESCALE 8
+#define BLOCKSCALE (TILESCALE * 2)
 
 typedef enum {
  MIRROR_X = 0x01,
@@ -34,6 +35,7 @@ int getcolor(int a, int b, int c, int d);
 
 void loadspritesheet(spritesheet_t* sheet, const char* path);
 
+void centerfocus(int* xs, int* ys, int lx, int ly, screen_t* screen);
 void clearscreen(screen_t* screen, int color);
 void createscreen(screen_t* screen, int width, int height, const char* icons);
 void offsetscreen(screen_t* screen, int x, int y);

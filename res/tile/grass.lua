@@ -3,6 +3,7 @@ tile.define(1, "grass", {
  flags = tile.TOGRASS,
  
  render = function(x, y)
+  print('meme')
   local gcol = level.data.grassColor
   local color = screen.get(gcol, gcol, gcol + 111, gcol + 111)
   local transition = screen.get(gcol - 111, gcol, gcol + 111, gcol)

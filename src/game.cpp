@@ -22,7 +22,8 @@ void renderdue(screen_t* screen) {
  return;
 }
 
-void rendergame(screen_t* screen) {
+void Game::render(screen_t* screen) {
+ Unit* player;
  int depth;
  int xs, ys;
  
@@ -33,22 +34,28 @@ void rendergame(screen_t* screen) {
  
  depth = 0;
 
- bindlevel(depth);
+ player = level.getUnit(clients[LOCALCLIENT].entity);
 
- centerfocus(&xs, &ys, screen);
+ level.bind(player->depth());
+
+ if (!player) {
+  return;
+ }
+
+ xs = player->x;
+ ys = player->y;
+
+ centerfocus(&xs, &ys, level.w(), level.h(), screen);
  
- xs = 0;
- ys = 0;
- 
- renderlevel(depth, xs, ys, screen);
+ level.render(xs, ys, screen);
  
  //renderGUI(player->id, screen);
  
 }
 
 // TODO: handle game client spawn effectively; return unit referral
-void spawngameclient(refer_t client, int depth) {
- client = getgameclient(client);
+void Game::spawn_client(refer_t client, int depth) {
+ client = get_client(client);
  
  if (client == INVALIDCLIENT) {
   LOGREPORT("received unknown gameclient id.");
@@ -60,16 +67,16 @@ void spawngameclient(refer_t client, int depth) {
   return;
  }
  
- bindlevel(depth);
+ level.bind(depth);
  
- session.clients[client].level = depth;
- session.clients[client].entity = spawn("Player");
+ clients[client].level = depth;
+ clients[client].entity = level.spawn("Player");
  
  return;
 }
 
-void startgame(gametype_e type, const char* name, const char* address, int port) {
- if (session.open) {
+void Game::start(gametype_e type, const char* name, const char* address, int port) {
+ if (open) {
   LOGREPORT("game session already open.");
   return;
  }
@@ -86,20 +93,20 @@ void startgame(gametype_e type, const char* name, const char* address, int port)
   break;
   
  case GAME_HOST:
-  //openhost(port);
+  openhost(port);
   /* no break */
   
  case GAME_PRIVATE:
-  createlevels(LEVELANGTH, LEVELANGTH, randominteger(0xffff));
+  id = randomid();
   
-  session.id = randomid();
+  level.generate(LEVELANGTH, LEVELANGTH, randominteger(0xffff));
   
   LOGREPORT("opened session under id [%x].", session.id);
   
   // Add a new client
-  session.self = newgameclient(name, LOCALCLIENT);
+  self = new_client(name, LOCALCLIENT);
   
-  spawngameclient(session.self, SPAWNLEVEL);
+  spawn_client(self, SPAWNLEVEL);
   
 //  directmessage(&m, data, sizeof(data));
 //  
@@ -115,21 +122,22 @@ void startgame(gametype_e type, const char* name, const char* address, int port)
  }
  
  // TODO: improve timer accuracy
- settimer(&session.timer, TIMER_SPACEDLAPSE, CURRENTTIME, 1.f / GAMERATE);
+ settimer(&timer, TIMER_SPACEDLAPSE, CURRENTTIME, 1.f / GAMERATE);
  
- session.marker = GAMESMARKER;
- session.open = true;
- session.ticks = 0;
- session.type = type;
- session.version = GAMEVERSION;
+ marker = GAMESMARKER;
+ open = true;
+ ticks = 0;
+ version = GAMEVERSION;
  
+ this->type = type;
+
  return;
 }
 
-void tickgame() {
- if (!session.open) {
+void Game::tick() {
+ if (!open) {
   return;
  }
  
- session.ticks++;
+ ticks++;
 }

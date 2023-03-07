@@ -2,15 +2,19 @@
 
 #include "bind.h"
 
+#include <map>
 #include <vector>
 
 #define NOUNIT 0
 
+// ==================================================
+// declarations
+
 typedef Unit* (*unitfactory_f)();
 
-#include <map>
-
 std::map<std::string, unitfactory_f> factories;
+std::map<Unit*, int> units;
+
 
 struct unitword_s {
  std::string type;
@@ -20,34 +24,33 @@ struct unitword_s {
  unitfactory_f create;
 };
 
-// ==================================================
-// declarations
+Unit::Unit() {
+ id = base = 0;
+ x = y = 0;
+ halfW = halfH = 0;
+}
 
-struct Unit {
- int id;
- int base; // index to units[]
- int x, y;
- int halfW, halfH;
+sol::object Unit::getClass() {
+ return sol::nil;
+}
+
+void Unit::touch(Unit* other) {
+ return;
+}
  
- Unit() {
-  id = base = 0;
-  x = y = 0;
-  halfW = halfH = 0;
+void Unit::test() {
+ LOGREPORT("meme");
+}
+
+int Unit::depth() {
+ for (auto& unit : units) {
+  if (unit.first->id == id) {
+   return unit.second;
+  }
  }
 
- sol::object getClass() {
-  return sol::nil;
- }
-
- void touch(Unit* other) {
-  return;
- }
- 
- void test() {
-  LOGREPORT("meme");
- }
-
-};
+ return 0;
+}
 
 struct Mob : Unit {
  int hp, maxHP;
@@ -76,7 +79,6 @@ struct Pliant : Mob {
 };
 
 std::vector<unitword_s> unitdefs;
-std::vector<Unit*> units;
 
 unitword_s* begetunit(const char* word, int* idx) {
  int i;
@@ -92,6 +94,16 @@ unitword_s* begetunit(const char* word, int* idx) {
  return NULL;
 }
 
+refer_t createunitid() {
+ int id;
+ 
+ do {
+  id = randomid();
+ }
+ while (level.hasUnit(id));
+ 
+ return id;
+}
 void loadunit(const char* path, const char* string) {
 char buffer[MAX_PATHLENGTH];
  char* c;
@@ -117,24 +129,31 @@ char buffer[MAX_PATHLENGTH];
   auto base = data["class"];
 
   unitfactory_f create = NULL;
-
+  
   if ISLUATYPE(base, string) {
    
-      
-   unitdefs.push_back({ base, string, data });
-
-   for (auto type : factories) {
-    if (type.first == base->type) {
-     unit = type.second();
+   
+   for (auto factory : factories) {
+    if (factory.first == string) {
+     create = factory.second;
      break;
     }
    }
 
-  }
+   std::string type;
 
-  if ()
-  else {
-   unitdefs.push_back({ "unit", string, data });
+   if (!create) {
+    create = []() -> Unit* {
+     return new Unit();
+    };
+
+    type = "unit";
+   }
+   else {
+    type = base;
+   }
+
+   unitdefs.push_back({ base, string, data, create });
   }
 
   LOGREPORT("loaded unit '%s' definition.", string);

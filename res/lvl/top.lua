@@ -8,9 +8,9 @@ top = {
 }
 
 function top.generate(w, h)
- local grass = tile.id('grass')
- local rock = tile.id('rock')
- local water = tile.id('water')
+ local grass = tile.id("grass")
+ local rock = tile.id("rock")
+ local water = tile.id("water")
  
  local mnoise1 = level.noise(w, h, 16)
  local mnoise2 = level.noise(w, h, 16)
@@ -19,8 +19,8 @@ function top.generate(w, h)
  local noise1 = level.noise(w, h, 32)
  local noise2 = level.noise(w, h, 32)
  
- for y = 0, h do
-  for x = 0, w do
+ for y = 0, h - 1 do
+  for x = 0, w - 1 do
    local i = x + y * w;
    
    local value = math.abs(noise1[i] - noise2[i]) * 3 - 2;
@@ -52,9 +52,9 @@ function top.generate(w, h)
    if (value < -0.5) then
 	level.setTile(x, y, water, 0)
    elseif ((value > 0.5) and (mvalue < -1.5)) then
-	level.setTile(x, y, rock, 0);
+	level.setTile(x, y, rock, 0)
    else
-	level.setTile(x, y, grass, 0);
+	level.setTile(x, y, grass, 0)
    end
   end
  end

@@ -1,9 +1,10 @@
 #include "host.h"
+#include "net.h"
 
-game_s session;
+Game session;
 
 // Get a game client index by id.
-int getgameclient(refer_t client) {
+int Game::get_client(refer_t client) {
  int i;
  
  if (client == INVALIDCLIENT) {
@@ -11,11 +12,11 @@ int getgameclient(refer_t client) {
  }
  
  if (client == LOCALCLIENT) {
-  return getgameclient(session.self);
+  return get_client(self);
  }
  
- for (i = 0; i < MAX_GAMECLIENTS; i++) {
-  if (session.clients[i].id == client) {
+ for (i = 0; i < MAX_CLIENTS; i++) {
+  if (clients[i].id == client) {
    return i;
   }
  }
@@ -23,30 +24,62 @@ int getgameclient(refer_t client) {
  return INVALIDCLIENT;
 }
 
+/*int handleinput() {
+ int commands;
+ 
+ commands = 0;
+ 
+ if (getaliasdown("attack")) {
+  commands |= CMD_ATTACK;
+ }
+ 
+ if (getaliasdown("menu")) {
+  commands |= CMD_MENU;
+ }
+ 
+ if (getaliasdown("down")) {
+  commands |= CMD_MOVEDOWN;
+ }
+ 
+ if (getaliasdown("left")) {
+  commands |= CMD_MOVELEFT;
+ }
+ 
+ if (getaliasdown("right")) {
+  commands |= CMD_MOVERIGHT;
+ }
+ 
+ if (getaliasdown("up")) {
+  commands |= CMD_MOVEUP;
+ }
+ 
+ return commands;
+}*/
+
 // Generate a new id for a client.
-int newgameclientid() {
+int Game::new_clientid() {
  int id;
  
  do {
   id = randomid();
   
-  if (getgameclient(id) != INVALIDCLIENT || id == session.id) {
+  if (get_client(id) != INVALIDCLIENT || id == session.id) {
    continue;
   }
   
   return id;
  }
- while (1);
+ while (true);
 }
 
-refer_t newgameclient(const char* name, refer_t netid) {
- gameclient_s* client;
+refer_t Game::new_client(const char* name, refer_t netid) {
+ Client* client;
  int i, j;
  
  j = -1;
  
- for (i = 0; i < MAX_GAMECLIENTS; i++) {
-  client = &session.clients[i];
+ for (i = 0; i < MAX_CLIENTS; i++) {
+  client = &clients[i];
   
   if (j < 0 && !client->id) {
    j = i;
@@ -66,9 +99,9 @@ refer_t newgameclient(const char* name, refer_t netid) {
  }
  
  if (j > -1) {
-  client = &session.clients[j];
+  client = &clients[j];
   
-  client->id = newgameclientid();
+  client->id = new_clientid();
   client->netid = netid;
   client->deadtime = client->livetime = 0;
   client->finished = /*client->inmenu =*/ 0;

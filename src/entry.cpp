@@ -53,13 +53,15 @@ void tick() {
   tickkeys();
  }
  
- tickgame();
+ if (session.open) {
+  session.tick();
+ }
  
  if (hasfocus()) {
   tickview();
  }
  
- //updatequeues();
+ net.update();
 }
 
 void render() {
@@ -121,7 +123,7 @@ int main(int argc, char** argv) {
   
   pollevents();
   
-  //handlequeues();
+  net.handle();
   
   while (unprocessed > 0) {
    tick();

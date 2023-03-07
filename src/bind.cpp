@@ -55,13 +55,13 @@ void enablelua() {
   },
   
   "render", []() {
-   rendergame(le_screen);
+   session.render(le_screen);
   },
   
   // Perhaps start sessions with a session table that holds its data, such as
   // level size, player name, etc.
   "start", [](int type, const char* name, const char* addr, const char* port) {
-   startgame((gametype_e) type, name, addr, atoi(port));
+   session.start((gametype_e) type, name, addr, atoi(port));
   },
   
   "seedRandom", [](int seed) {

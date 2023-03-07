@@ -156,6 +156,7 @@
     <ClCompile Include="level.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math.cpp" />
+    <ClCompile Include="net.cpp" />
     <ClCompile Include="sound.cpp" />
     <ClCompile Include="view.cpp" />
   </ItemGroup>

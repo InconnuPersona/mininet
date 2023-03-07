@@ -5,7 +5,7 @@
 #define GAMESMARKER 0x4d494e49 // mini in hexadecimal
 #define LEVELANGTH 128
 #define LOCALANGTH 1
-#define MAX_GAMECLIENTS MAX_CLIENTS
+#define MAX_CLIENTS 16
 #define MAX_GAMESENDLENGTH 256
 #define MAX_NAMELENGTH 16
 #define LOCALCLIENT 0
@@ -31,18 +31,6 @@ typedef enum {
  //MSG_POSTUNITWORD,
 } message_e;
 
-struct gameclient_s {
- int id;
- int netid;
- //int inmenu;
- int entity, level;
- 
- char name[MAX_NAMELENGTH];
- 
- int deadtime, livetime;
- int finished; // won game
-};
-
 /*typedef struct {
  short length;
  short type;
@@ -57,23 +45,50 @@ enum gametype_e {
  GAME_PRIVATE,
 };
 
-struct game_s {
+struct Game {
+ 
+ struct Client {
+  int id;
+  int netid;
+  //int inmenu;
+  int entity, level;
+  
+  char name[MAX_NAMELENGTH];
+  
+  int deadtime, livetime;
+  int finished; // won game
+ };
+
+	
  bool open;
  int marker;
  int id, version;
  int ticks, type;
  int self;
  
- gameclient_s clients[MAX_GAMECLIENTS];
+ Client clients[MAX_CLIENTS];
  watch_t timer;
+
+ refer_t get_client(refer_t id);
+
+ int new_clientid();
+ refer_t new_client(const char* name, refer_t netid);
+ void spawn_client(refer_t client, int depth);
+
+ void start(gametype_e type, const char* name, const char* address, int port);
+ void render(screen_t* screen);
+ void tick();
+
+ void handle();
+ void update();
 };
 
-extern game_s session;
+extern Game session;
 
 //void endsession() or closesession()
-void startgame(gametype_e type, const char* name, const char* address, int port);
-void rendergame(screen_t* screen);
-void tickgame();
+//void startgame(gametype_e type, const char* name, const char* address, int port);
+//void rendergame(screen_t* screen);
+//void tickgame();
 
 //int awaited();
 //void bindgamelevel(int level);
@@ -84,12 +99,12 @@ void tickgame();
 //void lostclient();
 
 //refer_t getboundclient(int bind);
-int getgameclient(refer_t client);
+//int getgameclient(refer_t client);
 //refer_t getgamepliant(refer_t client);
 //refer_t getnamedclient(const char* name);
 //refer_t getplayerclient(refer_t pliant);
 //void kickgameclient(refer_t client);
-int newgameclient(const char* name, int bind);
+//int newgameclient(const char* name, int bind);
 //void spawngameclient(refer_t client, int level);
 
 //void pushcommands(int commands);

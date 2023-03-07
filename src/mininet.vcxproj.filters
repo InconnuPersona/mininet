@@ -51,6 +51,9 @@
     <ClCompile Include="host.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="net.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="level.h">
