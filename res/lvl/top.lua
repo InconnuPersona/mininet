@@ -4,7 +4,7 @@ top = {
  grassColor = 141,
  sandColor = 550,
  
- density = 8
+ density = 8 -- monster, unit, and mob density
 }
 
 function top.generate(w, h)
@@ -23,10 +23,10 @@ function top.generate(w, h)
   for x = 0, w do
    local i = x + y * w;
    
-   local value = math.abs(noise1.at(i) - noise2.at(i)) * 3 - 2;
-   local mvalue = math.abs(mnoise1.at(i) - mnoise2.at(i));
-   local mvalue = math.abs(mvalue - mnoise3.at(i)) * 3 - 2;
-   print('meme')
+   local value = math.abs(noise1[i] - noise2[i]) * 3 - 2;
+   local mvalue = math.abs(mnoise1[i] - mnoise2[i]);
+   local mvalue = math.abs(mvalue - mnoise3[i]) * 3 - 2;
+   
    local xd = x / (w - 1) * 2 - 1;
    local yd = y / (h - 1) * 2 - 1;
    
@@ -50,11 +50,11 @@ function top.generate(w, h)
    value = value + 1 - distance * 20;
    
    if (value < -0.5) then
-	level.setTile(i, water, 0)
+	level.setTile(x, y, water, 0)
    elseif ((value > 0.5) and (mvalue < -1.5)) then
-	level.setTile(i, rock, 0);
+	level.setTile(x, y, rock, 0);
    else
-	level.setTile(i, grass, 0);
+	level.setTile(x, y, grass, 0);
    end
   end
  end

@@ -16,6 +16,7 @@
 void bindlevel(int depth);
 void enablelevel();
 void createlevels(int width, int height, int seed);
+void centerfocus(int* sx, int* sy, screen_t* screen);
 void emptylevel(int width, int height);
 void renderlevel(int level, int xs, int ys, screen_t* screen);
 void ticklevel();

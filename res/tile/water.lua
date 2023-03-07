@@ -1,13 +1,14 @@
 tile.define(3, "water", {
- --flags = tile.TOSAND and tile.TOWATER
- -- flags = tile.flags(tile.TOSAND, tile.TOWATER)
+ flags = tile.flags(tile.TOSAND, tile.TOWATER),
  
  --blocks = function(x, y, entity)
   --return not unit.buoyant(entity)
  --end,
  
  render = function(x, y)
-  game.seedrandom((game.ticks() + (x / 2 - y) * 4311) / 10 * 54687121 + x * 3271612 + y * 3412987161)
+  local seed = (game.ticks() + (x / 2 - y) * 4311) / 10 * 54687121 + x * 3271612 + y * 3412987161
+  
+  --game.seedRandom(seed)
   
   color = screen.get(005, 005, 115, 115)
   tcolor1 = screen.get(3, 005, level.data.dirtColor - 111, level.data.dirtColor)

@@ -6,11 +6,18 @@
 
 #define NOUNIT 0
 
+typedef Unit* (*unitfactory_f)();
+
+#include <map>
+
+std::map<std::string, unitfactory_f> factories;
+
 struct unitword_s {
  std::string type;
  std::string name;
 
  sol::table data;
+ unitfactory_f create;
 };
 
 // ==================================================
@@ -21,7 +28,6 @@ struct Unit {
  int base; // index to units[]
  int x, y;
  int halfW, halfH;
- int level;
  
  Unit() {
   id = base = 0;
@@ -45,10 +51,16 @@ struct Unit {
 
 struct Mob : Unit {
  int hp, maxHP;
+ int dir, xk, yk;
+ bool hurted, ticked, swam, walked;
  
  Mob() {
   hp = maxHP = 0;
  }
+};
+
+struct Fiend : Mob {
+ int level;
 };
 
 struct Movable : Unit {
@@ -104,9 +116,23 @@ char buffer[MAX_PATHLENGTH];
   // Add table to unitwords
   auto base = data["class"];
 
+  unitfactory_f create = NULL;
+
   if ISLUATYPE(base, string) {
+   
+      
    unitdefs.push_back({ base, string, data });
+
+   for (auto type : factories) {
+    if (type.first == base->type) {
+     unit = type.second();
+     break;
+    }
+   }
+
   }
+
+  if ()
   else {
    unitdefs.push_back({ "unit", string, data });
   }
@@ -117,14 +143,23 @@ char buffer[MAX_PATHLENGTH];
  }
 }
 
+template <typename Class, typename... Args>
+void defineunit(std::string name, Args&&... args) {
+ L.new_usertype<Class>(name, std::forward<Args>(args)...);
+
+ factories.insert({ name, []() -> Unit* {
+  return new Class();
+ }});
+}
+
 void enableunits() {
- L.new_usertype<Unit>("unit",
+ defineunit<Unit>("unit",
   "new", sol::no_constructor,
   
   "class", &Unit::getClass,
   
   "id", sol::readonly(&Unit::id),
-  "level", sol::readonly(&Unit::level),
+  //"level", sol::readonly(&Unit::level),
   
   "x", &Unit::x,
   "y", &Unit::y,
@@ -135,15 +170,15 @@ void enableunits() {
   "touch", &Unit::touch
  );
 
- L.new_usertype<Mob>("mob",
+ defineunit<Mob>("mob",
   sol::base_classes, sol::bases<Unit>()
  );
  
- L.new_usertype<Movable>("movable",
+ defineunit<Movable>("movable",
   sol::base_classes, sol::bases<Unit>()
  );
 
- L.new_usertype<Pliant>("pliant",
+ defineunit<Pliant>("player",
   sol::base_classes, sol::bases<Mob>()
  );
  

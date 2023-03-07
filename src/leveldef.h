@@ -15,9 +15,6 @@ struct Level {
  
  sol::table data;
  
- //int dirtcolor, sandcolor, grasscolor;
- //int density; // monster, unit, and mob density
- 
  //byte_t* dirties; // chunk bitmap
  
  //chunk_t* chunks;
@@ -26,7 +23,7 @@ struct Level {
 
  tile_s* tiles;
  
- refer_t* tileunits;
+ Unit** tileunits;
  
  Level* next;
 };
@@ -35,7 +32,7 @@ struct MapNoise {
  int w, h;
  float* values;
 
- MapNoise(int w, int h, int stepSize) {
+ MapNoise(int w, int h, int stepSize) : w(w), h(h) {
   float a, b, c, d, e, f, g, H, modifier, scale;
   int halfstep, x, y;
   
@@ -43,9 +40,6 @@ struct MapNoise {
    LOGREPORT("attempted invalid map creation.");
    return;
   }
-  
-  this->w = w;
-  this->h = h;
   
   values = new float[w * h];
   
@@ -100,8 +94,6 @@ struct MapNoise {
  }
 
  float get(int i, sol::this_state L) {
-
-	 printf("mememememem\n");
   return values[i];
  }
 
@@ -149,7 +141,7 @@ void enablelevel() {
  L.new_usertype<MapNoise>("stepnoise",
   "new", sol::no_constructor,
   
-  "at", &MapNoise::get
+  sol::meta_function::index, &MapNoise::get
  );
  
  L.create_named_table("level",
@@ -258,6 +250,18 @@ void enablelevel() {
   
   "define", [](int index, const char* name, sol::table data) {
    assigntile(index, name, data);
+  },
+  
+  "flags", [](sol::variadic_args va) {
+   int i;
+
+   i = 0;
+
+   for (auto a : va) {
+    i |= a.as<int>();
+   }
+
+   return i;
   },
   
   "hasFlag", [](int id, int flag) {

@@ -64,7 +64,7 @@ void enablelua() {
    startgame((gametype_e) type, name, addr, atoi(port));
   },
   
-  "seedrandom", [](int seed = -1) {
+  "seedRandom", [](int seed) {
    if (seed == -1) {
     seedrandomtime();
    }

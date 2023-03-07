@@ -35,7 +35,7 @@ void rendergame(screen_t* screen) {
 
  bindlevel(depth);
 
- //centerfocus(&xs, &ys, &session.levels[level], screen);
+ centerfocus(&xs, &ys, screen);
  
  xs = 0;
  ys = 0;
@@ -131,5 +131,5 @@ void tickgame() {
   return;
  }
  
- 
+ session.ticks++;
 }

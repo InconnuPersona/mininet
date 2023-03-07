@@ -1,4 +1,4 @@
-Player.class = "pliant"
+Player.class = "player"
 
 --function Player:spawn()
  --item.give(self.inv, "powGlove")
@@ -15,23 +15,21 @@ Player.class = "pliant"
 
 function Player:findSpawn()
  local x, y
+ local w, h
  
- x = 64 * 16
- y = 64 * 16
+ w, h = level.size()
  
- return x, y
- 
- --while true do
- -- x = game.random(level.width())
- -- y = game.random(level.height())
+ while true do
+  x = game.random(w)
+  y = game.random(h)
   
- -- if level.gettile(x, y) == tile.id("grass") then
- --  unit.x(self, x * 16 + 8)
- --  unit.y(self, y * 16 + 8)
- --  
- --  return true
- -- end
- --end
+  if level.getTile(x, y) == tile.id("grass") then
+   x = x * 16 + 8
+   y = y * 16 + 8
+   
+   return x, y
+  end
+ end
 end
 
 --function Player:light()
@@ -91,7 +89,7 @@ end
  
 end
 
-function Player:tick()
+--[[function Player:tick()
  local attacktime = unit.pliant.attacktime
  local commanded = unit.pliant.command
  local stamina = unit.pliant.stamina

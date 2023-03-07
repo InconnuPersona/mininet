@@ -17,7 +17,6 @@
 // variables
 
 Level* level;
-refer_t samples[MAX_SAMPLES];
 
 // ==================================================
 // private functions
@@ -75,6 +74,39 @@ void bindlevel(int depth) {
 
   L["level"]["data"] = l->data;
  }
+}
+
+void centerfocus(int* sx, int* sy, screen_t* screen) {
+ int xs, ys;
+ 
+ if (!level || !screen || !sx || !sy) {
+  LOGREPORT("received invalid position or arguments.");
+  return;
+ }
+ 
+ xs = *sx - screen->w / 2;
+ ys = *sy - (screen->h - 8) / 2;
+ 
+ if (xs < BLOCKSCALE) {
+  xs = BLOCKSCALE;
+ }
+ 
+ if (ys < BLOCKSCALE) {
+  ys = BLOCKSCALE;
+ }
+ 
+ if (xs > level->w * BLOCKSCALE - screen->w - BLOCKSCALE) {
+  xs = level->w * BLOCKSCALE - screen->w - BLOCKSCALE;
+ }
+ 
+ if (ys > level->h * BLOCKSCALE - screen->h - BLOCKSCALE) {
+  ys = level->h * BLOCKSCALE - screen->h - BLOCKSCALE;
+ }
+ 
+ *sx = xs;
+ *sy = ys;
+ 
+ return;
 }
 
 void createlevels(int w, int h, int seed) {
@@ -196,7 +228,7 @@ void emptylevel(int w, int h) {
  
  //level->dirties = calloc(w * h / (CHUNKANGTH * CHUNKANGTH) / BYTEWIDTH, sizeof(byte_t));
  level->tiles = new tile_s[w * h];
- level->tileunits = new refer_t[w * h * MAX_TILEUNITS];
+ level->tileunits = new Unit*[w * h * MAX_TILEUNITS];
  
  if (/*!level->dirties ||*/ !level->tiles || !level->tileunits) {
   LOGREPORT("unable to allocate memory for level chunk data.");
@@ -408,7 +440,10 @@ void renderbackground(int xs, int ys, screen_t* screen) {
  offsetscreen(screen, 0, 0);
 }
 
-/*void renderlights(int xs, int ys, screen_t* screen) {
+#define GETTILEUNIT(I, X, Y, Level) \
+ (Level->tileunits[I + (X + Y * Level->w) * MAX_TILEUNITS])
+
+void renderlights(int xs, int ys, screen_t* screen) {
  int i, lr, x, y, xo, yo, w, h, r;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
@@ -425,7 +460,7 @@ void renderbackground(int xs, int ys, screen_t* screen) {
   for (x = xo - r; x <= w + xo + r; x++) {
    CHECKTILEBOUNDS(x, y, level, continue);
    
-   for (i = 0; i < MAX_TILEUNITS; i++) {
+   /*for (i = 0; i < MAX_TILEUNITS; i++) {
 	lr = getlighting(GETTILEUNIT(x, y, i, level));
 	
 	if (lr > 0) {
@@ -437,40 +472,52 @@ void renderbackground(int xs, int ys, screen_t* screen) {
    
    if (lr > 0) {
 	renderlight(x * 16 + 8, y * 16 + 8, lr * 8, screen);
-   }
+   }*/
   }
  }
  
  offsetscreen(screen, 0, 0);
-}*/
+}
 
 // Sorts through the tile units and renders them on the screen according to position.
-void sortandrender(refer_t* units, int count, Level* level, screen_t* screen) {
+void sortandrender(std::vector<Unit*>& units, int count, Level* level, screen_t* screen) {
  int i;
  
  CHECKLEVEL(level, return);
  
- /*if (!units || !screen || count < 0) {
+ if (!screen || count < 0) {
   LOGREPORT("received invalid parameters.");
   return;
  }
  
- qsort(units, count, sizeof(refer_t), [](const void* v1, const void* v2) {
-  int u1, u2;
+ qsort(&units[0], count, sizeof(refer_t), [](const void* v1, const void* v2) {
+  Unit* u1 = (Unit*) v1;
+  Unit* u2 = (Unit*) v2;
   
-  
-  return 1;
- });*/
+  if (u2->y < u1->y) {
+   return 1;
+  }
+
+  if (u2->y > u1->y) {
+   return -1;
+  }
+
+  return 0;
+ });
  
+ le_screen = screen;
+
  for (i = 0; i < count; i++) {
-  //renderunit(units[i], screen);
+  auto render = unitdefs[units[i]->base].data["render"];
+
+  if ISLUATYPE(render, function) {
+   render(units[i]);
+  }
  }
 }
 
-#define GETTILEUNIT(I, X, Y, Level) \
- (Level->tileunits[I + (X + Y * Level->w) * MAX_TILEUNITS])
-
 void rendersprites(int xs, int ys, screen_t* screen) {
+ static std::vector<Unit*> samples;
  int i, j, x, y, xo, yo, w, h;
  
  CHECKLEVEL(level, exit(EXIT_FAILURE));
@@ -482,6 +529,8 @@ void rendersprites(int xs, int ys, screen_t* screen) {
  
  offsetscreen(screen, xs, ys);
  
+ samples.clear();
+
  for (y = yo; y <= h + yo; y++) {
   j = 0;
   
@@ -525,7 +574,7 @@ void renderlevel(int depth, int xs, int ys, screen_t* screen) {
  if (depth > 3) {
   clearscreen(&lightscreen, 0);
   
-  //renderlights(xs, ys, &lightscreen);
+  renderlights(xs, ys, &lightscreen);
   
   overlayscreens(screen, &lightscreen, xs, ys);
  }
@@ -611,17 +660,17 @@ refer_t spawn(const char* word) {
   return NOUNIT;
  }
 
- if (base->type == "unit") {
-  unit = new Unit();
+ unit = NULL;
+
+ for (auto type : factories) {
+  if (type.first == base->type) {
+   unit = type.second();
+   break;
+  }
  }
- elif (base->type == "mob") {
-  unit = new Mob();
- }
- elif (base->type == "pliant") {
-  unit = new Pliant();
- }
- else {
-  LOGREPORT("invalid unit word encountered.");
+
+ if (!unit) {
+  LOGREPORT("invalid unit type '%s' encountered.", base->type);
 
   exit(EXIT_FAILURE);
  }
