@@ -55,6 +55,7 @@ struct Game {
   
   char name[MAX_NAMELENGTH];
   
+  int old_cmds;
   int deadtime, livetime;
   int finished; // won game
  };
@@ -69,18 +70,20 @@ struct Game {
  Client clients[MAX_CLIENTS];
  watch_t timer;
 
- refer_t get_client(refer_t id);
+ int get_client(refer_t id);
 
  int new_clientid();
  refer_t new_client(const char* name, refer_t netid);
  void spawn_client(refer_t client, int depth);
+ void tick_clients();
+
+ int getInput();
 
  void start(gametype_e type, const char* name, const char* address, int port);
  void render(screen_t* screen);
  void tick();
 
- void handle();
- void update();
+ void tick_client(refer_t id);
 };
 
 extern Game session;

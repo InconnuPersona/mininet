@@ -87,48 +87,48 @@ end
   screen.sprite(xo + 8 - 8 * flip2, yo + 8, xt + 1 + (yt + 1) * 32, color, flip2);
  end
  
-end
+end]]--
 
---[[function Player:tick()
- local attacktime = unit.pliant.attacktime
- local commanded = unit.pliant.command
- local stamina = unit.pliant.stamina
- local tired = unit.pliant.tireddelay
+function Player:tick()
+ --local attacktime = unit.pliant.attacktime
+ --local stamina = unit.pliant.stamina
+ --local tired = unit.pliant.tireddelay
  
  local xa = 0
  local ya = 0
  
- if commanded(self, unit.pliant.MOVEUP) then ya = ya - 1 end
- if commanded(self, unit.pliant.MOVEDOWN) then ya = ya + 1 end
- if commanded(self, unit.pliant.MOVELEFT) then xa = xa - 1 end
- if commanded(self, unit.pliant.MOVERIGHT) then xa = xa + 1 end
+ if self:commanded(input.MOVEUP) then ya = -1 end
+ if self:commanded(input.MOVELEFT) then xa = -1 end
  
- if unit.inliquid(self) and unit.mob.ticked(self) % 60 == 0 then
-  if stamina(self) > 0 then
-   stamina(self, stamina(self) - 1)
-  else
+ if self:commanded(input.MOVEDOWN) then ya = ya + 1 end
+ if self:commanded(input.MOVERIGHT) then xa = xa + 1 end
+ 
+ --if unit.inliquid(self) and unit.mob.ticked(self) % 60 == 0 then
+  --if stamina(self) > 0 then
+   --stamina(self, stamina(self) - 1)
+  --else
    -- self:hurt(1)
-  end
- end
+  --end
+ --end
  
- if tired(self) % 2 == 0 then
-  unit.mob.move(self, xa, ya)
- end
+ --if tired(self) % 2 == 0 then
+  self:move(xa, ya)
+ --end]]
  
- if unit.pliant.command(self, unit.pliant.ATTACK) and stamina(self) > 0 then
-  stamina(self, stamina(self) - 1)
+ --if unit.pliant.command(self, unit.pliant.ATTACK) and stamina(self) > 0 then
+  --stamina(self, stamina(self) - 1)
   --unit.pliant.tireddelay(self, 0)
   
   -- attack
- end
+ --end
  
- if commanded(self, unit.pliant.MENU) then
+ --if commanded(self, unit.pliant.MENU) then
   -- if not unit.pliant.use(self, ) then
-   unit.pliant.view(self, "Inventory")
+   --unit.pliant.view(self, "Inventory")
   --end
- end
+ --end
  
- if attacktime(self) > 0 then
-  attacktime(self, attacktime(self) - 1)
- end
-end]]--
+ --if attacktime(self) > 0 then
+ -- attacktime(self, attacktime(self) - 1)
+ --end
+end

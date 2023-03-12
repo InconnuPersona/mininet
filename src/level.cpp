@@ -183,7 +183,7 @@ refer_t LevelI::spawn(const char* word) {
  }
 
  if (!unit) {
-  LOGREPORT("invalid unit type '%s' encountered.", base->type);
+  LOGREPORT("invalid unit type '%s' encountered.", base->type.c_str());
 
   exit(EXIT_FAILURE);
  }
@@ -231,10 +231,8 @@ void rendertiles(int xs, int ys, screen_t* screen) {
  
  for (y = yo; y <= h + yo; y++) {
   for (x = xo; x <= w + xo; x++) {
-   tile = bound->tiles[y * w + x].id;
+   tile = level.getTile(x, y);
    
-   LOGREPORT("tile: %i %i %i", tile, x, y);
-
    if (tiles[tile].data.valid()) {
     auto render = tiles[tile].data["render"];
     
@@ -382,7 +380,7 @@ void LevelI::render(int xs, int ys, screen_t* screen) {
   
   for (y = 0; y < 14; y++) {
    for (x = 0; x < 24; x++) {
-	//rendersprite(x * 8 - ((xs / 4) & 7), y * 8 - ((ys / 4) & 7), 0, color, 0, screen);
+	rendersprite(x * 8 - ((xs / 4) & 7), y * 8 - ((ys / 4) & 7), 0, color, 0, screen);
    }
   }
  }
@@ -391,18 +389,53 @@ void LevelI::render(int xs, int ys, screen_t* screen) {
  //rendersprites(xs, ys, screen);
  
  if (bound->depth > 3) {
-  //clearscreen(&lightscreen, 0);
+  clearscreen(&lightscreen, 0);
   
-  //renderlights(xs, ys, &lightscreen);
+  renderlights(xs, ys, &lightscreen);
   
-  //overlayscreens(screen, &lightscreen, xs, ys);
+  overlayscreens(screen, &lightscreen, xs, ys);
  }
  
  return;
 }
 
-void LevelI::tick() {
+void LevelI::getUnits(aabb_t bb, std::vector<Unit*>& units) {
 
+}
+
+void LevelI::tickUnits(aabb_t bb) {
+ Unit* unit;
+ int i, xt, yt, xto, yto;
+ 
+ for (auto& it : units) {
+  unit = it.first;
+
+  if (!unit) {
+   continue;
+  }
+
+  xto = unit->x >> 4;
+  yto = unit->y >> 4;
+
+  if (unit->exist) {
+   unitdefs[unit->base].call("tick", unit);
+   
+   xt = unit->x >> 4;
+   yt = unit->y >> 4;
+   
+   if (xto != xt || yto != yt) {
+	//removetileunit(unit->id, xto, yto, level);
+	//inserttileunit(unit->id, xt, yt, level);
+   }
+  }
+  else {
+   //efface(it);
+  }
+ }
+}
+
+void LevelI::tick() {
+ tickUnits({});
 }
 
 bool LevelI::valid() {

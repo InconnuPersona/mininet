@@ -1,5 +1,37 @@
 #include "host.h"
 
+int Game::getInput() {
+ int commands;
+ 
+ commands = 0;
+ 
+ if (getaliasdown("attack")) {
+  commands |= CMD_ATTACK;
+ }
+ 
+ if (getaliasdown("menu")) {
+  commands |= CMD_MENU;
+ }
+ 
+ if (getaliasdown("down")) {
+  commands |= CMD_MOVEDOWN;
+ }
+ 
+ if (getaliasdown("left")) {
+  commands |= CMD_MOVELEFT;
+ }
+ 
+ if (getaliasdown("right")) {
+  commands |= CMD_MOVERIGHT;
+ }
+ 
+ if (getaliasdown("up")) {
+  commands |= CMD_MOVEUP;
+ }
+ 
+ return commands;
+}
+
 void renderdue(screen_t* screen) {
  int color, ofs;
  
@@ -134,10 +166,63 @@ void Game::start(gametype_e type, const char* name, const char* address, int por
  return;
 }
 
+void Game::tick_client(refer_t id) {
+ Unit* player;
+ int commands;
+ int i;
+ 
+ i = get_client(id);
+ 
+ //if (awaited()) {
+  //if (session.ticks % 5 == 0) {
+   //pushjoin(session.clients[client].name);
+  //}
+ //}
+ //else {
+  commands = getInput();
+  
+  if (i != INVALIDCLIENT) {
+   player = level.getUnit(clients[i].entity);
+   
+   if (!player) {
+	return;
+   }
+   
+   player->input(commands);
+
+   /*if (session.clients[client].inmenu) {
+	ticksurface(session.clients[client].inmenu, session.clients[client].entity);
+	
+	player->pliant.commands = commands = 0;
+   }
+  }
+  
+  if (session.type == GAME_CLIENT) {
+   if (!session.clients[client].inmenu) {
+	if (commands != oldcommand) {
+	 pushcommands(commands);
+	}
+   }*/
+
+   clients[i].old_cmds = commands;
+  }
+ //}
+ 
+ return;
+}
+
 void Game::tick() {
  if (!open) {
   return;
  }
+ 
+ tick_client(LOCALCLIENT);
+
+ level.tick();
+
+ //if (type == GAME_HOST) {
+  // check client synchronizations
+ //}
  
  ticks++;
 }

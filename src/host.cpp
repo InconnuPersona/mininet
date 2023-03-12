@@ -24,38 +24,6 @@ int Game::get_client(refer_t client) {
  return INVALIDCLIENT;
 }
 
-/*int handleinput() {
- int commands;
- 
- commands = 0;
- 
- if (getaliasdown("attack")) {
-  commands |= CMD_ATTACK;
- }
- 
- if (getaliasdown("menu")) {
-  commands |= CMD_MENU;
- }
- 
- if (getaliasdown("down")) {
-  commands |= CMD_MOVEDOWN;
- }
- 
- if (getaliasdown("left")) {
-  commands |= CMD_MOVELEFT;
- }
- 
- if (getaliasdown("right")) {
-  commands |= CMD_MOVERIGHT;
- }
- 
- if (getaliasdown("up")) {
-  commands |= CMD_MOVEUP;
- }
- 
- return commands;
-}*/
-
 // Generate a new id for a client.
 int Game::new_clientid() {
  int id;

@@ -19,6 +19,10 @@ function top.generate(w, h)
  local noise1 = level.noise(w, h, 32)
  local noise2 = level.noise(w, h, 32)
  
+ local g_c = 0
+ local r_c = 0
+ local w_c = 0
+ 
  for y = 0, h - 1 do
   for x = 0, w - 1 do
    local i = x + y * w;
@@ -51,13 +55,20 @@ function top.generate(w, h)
    
    if (value < -0.5) then
 	level.setTile(x, y, water, 0)
+	w_c = w_c + 1
    elseif ((value > 0.5) and (mvalue < -1.5)) then
 	level.setTile(x, y, rock, 0)
+	r_c = r_c + 1
    else
 	level.setTile(x, y, grass, 0)
+	g_c = g_c + 1
    end
   end
  end
+ 
+ print("grass: ".. g_c)
+ print("rock: ".. r_c)
+ print("water: ".. w_c)
 end
 
 function top.validate(w, h)

@@ -83,6 +83,13 @@ void enablelua() {
   "ENTER", '\r',
   "ESCAPE", '\033',
   
+  "ATTACK", CMD_ATTACK,
+  "MENU", CMD_MENU,
+  "MOVEDOWN", CMD_MOVEDOWN,
+  "MOVELEFT", CMD_MOVELEFT,
+  "MOVERIGHT", CMD_MOVERIGHT,
+  "MOVEUP", CMD_MOVEUP,
+  
   "clicked", [](const char* name) {
    return (bool) getaliasclicked(name);
   },

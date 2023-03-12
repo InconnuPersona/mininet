@@ -65,7 +65,7 @@ void assigntile(int index, const char* name, sol::object data) {
  }
  
  if (tiles[index].flags) {
-  LOGREPORT("duplicate tile IDs for index %i; assigned '%s', attempted '%s'.", index, tiles[index].name, name);
+  LOGREPORT("duplicate tile IDs for index %i; assigned '%s', attempted '%s'.", index, tiles[index].name.c_str(), name);
   exit(EXIT_FAILURE);
  }
  
