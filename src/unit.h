@@ -305,6 +305,8 @@ struct unitword_s {
   elif (type == "player") {
    return func((Player*) unit, args...);
   }
+
+  return sol::nil;
  }
 
 };
@@ -430,6 +432,14 @@ void enableunits() {
  defineunit<Mob>("mob",
   sol::base_classes, sol::bases<Unit>(),
   
+  "hp", &Mob::hp,
+  "maxHP", &Mob::maxHP,
+  "dir", &Mob::dir,
+  "hurted", &Mob::hurted,
+  "ticked", &Mob::ticked,
+  "swam", &Mob::swam,
+  "walked", &Mob::walked,
+  
   "move", &Mob::move
  );
  
@@ -438,8 +448,9 @@ void enableunits() {
  );
 
  defineunit<Player>("player",
-  sol::base_classes, sol::bases<Mob>(),
-  "commanded", &Player::commanded
+  sol::base_classes, sol::bases<Unit, Mob>(),
+  "commanded", &Player::commanded,
+  "dir", &Player::dir
  );
  
  //uploadsubtable(lua_unitdrop, "drop", "unit", L_game);

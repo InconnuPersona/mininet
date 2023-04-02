@@ -228,7 +228,7 @@ void rendertiles(int xs, int ys, screen_t* screen) {
  h = (screen->h + 15) >> 4;
  
  offsetscreen(screen, xs, ys);
- 
+
  for (y = yo; y <= h + yo; y++) {
   for (x = xo; x <= w + xo; x++) {
    tile = level.getTile(x, y);
@@ -323,11 +323,7 @@ void sortandrender(std::vector<Unit*>& units, int count, Level* level, screen_t*
  le_screen = screen;
 
  for (i = 0; i < count; i++) {
-  auto render = unitdefs[units[i]->base].data["render"];
-
-  if ISLUATYPE(render, function) {
-   render(units[i]);
-  }
+  unitdefs[units[i]->base].call("render", units[i]);
  }
 }
 
@@ -342,7 +338,7 @@ void rendersprites(int xs, int ys, screen_t* screen) {
  
  offsetscreen(screen, xs, ys);
  
- samples.clear();
+ /*samples.clear();
 
  for (y = yo; y <= h + yo; y++) {
   j = 0;
@@ -361,6 +357,12 @@ void rendersprites(int xs, int ys, screen_t* screen) {
   if (j > 0) {
    sortandrender(samples, j, bound, screen);
   }
+ }*/
+
+ le_screen = screen;
+
+ for (auto& unit : units) {
+  unitdefs[unit.first->base].call("render", unit.first);
  }
  
  offsetscreen(screen, 0, 0);
@@ -370,6 +372,7 @@ void LevelI::render(int xs, int ys, screen_t* screen) {
  extern screen_t lightscreen;
  int color;
  int x, y;
+ int i;
  
  if (!valid()) {
   return;
@@ -382,12 +385,13 @@ void LevelI::render(int xs, int ys, screen_t* screen) {
    for (x = 0; x < 24; x++) {
 	rendersprite(x * 8 - ((xs / 4) & 7), y * 8 - ((ys / 4) & 7), 0, color, 0, screen);
    }
+
   }
  }
  
  rendertiles(xs, ys, screen);
- //rendersprites(xs, ys, screen);
- 
+ rendersprites(xs, ys, screen);
+
  if (bound->depth > 3) {
   clearscreen(&lightscreen, 0);
   

@@ -59,6 +59,3 @@ tile.define(1, "grass", {
  --interact = function(x, y, unit, item)
  --end
 })
-
-
-print('loaded grass.lua')

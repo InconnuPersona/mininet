@@ -36,30 +36,35 @@ end
 -- return 2
 --end
 
---[[function Player:render()
- xt = 0
- yt = 14
+function Player:render()
+ local xt = 0
+ local yt = 14
  
- flip1 = bit32.band(bit32.rshift(unit.mob.walked(self), 3), 1)
- flip2 = flip1
+ --local flip1 = bit32.band(bit32.rshift(self.walked, 3), 1)
+ local flip1 = (self.walked >> 3) & 1
+ local flip2 = flip1
  
- if unit.mob.dir(self) == 1 then
+ if self.dir == 1 then
   xt = xt + 2
- elseif unit.mob.dir(self) > 1 then
+ elseif self.dir > 1 then
   flip1 = 0
-  flip2 = bit32.band(bit32.rshift(unit.mob.walked(self), 4), 1)
+  --flip2 = bit32.band(bit32.rshift(self.walked, 4), 1)
+  flip2 = (self.walked >> 4) & 1
   
-  if unit.mob.dir(self) == 2 then
+  if self.dir == 2 then
    flip1 = 1
   end
   
-  xt = xt + 4 + bit32.band(bit32.rshift(unit.mob.walked(self), 3), 1) * 2
+  --xt = xt + 4 + bit32.band(bit32.rshift(self.walked, 3), 1) * 2
+  xt = xt + 4 + ((self.walked >> 3) & 1) * 2
  end
  
- xo = unit.x(self) - 8
- yo = unit.y(self) - 11
+ --print('x ' .. self.x)
  
- if unit.inliquid(self) then
+ local xo = self.x - 8
+ local yo = self.y - 11
+ 
+ --[[if unit.inliquid(self) then
   yo = yo + 4
   watercolor = screen.get(-1, -1, 115, 335)
   
@@ -69,7 +74,7 @@ end
   
   screen.sprite(xo + 0, yo + 3, 5 + 13 * 32, watercolor, 0)
   screen.sprite(xo + 8, yo + 3, 5 + 13 * 32, watercolor, 1)
- end
+ end]]
  
  color = screen.get(-1, 100, 220, 532)
  
@@ -82,12 +87,11 @@ end
  screen.sprite(xo + 8 - 8 * flip1, yo + 0, xt + 1 + yt * 32, color, flip1)
  
  -- render legs
- if not unit.inliquid(self) then
+ --if not unit.inliquid(self) then
   screen.sprite(xo + 0 + 8 * flip2, yo + 8, xt + 0 + (yt + 1) * 32, color, flip2);
   screen.sprite(xo + 8 - 8 * flip2, yo + 8, xt + 1 + (yt + 1) * 32, color, flip2);
- end
- 
-end]]--
+ --end
+end
 
 function Player:tick()
  --local attacktime = unit.pliant.attacktime
